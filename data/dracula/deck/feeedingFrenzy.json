@@ -1,5 +1,6 @@
 {
     "name": "feeding_frenzy",
+    "attack": 2, 
     "img": "../../../../assets/images/dracula/feeding-frenzy.png",
     "boost": 3,
     "eventType":"during_combat",
