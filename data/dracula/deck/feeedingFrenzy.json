@@ -1,0 +1,14 @@
+{
+    "name": "feeding_frenzy",
+    "img": "../../../../assets/images/dracula/feeding-frenzy.png",
+    "boost": 3,
+    "eventType":"during_combat",
+    "effect":
+    {
+        "mode": "add",
+        "toWhat": "attack",
+        "howMuchPerSisterNearEnemy": 1,
+        "if":"same_scope_with_enemy"
+    }
+}
+
