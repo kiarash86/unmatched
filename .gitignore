@@ -1,0 +1,7 @@
+CMakeLists.txt
+*.pro.user
+/build*/
+*.o
+*.obj
+*.exe
+*.out
