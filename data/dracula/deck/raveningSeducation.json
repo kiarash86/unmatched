@@ -1,0 +1,21 @@
+{
+    "name":"ravening_seduction",
+    "img": "../../../../assets/images/dracula/ravening_seduction.png",
+    "boost": 2,
+    "effects":[
+       {
+            "type": "move",
+            "howMany": "count_fighters" ,
+            "whichOne":"all",
+            "condition": "none",
+            "distance": 2
+
+        },
+        {
+            "type":"attack",
+            "toWhat":"near_sidekick" , 
+            "howMuch": "how_many_sidekicks_near"
+        }
+    ]
+
+}
