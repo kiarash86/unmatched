@@ -1,0 +1,22 @@
+{
+    "name" : "feint",
+                "type": "multipurpose", 
+    "performer": "fighter",
+    "img": "../../../../assets/images/sherlock/feint.png",
+    "boost": 1,
+    "eventType":"before_combat",  
+    "attack/def": 2 , 
+
+    "effects": [
+    
+        {
+            "type": "remove_effect",
+            "howMany": -1 ,
+            "whichOne":"all",
+            "condition":"none",
+            "who": "enemy"
+
+        }
+    ]
+
+}

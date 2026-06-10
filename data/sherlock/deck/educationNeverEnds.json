@@ -1,0 +1,26 @@
+{
+    "name": "education_never_ends", 
+    "img": "../../../../assets/images/sherlock/education_never_ends.png",
+    "boost" : 1,
+    "performer":"fighter", 
+    "eventType": "after_combat",
+    "type": "multipurpose",
+    "effects": [
+       
+         {
+            "type": "draw_card",
+            "howMany": 1 ,
+            "condition":"isWinnerSelf",
+            "toWho":"enemy",
+            "else":{
+            "toWho":"enemy",
+            "howMany": 2 ,
+            "toWho":"self"
+                
+            }
+
+        }
+    ]
+
+}
+

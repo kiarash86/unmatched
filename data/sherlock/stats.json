@@ -1,0 +1,7 @@
+{
+    "name" : "sherlock_holms", 
+    "img": "../../../../assets/images/sherlock/sherlock_holms.webp",
+    "health" : 16 , 
+    "movement": 2, 
+    "attackType": "melee"
+}

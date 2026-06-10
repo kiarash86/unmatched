@@ -1,0 +1,22 @@
+{
+    "name" : "fixed_point_in_a_changing_age",
+                "type": "multipurpose", 
+    "performer": "watson",
+    "img": "../../../../assets/images/sherlock/fixed_point_in_a_changing_age.png",
+    "boost": 1,
+    "eventType":"after_combat",  
+    "attack/def": 3 , 
+
+    "effects": [
+    
+        {
+            "type" :"add",
+            "toWhat": "health",
+            "howMuch": 1,
+            "towho": "all",
+            "condition": "near_each_other"
+
+        }
+    ]
+
+}
