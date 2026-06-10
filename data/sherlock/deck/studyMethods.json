@@ -1,0 +1,19 @@
+{
+    "name": "study_methods", 
+    "img": "../../../../assets/images/sherlock/study_methods.png",
+    "boost" : 2,
+    "performer":"fighter", 
+    "type": "multipurpose",
+    "eventType":"after_combat",
+    "attack/def" : 3,
+    "effects": [
+           {
+            "type" : "seeHand",
+            "whichcards": "all",
+            "who": "enemy",
+            "condition": "won_the_war"
+        } 
+    ]
+
+}
+

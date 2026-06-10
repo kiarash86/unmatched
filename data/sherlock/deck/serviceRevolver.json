@@ -1,0 +1,14 @@
+{
+    "name": "service_revolver", 
+    "img": "../../../../assets/images/sherlock/service_revolver.png",
+    "boost" : 3,
+    "performer":"watson", 
+    "type": "attack",
+    "eventType":"none",
+    "attack" : 5,
+    "effects": [
+          
+    ]
+
+}
+
