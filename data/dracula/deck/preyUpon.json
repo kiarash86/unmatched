@@ -1,0 +1,19 @@
+{
+    "name":"prey_upon",
+    "img": "../../../../assets/images/dracula/prey_upon.png",
+    "boost": 4,
+    "effects":[
+        {
+            "type":"attack",
+            "toWhat": "near_Hero",
+            "howMuch":1,
+            "howMany": "every_near_fighter"
+       },
+        {
+            "type":"add",
+            "toWhat":"health" , 
+            "howMuch": "how_many_attacked"
+        }
+    ]
+
+}
