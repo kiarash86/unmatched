@@ -1,0 +1,20 @@
+{
+    "name" : "thirst_for_sustenance",
+    "img": "../../../../assets/images/dracula/thirst_for_sustenance.png",
+    "boost": 3 ,
+    "eventType":"after_combat",  
+    "attack": 3 , 
+
+    "effects": [
+    
+        {
+            "type": "move",
+            "howMany": 1 ,
+            "whichOne":"hero",
+            "distance" :-1 ,
+            "toWhere": "near_enemy_fighters"
+
+        }
+    ]
+
+}
