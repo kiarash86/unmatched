@@ -1,0 +1,21 @@
+{
+    "name" : "dash",
+    "img": "../../../../assets/images/dracula/dash.png",
+    "boost": 1 ,
+    "eventType":"after_combat",  
+    "attack/def": 3 , 
+
+    "effects": [
+    
+        {
+            "type": "move",
+            "howMany": 1 ,
+            "whichOne":"both",
+            "distance" :3 ,
+            "condition": "none",
+            "toWhere": "none"
+
+        }
+    ]
+
+}
