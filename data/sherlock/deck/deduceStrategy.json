@@ -12,7 +12,8 @@
             "onWho":"enemy",
             "whichOne":"attack/def/or" , 
             "changeWith": "boost"
-        } 
+        
+        }      
     ]
 
 }
