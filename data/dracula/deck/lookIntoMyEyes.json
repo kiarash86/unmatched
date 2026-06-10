@@ -1,0 +1,15 @@
+{
+    "name":"look_into_my_eyes",
+    "img": "../../../../assets/images/dracula/look_into_my_eyes.png",
+    "boost":2 ,
+    "def": 1,
+    "eventType": "during_combat",
+    "effects":[
+        {
+            "type":"add",
+            "toWhat":"def" , 
+            "howMuch": "boost_card_enemy"
+        }
+    ]
+
+}
