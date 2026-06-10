@@ -9,7 +9,7 @@
             "type":"remove_card",
             "from": "enemy",
             "howMany":1, 
-            "random": true 
+            "how": "random" 
         },
         {
             "type":"add",
