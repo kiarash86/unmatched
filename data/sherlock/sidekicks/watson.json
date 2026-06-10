@@ -1,0 +1,7 @@
+{
+    "name" : "watson" , 
+    "img": "../../../../assets/images/sherlock/watson.png",
+    "health" : 8,
+    "attackType": "ranged"  ,
+    "movement" : 2
+}
