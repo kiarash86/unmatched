@@ -1,5 +1,8 @@
 {
     "name":"mistform" ,
+        "type": "event", 
+    "performer": "dracula",
+    
     "img": "../../../../assets/images/dracula/mistform.png",
     "boost":2 , 
     "effects":[

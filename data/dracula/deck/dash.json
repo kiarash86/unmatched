@@ -1,5 +1,7 @@
 {
     "name" : "dash",
+        "type": "multipurpose", 
+    "performer": "fighter",
     "img": "../../../../assets/images/dracula/dash.png",
     "boost": 1 ,
     "eventType":"after_combat",  

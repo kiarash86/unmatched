@@ -1,5 +1,7 @@
 {
     "name":"prey_upon",
+            "type": "event", 
+    "performer": "dracula",
     "img": "../../../../assets/images/dracula/prey_upon.png",
     "boost": 4,
     "effects":[

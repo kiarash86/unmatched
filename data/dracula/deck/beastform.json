@@ -1,5 +1,7 @@
 {
     "name": "beastform",
+        "type": "attack", 
+    "performer": "dracula",
     "img": "../../../../assets/images/dracula/beastform.png",
     "eventType":"during_combat" , 
     "attack" : 6 , 

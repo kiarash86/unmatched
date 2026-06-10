@@ -1,5 +1,7 @@
 {
     "name" : "baptism_of_blood",
+        "type": "event", 
+    "performer": "dracula",
     "img": "../../../../assets/images/dracula/baptism_of_blood.png",
     "boost": 2 ,
     "effects": [

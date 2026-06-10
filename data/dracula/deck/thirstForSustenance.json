@@ -1,5 +1,7 @@
 {
     "name" : "thirst_for_sustenance",
+                "type": "attack", 
+    "performer": "sisiters",
     "img": "../../../../assets/images/dracula/thirst_for_sustenance.png",
     "boost": 3 ,
     "eventType":"after_combat",  

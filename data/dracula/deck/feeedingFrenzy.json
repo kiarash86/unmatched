@@ -1,5 +1,7 @@
 {
     "name": "feeding_frenzy",
+        "type": "attack", 
+    "performer": "dracula",
     "attack": 2, 
     "img": "../../../../assets/images/dracula/feeding-frenzy.png",
     "boost": 3,

@@ -1,5 +1,7 @@
 {
     "name":"look_into_my_eyes",
+            "type": "def", 
+    "performer": "dracula",
     "img": "../../../../assets/images/dracula/look_into_my_eyes.png",
     "boost":2 ,
     "def": 1,

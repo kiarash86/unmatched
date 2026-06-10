@@ -1,5 +1,8 @@
 {
     "name":"ambush",
+    "type": "attack", 
+    "performer": "fighter",
+
     "img": "../../../../assets/images/dracula/ambush.png",
     "boost":3 ,
     "attack": 2,
