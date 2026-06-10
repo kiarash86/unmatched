@@ -1,0 +1,25 @@
+{
+    "name" : "baptism_of_blood",
+        "type": "event", 
+    "performer": "dracula",
+    "img": "../../../../assets/images/dracula/baptism_of_blood.png",
+    "boost": 2 ,
+    "effects": [
+        {
+            "type" :"add",
+            "toWhat": "health",
+            "howMuch": 2
+
+        },
+        {
+            "type": "move",
+            "howMany": 1 ,
+            "whichOne":"sidekick",
+            "condition": "isLossed",
+            "distance": -1,
+            "toWhere": "nearHero"
+
+        }
+    ]
+
+}

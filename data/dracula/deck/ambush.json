@@ -1,0 +1,24 @@
+{
+    "name":"ambush",
+    "type": "attack", 
+    "performer": "fighter",
+
+    "img": "../../../../assets/images/dracula/ambush.png",
+    "boost":3 ,
+    "attack": 2,
+    "eventType": "during_combat",
+    "effects":[
+        {
+            "type":"remove_card",
+            "from": "enemy",
+            "howMany":1, 
+            "how": "random" 
+        },
+        {
+            "type":"add",
+            "toWhat":"attack" , 
+            "howMuch": "boost_card"
+        }
+    ]
+
+}
