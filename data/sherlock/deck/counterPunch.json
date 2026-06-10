@@ -1,0 +1,18 @@
+{
+    "name": "counter_punch", 
+    "img": "../../../../assets/images/sherlock/counter_punch.png",
+    "boost" : 1,
+    "performer":"sherlock", 
+    "type": "multipurpose",
+    "eventType":"after_combat",
+    "attack/def" : 3,
+    "effects": [
+           {
+            "type":"attack",
+            "toWhat":"near_enemy_fighter" , 
+            "howMuch": 2
+        } 
+    ]
+
+}
+
