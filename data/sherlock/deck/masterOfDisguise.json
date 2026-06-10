@@ -1,0 +1,23 @@
+{
+    "name": "master_of_disguise", 
+    "img": "../../../../assets/images/sherlock/master_of_disguise.png",
+    "boost" : 2,
+    "performer":"sherlock", 
+    "type": "event",
+    "eventType":"none",
+    "effects": [
+           {
+            "type": "position_exchange",
+            "whichOne":"hero",
+            "toWho" : "enemy_fighter"
+
+        } ,
+         {
+            "type":"attack",
+            "toWhat":"exchanged_position" , 
+            "howMuch": 1
+        } 
+    ]
+
+}
+
