@@ -10,7 +10,6 @@ static void setStats(const nlohmann::json &stats, Hero *hero)
     hero->setImgSource(stats["img"].get<std::string>());
     hero->setHealth(stats["health"].get<int>());
     hero->setMovement(stats["movement"].get<int>());
-    hero->setTypeOfAttack(stats["attackType"].get<TypeOfAttack>());
     if (stats["attackType"] == "range")
         hero->setTypeOfAttack(TypeOfAttack::ranged);
     else if (stats["attackType"] == "melee")
