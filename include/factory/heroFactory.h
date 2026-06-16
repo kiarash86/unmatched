@@ -6,8 +6,6 @@ class HeroFactory
 {
 private:
 
-void setStats(const nlohmann::json & stats);
-
 
 
 
