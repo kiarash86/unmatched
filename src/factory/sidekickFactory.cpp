@@ -1,25 +1,34 @@
 #include "../../include/factory/sidekickFactory.h"
 
-
- std::unique_ptr<Sidekick> SidekickFactory::create(const nlohmann::json & sidekick)
+// get hero with stats
+// put data in the hero
+namespace
 {
 
-    std::unique_ptr<Sidekick> sidekck;
-    sidekck->setName(sidekick["name"]);
-    sidekck->setImgSource(sidekick["img"]);
-    sidekck->setHealth(sidekick["health"]);
-    sidekck->setTypeOfAttack(sidekick["attackType"]);
-    sidekck->setMovement(sidekick["movement"]);
+    void setStats(const nlohmann::json &stats, Sidekick *sidekick)
+    {
 
+        // setting data in sidekick
+        sidekick->setName(stats["name"].get<std::string>());
+        sidekick->setImgSource(stats["img"].get<std::string>());
+        sidekick->setHealth(stats["health"].get<int>());
+        sidekick->setMovement(stats["movement"].get<int>());
+        if (stats["attackType"].get<std::string>() == "range")
+            sidekick->setTypeOfAttack(TypeOfAttack::ranged);
+        else if (stats["attackType"].get<std::string>() == "melee")
+            sidekick->setTypeOfAttack(TypeOfAttack::melee);
+    }
 
-    return sidekck;
 }
 
+std::unique_ptr<Sidekick>& SidekickFactory::create(const std::string & path)
+{
 
-// {
-//     "name" : "watson" , 
-//     "img": "../../../../assets/images/sherlock/watson.png",
-//     "health" : 8,
-//     "attackType": "ranged"  ,
-//     "movement" : 2
-// }
+    auto sidekick = std::make_unique<Sidekick>();
+
+    nlohmann::json jSidekick = load(path);
+
+    setStats(jSidekick, sidekick.get());
+
+    return sidekick;
+}

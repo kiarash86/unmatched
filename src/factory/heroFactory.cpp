@@ -2,7 +2,11 @@
 
 // get hero with stats
 // put data in the hero
-static void setStats(const nlohmann::json &stats, Hero *hero)
+namespace
+{
+
+
+ void setStats(const nlohmann::json &stats, Hero *hero)
 {
 
     // setting data in hero
@@ -10,11 +14,13 @@ static void setStats(const nlohmann::json &stats, Hero *hero)
     hero->setImgSource(stats["img"].get<std::string>());
     hero->setHealth(stats["health"].get<int>());
     hero->setMovement(stats["movement"].get<int>());
-    if (stats["attackType"] == "range")
+    if (stats["attackType"].get<std::string>() == "range")
         hero->setTypeOfAttack(TypeOfAttack::ranged);
-    else if (stats["attackType"] == "melee")
+    else if (stats["attackType"].get<std::string>() == "melee")
         hero->setTypeOfAttack(TypeOfAttack::melee);
 }
+}
+
 
 // get the name 
 // connect it to data/ + "name"
@@ -25,7 +31,7 @@ static void setStats(const nlohmann::json &stats, Hero *hero)
 // we send the path to sidekickFactory and adding that to the hero
 // samething for ability and deck
 // return hero
-std::unique_ptr<Hero> HeroFactory::create(const std::string &name)
+std::unique_ptr<Hero>& HeroFactory::create(const std::string & name)
 {
 
     // path of hero
@@ -47,7 +53,8 @@ std::unique_ptr<Hero> HeroFactory::create(const std::string &name)
     for (auto &&Sidek : stats["sidekickList"])
     {
         // calling sidekickFactory to create the sidekick
-        hero->addSidekick(SidekickFactory::create(path + "/Sidekick/" + Sidek.get<std::string>() + ".json"));
+        std::string sidekickPath = path + "/Sidekick/" + Sidek.get<std::string>() + ".json";
+        hero->addSidekick(SidekickFactory::create(sidekickPath));
     }
 
     // calling abilityFactory to create ability
