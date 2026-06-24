@@ -6,12 +6,11 @@
 #include <memory>
 #include <vector>
 #include<string>
-#include "fighter.h"
 class Deck;
 class Sidekick;
 class Ability;
 
-class Hero : public Fighter
+class Fighter
 {
 private:
     std::string imgSource;
@@ -47,6 +46,6 @@ public:
 
 
 
-    Hero();
-    ~Hero()= default;
+    fighter();
+    ~fighter()= default;
 };

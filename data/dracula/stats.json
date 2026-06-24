@@ -2,7 +2,12 @@
     "name" : "dracula", 
     "img": "../../../../assets/images/dracula/dracHerp.webp",
     "health" : 13 , 
-    "moves": 2, 
-    "attackType": "melee"
+    "movement": 2, 
+    "attackType": "melee",
+    "sidekickList": [
+        "sister",
+        "sister",
+        "sister"
+    ]
 }
 
