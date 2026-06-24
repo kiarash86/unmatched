@@ -11,7 +11,7 @@
         "type": "add",
         "toWhat": "attack",
         "howMuchPerSisterNearEnemy": 1,
-        "if":"same_scope_with_enemy"
+        "condition":"same_scope_with_enemy"
     }
 }
 
