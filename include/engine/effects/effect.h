@@ -10,7 +10,7 @@ protected:
 
 public:
     Effect();
-    void addCondtion(std::unique_ptr<Condition> cond)
+    void addCondition(std::unique_ptr<Condition> cond)
     {
         conditions.push_back(cond);
     }
