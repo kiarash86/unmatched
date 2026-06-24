@@ -1,5 +1,5 @@
 {
-    "name" : "sisters" , 
+    "name" : "sister" , 
     "img": "../../../../assets/images/dracula/sisters.png",
     "health" : 1,
     "attackType": "melee"  ,
