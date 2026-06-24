@@ -3,11 +3,12 @@
 
 struct gameData
 {
+    int board;
     int age;
     int target;
     int self;
     int enemy;
-    int cardPlayed;
+    Card * cardPlayed;
     int value;
 };
 //later
