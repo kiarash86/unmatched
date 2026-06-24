@@ -9,6 +9,7 @@ class Query
 private:
     
 public:
+Query();
   void addCondition(std::unique_ptr<Condition> cond){ conditions.push_back(std::move(cond));}
  virtual int get(gameData gameData)= 0 ;
  ~Query() = default;
