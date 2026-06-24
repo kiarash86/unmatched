@@ -79,3 +79,8 @@
 
     Hero::Hero() {}
  
+
+        void Hero::addSidekick(std::unique_ptr<Sidekick>& sidekick)
+        {
+            sidekicks.push_back(sidekick);
+        }
