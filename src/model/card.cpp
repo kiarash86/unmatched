@@ -27,3 +27,8 @@ void Card::setPerformer(const TypeOfPerformer &newPerformer) {
 int Card::getValue() const { return value; }
 void Card::setValue(const int &newValue) { value = newValue; }
 void Card::modifyValue(const int &amount) { value += amount; }
+
+
+void Card::addEffect(std::unique_ptr<Effect> eff) {
+    effects.push_back(eff);
+  }

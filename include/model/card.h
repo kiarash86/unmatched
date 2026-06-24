@@ -2,10 +2,10 @@
 #include "typeOfCard.h"
 #include "typeOfEvent.h"
 #include "typeOfPerformer.h"
+#include "engine/effects/effect.h"
 #include <memory>
 #include <string>
 #include <vector>
-class Effect;
 class Card {
 private:
   int value;
@@ -19,7 +19,7 @@ private:
 
 public:
   int getValue() const;
-  void setValue(const int&);
+  void setValue(const int &);
   void modifyValue(const int &);
   int getBoost() const;
   std::string getName() const;
@@ -37,4 +37,6 @@ public:
   void setPerformer(const TypeOfPerformer &);
   Card();
   ~Card() = default;
+
+  void addEffect(std::unique_ptr<Effect> eff);
 };
