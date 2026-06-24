@@ -6,11 +6,12 @@
 #include <memory>
 #include <vector>
 #include<string>
+#include "fighter.h"
 class Deck;
 class Sidekick;
 class Ability;
 
-class Hero
+class Hero : public Fighter
 {
 private:
     std::string imgSource;
@@ -37,6 +38,7 @@ public:
     TypeOfAttack getTypeOfAttack() const;
     void setTypeOfAttack(const TypeOfAttack&);
     const std::vector<std::unique_ptr<Sidekick>>& getSidekicks() const;
+    void addSidekick(std::unique_ptr<Sidekick>& sidekick);
         Ability * getAbility() const;
     Deck * getDeck() const;
     void damage(const int&);
