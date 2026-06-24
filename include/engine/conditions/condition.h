@@ -6,7 +6,7 @@ private:
 public:
     Condition();
    virtual ~Condition() = default;
-   void check(gameData & gameData);
+   virtual bool check( gameData & gameData, Fighter* fighter = nullptr )=0;
 };
 
 
