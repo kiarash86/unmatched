@@ -1,0 +1,197 @@
+{
+  "name": "baskerville-manor",
+  "tiles": [
+    {
+      "id": 0,
+      "neighbors": [1, 2],
+      "zones": ["light-blue"],
+      "tags": ["secret-passage"]
+    },
+    {
+      "id": 1,
+      "neighbors": [0, 3],
+      "zones": ["light-blue"],
+      "tags": []
+    },
+    {
+      "id": 2,
+      "neighbors": [0, 4],
+      "zones": ["light-blue"],
+      "tags": []
+    },
+    {
+      "id": 3,
+      "neighbors": [1, 4, 8],
+      "zones": ["light-blue"],
+      "tags": []
+    },
+    {
+      "id": 4,
+      "neighbors": [2, 3, 5, 8],
+      "zones": ["light-blue", "brown"],
+      "tags": ["start-point"]
+    },
+    {
+      "id": 5,
+      "neighbors": [4, 6, 7],
+      "zones": ["brown"],
+      "tags": []
+    },
+    {
+      "id": 6,
+      "neighbors": [5, 12],
+      "zones": ["brown"],
+      "tags": []
+    },
+    {
+      "id": 7,
+      "neighbors": [5, 11, 12],
+      "zones": ["brown"],
+      "tags": []
+    },
+    {
+      "id": 8,
+      "neighbors": [3, 4, 9, 10],
+      "zones": ["light-blue", "dark-blue"],
+      "tags": []
+    },
+    {
+      "id": 9,
+      "neighbors": [8, 10, 11],
+      "zones": ["dark-blue"],
+      "tags": ["start-point"]
+    },
+    {
+      "id": 10,
+      "neighbors": [8, 9, 25],
+      "zones": ["dark-blue"],
+      "tags": []
+    },
+    {
+      "id": 11,
+      "neighbors": [7, 9, 12, 14],
+      "zones": ["dark-blue", "green"],
+      "tags": []
+    },
+    {
+      "id": 12,
+      "neighbors": [6, 7, 11, 13, 16],
+      "zones": ["brown", "green"],
+      "tags": []
+    },
+    {
+      "id": 13,
+      "neighbors": [12, 14, 15, 20],
+      "zones": ["green"],
+      "tags": ["secret-passage"]
+    },
+    {
+      "id": 14,
+      "neighbors": [11, 13, 15],
+      "zones": ["green"],
+      "tags": []
+    },
+    {
+      "id": 15,
+      "neighbors": [13, 14, 27],
+      "zones": ["green"],
+      "tags": []
+    },
+    {
+      "id": 16,
+      "neighbors": [12, 17, 18, 20],
+      "zones": ["yellow"],
+      "tags": []
+    },
+    {
+      "id": 17,
+      "neighbors": [16, 19],
+      "zones": ["yellow"],
+      "tags": ["secret-passage"]
+    },
+    {
+      "id": 18,
+      "neighbors": [16, 19, 21],
+      "zones": ["yellow"],
+      "tags": []
+    },
+    {
+      "id": 19,
+      "neighbors": [17, 18, 21],
+      "zones": ["yellow"],
+      "tags": []
+    },
+    {
+      "id": 20,
+      "neighbors": [13, 16, 21, 22],
+      "zones": ["green", "purple"],
+      "tags": []
+    },
+    {
+      "id": 21,
+      "neighbors": [18, 19, 20, 23],
+      "zones": ["yellow", "purple"],
+      "tags": []
+    },
+    {
+      "id": 22,
+      "neighbors": [20, 23, 30],
+      "zones": ["purple"],
+      "tags": []
+    },
+    {
+      "id": 23,
+      "neighbors": [21, 22, 31],
+      "zones": ["purple"],
+      "tags": ["start-point"]
+    },
+    {
+      "id": 24,
+      "neighbors": [25],
+      "zones": ["grey"],
+      "tags": ["secret-passage"]
+    },
+    {
+      "id": 25,
+      "neighbors": [10, 24, 26],
+      "zones": ["grey"],
+      "tags": []
+    },
+    {
+      "id": 26,
+      "neighbors": [25, 27],
+      "zones": ["grey"],
+      "tags": []
+    },
+    {
+      "id": 27,
+      "neighbors": [15, 26, 28],
+      "zones": ["grey", "green"],
+      "tags": ["start-point"]
+    },
+    {
+      "id": 28,
+      "neighbors": [27, 29],
+      "zones": ["grey"],
+      "tags": []
+    },
+    {
+      "id": 29,
+      "neighbors": [28, 30],
+      "zones": ["grey"],
+      "tags": []
+    },
+    {
+      "id": 30,
+      "neighbors": [22, 29, 31],
+      "zones": ["grey"],
+      "tags": []
+    },
+    {
+      "id": 31,
+      "neighbors": [23, 30],
+      "zones": ["grey", "purple"],
+      "tags": []
+    }
+  ]
+}
