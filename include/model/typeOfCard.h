@@ -5,3 +5,5 @@ enum class TypeOfCard
     def,
     event
 };
+
+// USED FOR WORKING WITH VALUE IN DIFFRENT PLACES AND KNOW WHAT WE SHOULD DO WITH THIS CARD

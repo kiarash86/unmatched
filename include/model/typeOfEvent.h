@@ -4,3 +4,4 @@ enum class TypeOfEvent{
     before_combat,
     none
 };
+// USED FOR CARD THAT WE KNOW WHEN SHOULD WE START PROCESSING THIS CARD
