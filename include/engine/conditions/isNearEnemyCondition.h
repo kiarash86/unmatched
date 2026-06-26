@@ -13,6 +13,7 @@ public:
     //check distance between this 2
     if (fighter->getPosition() == gameData.enemy->position)
     {
+      //FIXME
       return true;
     }
     
@@ -20,4 +21,3 @@ public:
     
   }
 };
- 

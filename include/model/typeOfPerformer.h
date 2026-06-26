@@ -4,3 +4,5 @@ enum class TypeOfPerformer
     hero,
     sidekick
 };
+//USED FOR MODEL CARD 
+//FOR CHECKING WHO CAN USE THIS CARD

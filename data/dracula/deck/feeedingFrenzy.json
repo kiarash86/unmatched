@@ -8,10 +8,19 @@
     "eventType":"during_combat",
     "effect":
     {
-        "type": "add",
-        "toWhat": "attack",
-        "howMuchPerSisterNearEnemy": 1,
-        "condition":"same_scope_with_enemy"
+        "type": "modify",
+        "toWhat": "value",
+    "queries": [
+        {
+            "query" : "countFighter",
+            "typeFighter" : "sidekick",
+            "conditions":[
+             { "condition":  "same_scope_with_enemy"}
+        ]
+
+        }
+    ] ,
+    "howMuch": "queries"
     }
 }
 

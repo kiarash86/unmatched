@@ -4,3 +4,5 @@ enum class TypeOfAttack
     ranged
 
 };
+//FOR SIDEKICKS AND HEROS
+// CAN ATTACK FROM FAR DISTANCE OR NO

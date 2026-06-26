@@ -3,3 +3,4 @@ enum class TypeOfFighter{
     Sidekick , 
     Fighter
 };
+// SAME AS TYPE OF PERFORMER BUT IT IS USED FOR CONDITIONS
