@@ -12,16 +12,13 @@ class Ability;
 
 class Fighter
 {
-private:
+protected:
     std::string imgSource;
     std::string name;
     int health{};
     int maxHealth{};
     int movement{};
     TypeOfAttack typeOfAttack;
-   std::vector< std::unique_ptr<Sidekick>> sidekicks;
-    std::unique_ptr<Deck> deck;
-    std::unique_ptr<Ability> ability;
 
     bool canBeHealed() const;
 
@@ -49,3 +46,6 @@ public:
     fighter();
     ~fighter()= default;
 };
+
+
+//TODO : adding cpp of these funcs
