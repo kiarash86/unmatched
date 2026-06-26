@@ -1,4 +1,3 @@
-آره. بر اساس معماری‌ای که تا الان ساختی (C++، JSON driven، Factory، Effect/Condition/Query، Board گرافی)، یک README مناسب پروژه می‌تونه این شکلی باشه:
 
 ```md
 # Card Battle Engine
