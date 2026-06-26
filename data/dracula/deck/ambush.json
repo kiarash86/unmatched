@@ -15,8 +15,8 @@
             "how": "random" 
         },
         {
-            "type":"add",
-            "toWhat":"attack" , 
+            "type":"modify",
+            "toWhat":"value" , 
             "howMuch": "boost_card"
         }
     ]

@@ -8,8 +8,9 @@
     "eventType": "during_combat",
     "effects":[
         {
-            "type":"add",
-            "toWhat":"def" , 
+            "type":"modify",
+            "toWhat":"value" , 
+
             "howMuch": "boost_card_enemy"
         }
     ]
