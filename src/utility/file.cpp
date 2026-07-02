@@ -9,7 +9,7 @@ nlohmann::json load(const std::string &path) {
 std::vector<std::string> listFiles(const std::string &folder) {
   std::vector<std::string> files;
 
-  for (const auto &file : fs::directory_iterator(folder)) {
+  for (const auto &file : std::filesystem::directory_iterator(folder)) {
     if (file.is_regular_file()) {
       files.push_back(file.path().string());
     }
