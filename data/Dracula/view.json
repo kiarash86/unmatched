@@ -1,0 +1,19 @@
+{
+    "name" : "Dracula", 
+    "wallpaperPath" : "assets/images/Dracula/DraculaWallpaper.png",
+    "logoPath" : "assets/images/Dracula/DraculaLogo.png",
+    "role": "Shadow Fighter",
+    "desc" :  "The ancient vampire lord.\nFeeds on the living." , 
+    "hp": 7, 
+    "attack": 6, 
+    "defense": 5, 
+    "speed": 6, 
+    "abilityTitle": "Life Drain",
+    "abilityDesc": "Heal for 50% of the\ndamage dealt this turn.",
+    "themeColor" : [150 , 0 , 0]
+
+}
+
+
+
+

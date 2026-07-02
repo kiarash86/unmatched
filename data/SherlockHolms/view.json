@@ -1,0 +1,17 @@
+{
+    "name" : "sherlock holms", 
+    "wallpaperPath" : "assets/images/SherlockHolms/SherlockHolmsWallpaper.png",
+    "logoPath" : "assets/images/SherlockHolms/SherlockHolmsLogo.png",
+    "role": "Shadow Fighter",
+    "desc" : "tgflkvmgjlfdgdbf;dsjg\n jdlsjdvvffdfijgwj" , 
+    "hp": 6, 
+    "attack": 8, 
+    "defense": 6, 
+    "speed": 5, 
+    "abilityTitle": "decetive",
+    "abilityDesc": "ifjdvojsij s\n sijfldsijnlsijslzjf",
+    "themeColor" : [150 , 0 , 0]
+
+}
+
+
