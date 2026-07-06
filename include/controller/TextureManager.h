@@ -2,6 +2,7 @@
 #include "libraries/magic_enum.hpp" //use name of enums
 #include "raylib.h"                 // for texture type
 #include "view/enums/TextureID.h"   // the key to textures
+#include <filesystem>               // cheking folders
 #include <string>                   // string
 #include <unordered_map>            // saving data in map
 
