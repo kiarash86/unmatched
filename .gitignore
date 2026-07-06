@@ -5,7 +5,7 @@ CMakeLists.txt
 *.obj
 *.exe
 *.out
-
+*.Executables
 # Prerequisites
 *.d
 
