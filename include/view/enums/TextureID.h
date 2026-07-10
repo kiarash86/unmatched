@@ -11,5 +11,6 @@ enum class TextureID {
   clickedButton,
   titleLogo,
   titleLogo1, 
-  quote
+  quote ,
+  manorMap
 };

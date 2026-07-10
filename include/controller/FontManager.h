@@ -10,7 +10,7 @@ class FontManager // controll fonts
 {
 private:
   const std::string pathFonts = "assets/fonts/"; // where we save fonts
-  std::unordered_map<std::string, Font> fonts;  // map of fonts(string key)
+  std::unordered_map<std::string, Font> fonts;   // map of fonts(string key)
 
 public:
   ~FontManager() // unloading fonts
@@ -30,14 +30,28 @@ public:
     if (it == fonts.end()) // check if we load this font before or no
     {
 
-      it = fonts
-               .emplace(name,
-                        LoadFontEx((pathFonts +
-                                    std::string(magic_enum::enum_name(font)) +
-                                    ".ttf")
-                                       .c_str(),
-                                   size, nullptr, 0))
-               .first; // loading font, adding to map , get iterator of it
+      if (name == "awesome") {
+        it = fonts
+                 .emplace(name,
+                          LoadFontEx((pathFonts +
+                                      std::string(magic_enum::enum_name(font)) +
+                                      ".otf")
+                                         .c_str(),
+                                     size, nullptr, 0))
+                 .first; // loading font, adding to map , get iterator of it
+
+      } // FIXME:  for now using this exception for font awesome
+      else {
+
+        it = fonts
+                 .emplace(name,
+                          LoadFontEx((pathFonts +
+                                      std::string(magic_enum::enum_name(font)) +
+                                      ".ttf")
+                                         .c_str(),
+                                     size, nullptr, 0))
+                 .first; // loading font, adding to map , get iterator of it
+      }
     }
     return it->second; // returning font
   }

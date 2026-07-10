@@ -1,6 +1,7 @@
 #pragma once // only once for entire prj
 #include "controller/AudioManager.h"
 #include "view/enums/ScenesType.h"            // for changing scenes
+#include "view/scenes/GameScene.h"            // board scene
 #include "view/scenes/HeroesSelectionScene.h" // selection scene
 #include "view/scenes/MainScene.h"            // start scene
 #include "view/scenes/Scene.h"                // scene
@@ -38,6 +39,9 @@ public:
     case ScenesType::mainScene:
       currentScene = std::make_unique<MainScene>(audioManager, this,
                                                  textureManager, fontManager);
+      break;
+      case ScenesType::game:
+      currentScene = std::make_unique<GameScene>(audioManager , this , textureManager , fontManager);
       break;
       // case ScenesType::collection:
       // TODO:: WRITE THESE SCENES , I DONT HAVE THEM FOR NOW

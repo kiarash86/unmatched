@@ -176,7 +176,8 @@ void MainScene::activateButton(int index) // choose next scene
     break;
   case 1:
     audio->playSound(SoundID::clickForAll, 1.0f);
-    scene->changeScene(ScenesType::HowToPlay);
+    scene->changeScene(ScenesType::game);
+    //HACK: FOR NOW USING THIS FOR CHECKING BOARD
     break;
   case 2:
     audio->playSound(SoundID::clickForAll, 1.0f);
