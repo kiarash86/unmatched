@@ -2,7 +2,7 @@
 #include "controller/AudioManager.h"
 #include "view/enums/ScenesType.h"            // for changing scenes
 #include "view/scenes/GameScene.h"            // board scene
-#include "view/scenes/HeroesSelectionScene.h" // selection scene
+#include "view/scenes/HeroSelectionScene.h" // selection scene
 #include "view/scenes/MainScene.h"            // start scene
 #include "view/scenes/Scene.h"                // scene
 #include <memory>                             // smart pointer
