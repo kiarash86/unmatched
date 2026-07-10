@@ -50,7 +50,7 @@ public:
       // TODO:: WRITE THESE SCENES , I DONT HAVE THEM FOR NOW
       //    break;
     case ScenesType::heroSelection:
-      currentScene = std::make_unique<HeroSelectionMenu>(
+      currentScene = std::make_unique<HeroSelectionScene>(
           audioManager, this, textureManager, fontManager);
       break;
     }
