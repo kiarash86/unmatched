@@ -1,7 +1,7 @@
 #pragma once // only once for entire prj
 #include "controller/AudioManager.h"
 #include "view/enums/ScenesType.h"            // for changing scenes
-#include "view/scenes/HeroesSelectionScene.h" // selection scene
+#include "view/scenes/HeroSelectionScene.h" // selection scene
 #include "view/scenes/MainScene.h"            // start scene
 #include "view/scenes/Scene.h"                // scene
 #include <memory>                             // smart pointer
@@ -46,7 +46,7 @@ public:
       // TODO:: WRITE THESE SCENES , I DONT HAVE THEM FOR NOW
       //    break;
     case ScenesType::heroSelection:
-      currentScene = std::make_unique<HeroSelectionMenu>(
+      currentScene = std::make_unique<HeroSelectionScene>(
           audioManager, this, textureManager, fontManager);
       break;
     }
