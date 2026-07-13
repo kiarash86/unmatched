@@ -16,6 +16,7 @@ struct InfoHero
     std::string abilityDesc;
     Color themeColor;
     Texture2D wallpaper;
-    Texture2D button;
+    Texture2D normalButton;
+    Texture2D hoveredButton;
 
 };
