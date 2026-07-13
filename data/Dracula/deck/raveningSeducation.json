@@ -7,7 +7,10 @@
     "effects":[
        {
             "type": "move",
-            "howMany": "count_fighters" ,
+            "howMany": "queries" ,
+            "queries": [
+                { "name": "countFighter", "type": "sidekick" }
+            ],
             "whichOne":"all",
             "condition": "none",
             "distance": 2
@@ -16,7 +19,10 @@
         {
             "type":"attack",
             "toWhat":"near_sidekick" , 
-            "howMuch": "how_many_sidekicks_near"
+            "howMuch": "queries",
+            "queries": [
+                { "name": "countFighter", "type": "sidekick", "conditions": ["same_scope_with_enemy"] }
+            ]
         }
     ]
 

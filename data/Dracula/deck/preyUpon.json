@@ -9,12 +9,18 @@
             "type":"attack",
             "toWhat": "near_Hero",
             "howMuch":1,
-            "howMany": "every_near_fighter"
+            "howMany": "queries",
+            "queries": [
+                { "name": "countFighter", "type": "fighter", "conditions": ["near_hero"] }
+            ]
        },
         {
             "type":"add",
             "toWhat":"health" , 
-            "howMuch": "how_many_attacked"
+            "howMuch": "queries",
+            "queries": [
+                { "name": "countFighter", "type": "fighter", "conditions": ["near_hero"] }
+            ]
         }
     ]
 

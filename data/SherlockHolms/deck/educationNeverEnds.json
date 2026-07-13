@@ -14,9 +14,8 @@
             "toWho":"enemy",
             "else":{
             "toWho":"enemy",
-            "howMany": 2 ,
-            "toWho":"self"
-                
+            "howMany": 2 
+            
             }
 
         }

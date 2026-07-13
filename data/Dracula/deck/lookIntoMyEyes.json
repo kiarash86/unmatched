@@ -11,7 +11,10 @@
             "type":"modify",
             "toWhat":"value" , 
 
-            "howMuch": "boost_card_enemy"
+            "howMuch": "queries",
+            "queries": [
+                { "name": "cardBoost", "who": "enemy" }
+            ]
         }
     ]
 
