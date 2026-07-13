@@ -11,7 +11,10 @@
           {
             "type":"add",
             "toWhat":"attack" , 
-            "howMuch": "how_many_removed"
+            "howMuch": "queries",
+            "queries": [
+                { "name": "countRemovedCards" }
+            ]
         }
 
         
