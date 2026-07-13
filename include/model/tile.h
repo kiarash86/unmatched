@@ -8,6 +8,7 @@ private:
   std::vector<int> neighbors;
   std::unordered_set<TypeOfTile> tags;
   std::unordered_set<std::string> zones;
+  vector2D position;
 
 public:
   void setId(const int &ID);
@@ -18,4 +19,5 @@ public:
   void addTag(const TypeOfTile &typeTle);
   std::unordered_set<TypeOfTile> getTags();
   void setTags(const std::unordered_set<TypeOfTile> &typeTiles);
+  bool isPortal();
 };
