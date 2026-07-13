@@ -1,26 +1,23 @@
 {
     "name": "feeding_frenzy",
-        "type": "attack", 
+    "type": "attack",
     "performer": "dracula",
-    "attack": 2, 
+    "attack": 2,
     "img": "../../../../assets/images/dracula/feeding-frenzy.png",
     "boost": 3,
-    "eventType":"during_combat",
-    "effect":
-    {
-        "type": "modify",
-        "toWhat": "value",
-    "queries": [
+    "eventType": "during_combat",
+    "effects": [
         {
-            "query" : "countFighter",
-            "typeFighter" : "sidekick",
-            "conditions":[
-             { "condition":  "same_scope_with_enemy"}
-        ]
-
+            "type": "modify",
+            "toWhat": "value",
+            "howMuch": "queries",
+            "queries": [
+                {
+                    "name": "countFighter",
+                    "type": "sidekick",
+                    "conditions": ["same_scope_with_enemy"]
+                }
+            ]
         }
-    ] ,
-    "howMuch": "queries"
-    }
+    ]
 }
-
