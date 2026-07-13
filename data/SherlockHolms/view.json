@@ -1,17 +1,13 @@
 {
-    "name" : "sherlock holms", 
-    "wallpaperPath" : "assets/images/SherlockHolms/SherlockHolmsWallpaper.png",
-    "logoPath" : "assets/images/SherlockHolms/SherlockHolmsLogo.png",
-    "role": "Shadow Fighter",
-    "desc" : "tgflkvmgjlfdgdbf;dsjg\n jdlsjdvvffdfijgwj" , 
-    "hp": 6, 
-    "attack": 8, 
-    "defense": 6, 
-    "speed": 5, 
-    "abilityTitle": "decetive",
-    "abilityDesc": "ifjdvojsij s\n sijfldsijnlsijslzjf",
-    "themeColor" : [150 , 0 , 0]
-
+  "name": "Sherlock Holmes",
+  "role": "Consulting Detective",
+  "desc": "A brilliant mind with an\neye for every hidden clue.",
+  "hp": 6,
+  "attack": 5,
+  "defense": 5,
+  "speed": 7,
+  "abilityTitle": "Deduction",
+  "abilityDesc": "Predict your opponent's\nmoves before they strike.",
+  "themeColor": [30, 90, 170],
+  "difficulty": 3
 }
-
-
