@@ -126,4 +126,11 @@ public:
       ResumeMusicStream(musics.at(music));
     }
   }
+
+
+    bool isSoundPlaying(SoundID sound) // is this sound still playing
+  {
+    return IsSoundPlaying(sounds.at(sound));
+  }
+
 };
