@@ -12,5 +12,13 @@ enum class TextureID {
   titleLogo,
   titleLogo1, 
   quote ,
-  manorMap
+  manorMap,
+  bgDracula ,
+  bgSherlock , 
+  sherlockButtonNormal ,
+  sherlockButtonHovered , 
+  draculaButtonNormal,
+  draculaButtonHovered ,
+  titleHeroSelection , 
+  frame
 };
