@@ -1,4 +1,5 @@
 #include "view/scenes/GameScene.h"
+#include "controller/PlayerSelectionManager.h"
 #include "controller/SceneManager.h"
 
 GameScene::GameScene(AudioManager *audioManager, SceneManager *sceneManager,
@@ -68,11 +69,14 @@ GameScene::~GameScene() {
 void GameScene::onEnter() {
   selectedAction = -1;
   selectedCard = -1;
+
+   const auto &pickedPlayers = PlayerSelectionManager::instance().getPlayers();
+  if (!pickedPlayers.empty()) {
+    heroName = pickedPlayers[0].getHeroName();
+  }
 }
 
-// TODO: replace with a loader that reads real Tile ids/neighbors from Map
-// and pairs them with a separate view-only layout (see the map-layout
-// discussion earlier in this conversation).
+
 void GameScene::BuildMockBoard() {
   tiles.clear();
   edges.clear();
@@ -351,7 +355,7 @@ void GameScene::Draw() {
   drawDeck();
   drawBoard();
 
-  DrawTexturePro(map, {0, 0, (float)map.width, (float)map.height}, boardRect, {0, 0}, 0, WHITE);
+  //DrawTexturePro(map, {0, 0, (float)map.width, (float)map.height}, boardRect, {0, 0}, 0, WHITE);
 
   drawHand();
   drawBottomBar();
