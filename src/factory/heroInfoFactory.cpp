@@ -10,6 +10,8 @@ std::unique_ptr<InfoHero> HeroInfoFactory::create(const HeroList &name) {
     hero->defense =(int) heroInfo["defense"];
 
     hero->attack =(int) heroInfo["attack"];
+    hero->difficulty =(int) heroInfo["difficulty"];
+
     hero->speed =(int) heroInfo["speed"];
     hero->desc = heroInfo["desc"];
     hero->abilityDesc = heroInfo["abilityDesc"];
@@ -23,8 +25,7 @@ std::unique_ptr<InfoHero> HeroInfoFactory::create(const HeroList &name) {
 
     } ;
 
-    hero->wallpaperPath = heroInfo["wallpaperPath"];
-    hero->logoPath = heroInfo["logoPath"];
+
 
 
     return hero;
