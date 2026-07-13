@@ -76,5 +76,6 @@ vcpkg_installed/
 Testing/
 .cache/
 
+*.out
 
 _deps/
