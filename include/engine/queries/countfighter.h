@@ -1,16 +1,24 @@
+#pragma once
 #include "engine/conditions/condition.h"
 #include "engine/gameData.h"
 #include "model/typeOfFighter.h"
+#include "model/fighter.h"
+#include "model/map.h"
 #include "query.h"
+
+
 class CountFighter : public Query {
 private:
   TypeOfFighter fighterType;
 
 public:
-  CountFighter(TypeOfFighter type) : fighterType(type){};
-  int get(gameData gameData) override {
+  explicit CountFighter(TypeOfFighter type) : fighterType(type) {}
+
+  int get(gameData &gameData) override {
     int value{0};
-    for (auto &&fghr : gameData.map->getFighter(fighterType , gameData.self)) {
+    if (!gameData.map || !gameData.self) return value;
+
+    for (auto &&fghr : gameData.map->getFighter(fighterType, gameData.self->getOwnerPlayer())) {
       bool flag = true;
       for (auto &&cnd : conditions) {
         if (!cnd->check(gameData, fghr)) {
@@ -19,8 +27,7 @@ public:
         }
       }
       if (flag) {
-
-        value++; 
+        value++;
       }
     }
     return value;
