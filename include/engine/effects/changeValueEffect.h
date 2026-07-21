@@ -20,10 +20,12 @@ public:
     Card *targetCard = targetEnemy ? gameData.enemyCardPlayed : gameData.cardPlayed;
     if (!targetCard) return;
 
-    int amount = useBoost
-                     ? (gameData.cardPlayed ? gameData.cardPlayed->getBoost() : 0)
-                     : (flatAmount + sumQueries(gameData));
+    if (useBoost) { // for reversing boost and value
+      targetCard->setValue(targetCard->getBoost());
+      return;
+    }
 
+    int amount = flatAmount + sumQueries(gameData);
     targetCard->modifyValue(amount);
   }
 };
