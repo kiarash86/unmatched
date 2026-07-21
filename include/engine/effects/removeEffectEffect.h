@@ -1,24 +1,19 @@
 #pragma once
 #include "effect.h"
+#include "model/ability.h"
+#include "model/hero.h"
 
-class RemoveEffectEffect : public Effect
-{
+class RemoveEffectEffect : public Effect {
 private:
-    int howMany{-1}; // -1 for "all"
+  int howMany{-1};
+
 public:
-    RemoveEffectEffect(int howMany = -1) : howMany(howMany) {}
-    ~RemoveEffectEffect() = default;
+  explicit RemoveEffectEffect(int howMany = -1) : howMany(howMany) {}
+  ~RemoveEffectEffect() override = default;
 
-    void execute(gameData & gameData) override
-    {
-        for (auto &&cond : conditions)
-        {
-            if (!cond->check(gameData))
-            {
-                return;
-            }
-        }
-
-
-    }
+  void execute(gameData &gameData) override {
+    if (!conditionsMet(gameData)) return;
+   
+    (void)howMany;
+  }
 };
