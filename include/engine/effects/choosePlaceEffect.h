@@ -22,12 +22,14 @@ public:
     if (!mover || !gameData.map || !gameData.requestTileChoice) return;
 
     int fromTile = gameData.map->getTileIdOf(mover);
-   
-    auto options = gameData.map->getTilesThatCanMoveTo(fromTile, mover->getMovement());
     Map *map = gameData.map;
-    options.erase(std::remove_if(options.begin(), options.end(),
-                                  [map](Tile *t) { return map->isOccupied(t->getId()); }),
-                  options.end());
+
+    std::vector<Tile *> options;
+    for (auto &[id, tile] : map->getTiles()) {
+      if (id == fromTile) continue;
+      if (map->isOccupied(id)) continue;
+      options.push_back(tile.get());
+    }
 
     gameData.requestTileChoice(options, [map, mover](Tile *chosen) {
       if (chosen) map->placeFighter(mover, chosen->getId());
