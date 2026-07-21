@@ -1,12 +1,11 @@
-#include "../gameData.h"
-class Condition
-{
-private:
-    
+#pragma once
+#include "engine/gameData.h"
+
+class Fighter;
+
+class Condition {
 public:
-    Condition();
-   virtual ~Condition() = default;
-   virtual bool check( gameData & gameData, Fighter* fighter = nullptr )=0;
+  Condition() = default;
+  virtual ~Condition() = default;
+  virtual bool check(gameData &gameData, Fighter *fighter = nullptr) = 0;
 };
-
-
