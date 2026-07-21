@@ -3,6 +3,7 @@
 #include "raylib.h"                 // sound and music type
 #include "view/enums/MusicID.h"     // list of music
 #include "view/enums/SoundID.h"     // list of sounds
+#include <filesystem>               // checking files exist before loading
 #include <string>                   // string
 #include <unordered_map>            // saving all musics and sounds here
 #include <unordered_set>            // current musics that are being played
@@ -22,38 +23,39 @@ private:
 
   void loadAllSound() // loading all sounds
   {
-    for (auto &msc :
+    if (!std::filesystem::exists(pathSounds)) return; // no assets yet
+
+    for (auto &snd :
          magic_enum::enum_values<SoundID>()) // soundID is list of all sounds
     {
-      sounds.emplace(
-          msc, LoadSound((pathSounds + std::string(magic_enum::enum_name(msc)) +
-                          ".mp3")
-                             .c_str()));
+      std::string path = pathSounds + std::string(magic_enum::enum_name(snd)) + ".mp3";
+      if (!std::filesystem::exists(path)) continue; // this one's missing
+      sounds.emplace(snd, LoadSound(path.c_str()));
     }
   }
 
   void loadAllMusic() // loading all musics
   {
+    if (!std::filesystem::exists(pathMusics)) return; // no assets yet
+
     for (auto &msc :
          magic_enum::enum_values<MusicID>()) // musicID is list of all muaics
     {
-
-      musics.emplace(msc, LoadMusicStream(
-                              (pathMusics +
-                               std::string(magic_enum::enum_name(msc)) + ".mp3")
-                                  .c_str()));
+      std::string path = pathMusics + std::string(magic_enum::enum_name(msc)) + ".mp3";
+      if (!std::filesystem::exists(path)) continue; // this one's missing
+      musics.emplace(msc, LoadMusicStream(path.c_str()));
     }
   }
 
 public:
   void update() // get music for seconds ahead
   {
-
     for (auto &cMs : currentMusics) {
-      if (IsMusicStreamPlaying(musics.at(cMs))) // check if its puased
+      auto it = musics.find(cMs);
+      if (it == musics.end()) continue;
+      if (IsMusicStreamPlaying(it->second)) // check if its puased
       {
-
-        UpdateMusicStream(musics.at(cMs));
+        UpdateMusicStream(it->second);
       }
     }
   }
@@ -79,6 +81,7 @@ public:
 
   void playMusic(MusicID music, float volume, bool loop) // play music
   {
+    if (musics.find(music) == musics.end()) return; // asset missing, no-op
 
     if (currentMusics.find(music) !=
         currentMusics.end()) // dont have this music? bye!bye!
@@ -94,43 +97,49 @@ public:
 
   void playSound(SoundID sound, float volume) // play sound
   {
-    SetSoundVolume(sounds.at(sound), volume); // set volume
-    PlaySound(sounds.at(sound));              // playing sound
+    auto it = sounds.find(sound);
+    if (it == sounds.end()) return; // asset missing, no-op
+    SetSoundVolume(it->second, volume); // set volume
+    PlaySound(it->second);              // playing sound
   }
 
   void stopAllMusic() // no music playing anymore
   {
     for (auto &ms : currentMusics) {
-      StopMusicStream(musics.at(ms));
+      auto it = musics.find(ms);
+      if (it != musics.end()) StopMusicStream(it->second);
     }
     currentMusics.clear();
   }
 
   void stopMusic(MusicID music) // erase this music from current musics
   {
-    StopMusicStream(musics.at(music));
+    auto it = musics.find(music);
+    if (it != musics.end()) StopMusicStream(it->second);
     currentMusics.erase(music);
   }
 
   void pauseMusic(MusicID music) // pause musicStream
   {
-    if (IsMusicStreamPlaying(musics.at(music))) {
-      PauseMusicStream(musics.at(music));
+    auto it = musics.find(music);
+    if (it == musics.end()) return;
+    if (IsMusicStreamPlaying(it->second)) {
+      PauseMusicStream(it->second);
     }
   }
 
   void resumeMusic(MusicID music) // continue musicStream
   {
-    if (!IsMusicStreamPlaying(musics.at(music))) {
-
-      ResumeMusicStream(musics.at(music));
+    auto it = musics.find(music);
+    if (it == musics.end()) return;
+    if (!IsMusicStreamPlaying(it->second)) {
+      ResumeMusicStream(it->second);
     }
   }
 
-
-    bool isSoundPlaying(SoundID sound) // is this sound still playing
+  bool isSoundPlaying(SoundID sound) // is this sound still playing
   {
-    return IsSoundPlaying(sounds.at(sound));
+    auto it = sounds.find(sound);
+    return it != sounds.end() && IsSoundPlaying(it->second);
   }
-
 };
