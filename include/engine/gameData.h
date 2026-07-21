@@ -7,6 +7,7 @@ class Fighter;
 class Card;
 class Map;
 class Tile;
+class Hero;
 
 
 struct gameData {
@@ -25,6 +26,13 @@ struct gameData {
  
   Card *enemyCardPlayed{nullptr}; //def
 
-  std::function<void(std::vector<Tile *>, std::function<void(Tile *)>)> requestTileChoice; // get tile from user but which tiles?
-  // tiles in a same zone? or near fighter? or...?
+  std::function<void(std::vector<Tile *>, std::function<void(Tile *)>)> requestTileChoice;
+ 
+  std::function<void(std::vector<Card *>, std::function<void(Card *)>)> requestCardChoice;
+
+  std::function<bool(Hero *)> disableAbility;
+
+  std::function<void(int)> grantAction;
+
+  std::function<Hero *(Fighter *)> getOwnerHero;
 };
