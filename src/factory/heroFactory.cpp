@@ -1,67 +1,39 @@
-#include "../../include/factory/heroFactory.h"
+#include "factory/heroFactory.h"
 
-// get hero with stats
-// put data in the hero
-namespace
-{
-
-
- void setStats(const nlohmann::json &stats, Hero *hero)
-{
-
-    // setting data in hero
-    hero->setName(stats["name"].get<std::string>());
-    hero->setImgSource(stats["img"].get<std::string>());
-    hero->setHealth(stats["health"].get<int>());
-    hero->setMovement(stats["movement"].get<int>());
-    if (stats["attackType"].get<std::string>() == "range")
-        hero->setTypeOfAttack(TypeOfAttack::ranged);
-    else if (stats["attackType"].get<std::string>() == "melee")
-        hero->setTypeOfAttack(TypeOfAttack::melee);
+namespace {
+void setStats(const nlohmann::json &stats, Hero *hero) {
+  hero->setName(stats.value("name", ""));
+  hero->setImgSource(stats.value("img", ""));
+  hero->setHealth(stats.value("health", 1));
+  hero->setMaxHealth(stats.value("health", 1));
+  hero->setMovement(stats.value("movement", 0));
+  std::string attackType = stats.value("attackType", "melee");
+  if (attackType == "range") {
+    hero->setTypeOfAttack(TypeOfAttack::ranged);
+  } else {
+    hero->setTypeOfAttack(TypeOfAttack::melee);
+  }
 }
 }
 
+std::unique_ptr<Hero> HeroFactory::create(const std::string &name) {
+  std::string path = "data/" + name;
 
-// get the name 
-// connect it to data/ + "name"
-// with this we decide whick hero we are talking about
-// make hero
-// put json in stats and send it to setStats
-// get the list of sidekicks from stats in a forrange
-// we send the path to sidekickFactory and adding that to the hero
-// samething for ability and deck
-// return hero
-std::unique_ptr<Hero>& HeroFactory::create(const std::string & name)
-{
+  auto hero = std::make_unique<Hero>();
 
-    // path of hero
-    std::string path = "data/" + name;
+  nlohmann::json stats = load(path + "/stats.json");
+  setStats(stats, hero.get());
 
-    // the hero we return it
-    auto hero = std::make_unique<Hero>();
-
-    // stats of hero will be in this
-    nlohmann::json stats;
-
-    // using load from utility to get json
-    stats = load(path + "/stats.json");
-
-    // put stats in hero
-    setStats(stats, hero.get());
-
-    // put sidekicks in hero
-    for (auto &&Sidek : stats["sidekickList"])
-    {
-        // calling sidekickFactory to create the sidekick
-        std::string sidekickPath = path + "/Sidekick/" + Sidek.get<std::string>() + ".json";
-        hero->addSidekick(SidekickFactory::create(sidekickPath));
+  if (stats.contains("sidekickList")) {
+    for (auto &&sidekickName : stats["sidekickList"]) {
+      std::string sidekickPath =
+          path + "/sidekicks/" + sidekickName.get<std::string>() + ".json";
+      hero->addSidekick(SidekickFactory::create(sidekickPath));
     }
+  }
 
-    // calling abilityFactory to create ability
-    hero->setAbility(AbilityFactory::create(path + "/abilities"));
+  hero->setAbility(AbilityFactory::create(path + "/abilities"));
+  hero->setDeck(DeckFactory::create(path + "/deck"));
 
-    // calling deckFactory to create deck
-    hero->setDeck(DeckFactory::create(path + "/deck"));
-
-    return hero;
+  return hero;
 }
