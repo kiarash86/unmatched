@@ -10,7 +10,7 @@
         {
             "type": "move",
             "howMany": 1,
-            "whichOne": "both",
+            "whichOne": "self",
             "distance": 3,
             "condition": "none",
             "toWhere": "none"

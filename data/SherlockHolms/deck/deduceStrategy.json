@@ -2,7 +2,7 @@
     "name": "deduce_strategy",
     "img": "../../../../assets/images/sherlock/deduce_strategy.png",
     "boost": 1,
-    "performer": "sherlock",
+    "performer": "hero",
     "type": "multipurpose",
     "eventType": "during_combat",
     "attack/def": 3,

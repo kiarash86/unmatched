@@ -1,7 +1,7 @@
 {
     "name": "thirst_for_sustenance",
     "type": "attack",
-    "performer": "sisiters",
+    "performer": "sidekick",
     "img": "../../../../assets/images/dracula/thirst_for_sustenance.png",
     "boost": 3,
     "eventType": "after_combat",
@@ -11,8 +11,9 @@
             "type": "move",
             "howMany": 1,
             "whichOne": "hero",
-            "distance": -1,
-            "toWhere": "near_enemy_fighters"
+            "distance": 99,
+            "toWhere": "near_enemy_fighters",
+            "condition": "won_the_war"
         }
     ],
     "quantity": 3

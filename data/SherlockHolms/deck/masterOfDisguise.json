@@ -2,7 +2,7 @@
     "name": "master_of_disguise",
     "img": "../../../../assets/images/sherlock/master_of_disguise.png",
     "boost": 2,
-    "performer": "sherlock",
+    "performer": "hero",
     "type": "event",
     "eventType": "none",
     "effects": [

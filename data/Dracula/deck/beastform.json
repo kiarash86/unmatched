@@ -1,21 +1,21 @@
 {
     "name": "beastform",
     "type": "attack",
-    "performer": "dracula",
+    "performer": "hero",
     "img": "../../../../assets/images/dracula/beastform.png",
     "eventType": "during_combat",
     "attack": 6,
     "boost": 4,
     "effects": [
         {
-            "type": "add",
-            "toWhat": "attack",
-            "howMuch": "queries",
-            "queries": [
-                {
-                    "name": "countRemovedCards"
-                }
-            ]
+            "type": "remove_card",
+            "from": "self",
+            "how": "user_choosen",
+            "howMany": -1,
+            "bonusPerCard": {
+                "toWhat": "attack",
+                "amount": 1
+            }
         }
     ],
     "quantity": 2

@@ -1,7 +1,7 @@
 {
     "name": "fixed_point_in_a_changing_age",
     "type": "multipurpose",
-    "performer": "watson",
+    "performer": "sidekick",
     "img": "../../../../assets/images/sherlock/fixed_point_in_a_changing_age.png",
     "boost": 1,
     "eventType": "after_combat",

@@ -1,7 +1,7 @@
 {
     "name": "prey_upon",
     "type": "event",
-    "performer": "dracula",
+    "performer": "hero",
     "img": "../../../../assets/images/dracula/prey_upon.png",
     "boost": 4,
     "effects": [
@@ -13,7 +13,16 @@
             "queries": [
                 {
                     "name": "countFighter",
-                    "type": "fighter",
+                    "type": "hero",
+                    "who": "enemy",
+                    "conditions": [
+                        "near_hero"
+                    ]
+                },
+                {
+                    "name": "countFighter",
+                    "type": "sidekick",
+                    "who": "enemy",
                     "conditions": [
                         "near_hero"
                     ]
@@ -27,7 +36,16 @@
             "queries": [
                 {
                     "name": "countFighter",
-                    "type": "fighter",
+                    "type": "hero",
+                    "who": "enemy",
+                    "conditions": [
+                        "near_hero"
+                    ]
+                },
+                {
+                    "name": "countFighter",
+                    "type": "sidekick",
+                    "who": "enemy",
                     "conditions": [
                         "near_hero"
                     ]

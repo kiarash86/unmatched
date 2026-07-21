@@ -1,7 +1,0 @@
-{
-    "when": "start_turn_self",
-    "type" : "attack" ,
-    "howMuch" : 1 ,
-    "toWho": "choose_by_user",
-    "options": "all"
-}

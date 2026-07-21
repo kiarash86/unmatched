@@ -1,6 +1,0 @@
-{
-    "when": "all_the_time",
-    "type" : "passive" ,
-    "condition": "is_sherlock_watson_card",
-    "effect": "cant_be_disabled_effects"
-}

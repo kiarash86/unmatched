@@ -1,22 +1,18 @@
 {
     "name": "baptism_of_blood",
     "type": "event",
-    "performer": "dracula",
+    "performer": "hero",
     "img": "../../../../assets/images/dracula/baptism_of_blood.png",
     "boost": 2,
     "effects": [
         {
-            "type": "modify",
+            "type": "add",
             "toWhat": "health",
             "howMuch": 2
         },
         {
-            "type": "move",
-            "howMany": 1,
-            "whichOne": "sidekick",
-            "condition": "isLossed",
-            "distance": -1,
-            "toWhere": "nearHero"
+            "type": "revive",
+            "whichOne": "sidekick"
         }
     ],
     "quantity": 2

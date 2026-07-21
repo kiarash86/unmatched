@@ -2,7 +2,7 @@
     "name": "administer_aid",
     "img": "../../../../assets/images/sherlock/administer_aid.png",
     "boost": 2,
-    "performer": "watson",
+    "performer": "sidekick",
     "type": "event",
     "effects": [
         {
@@ -16,7 +16,7 @@
             "howMany": 1,
             "whichOne": "sidekick",
             "condition": "none",
-            "distance": -1,
+            "distance": 99,
             "toWhere": "nearHero"
         },
         {

@@ -5,6 +5,7 @@
     "performer": "fighter",
     "eventType": "after_combat",
     "type": "multipurpose",
+    "attack/def": 3,
     "effects": [
         {
             "type": "draw_card",
@@ -12,7 +13,7 @@
             "condition": "isWinnerSelf",
             "toWho": "enemy",
             "else": {
-                "toWho": "enemy",
+                "toWho": "self",
                 "howMany": 2
             }
         }
