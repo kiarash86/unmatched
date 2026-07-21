@@ -6,11 +6,14 @@ std::unique_ptr<Condition> ConditionFactory::create(const std::string &condition
     return std::make_unique<IsNearEnemyCondition>(distance);
   }
   if (condition == "near_each_other") {
-   
-    return std::make_unique<IsNearEnemyCondition>(distance);
+
+    return std::make_unique<IsTeamAdjacentCondition>(distance);
   }
   if (condition == "near_hero") {
     return std::make_unique<NearHeroCondition>(distance);
+  }
+  if (condition == "near_target") {
+    return std::make_unique<IsNearTargetCondition>(distance);
   }
   if (condition == "isLossed") {
     return std::make_unique<IsLossedCondition>();
