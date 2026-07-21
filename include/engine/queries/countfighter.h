@@ -10,15 +10,20 @@
 class CountFighter : public Query {
 private:
   TypeOfFighter fighterType;
+  bool useEnemy{false};
 
 public:
-  explicit CountFighter(TypeOfFighter type) : fighterType(type) {}
+  explicit CountFighter(TypeOfFighter type, bool useEnemy = false)
+      : fighterType(type), useEnemy(useEnemy) {}
 
   int get(gameData &gameData) override {
     int value{0};
     if (!gameData.map || !gameData.self) return value;
 
-    for (auto &&fghr : gameData.map->getFighter(fighterType, gameData.self->getOwnerPlayer())) {
+    Fighter *owner = useEnemy ? gameData.enemy : gameData.self;
+    if (!owner) return value;
+
+    for (auto &&fghr : gameData.map->getFighter(fighterType, owner->getOwnerPlayer())) {
       bool flag = true;
       for (auto &&cnd : conditions) {
         if (!cnd->check(gameData, fghr)) {
