@@ -2,6 +2,8 @@
 #include "controller/PlayerSelectionManager.h"
 #include "controller/SceneManager.h"
 
+HeroSelectionScene::~HeroSelectionScene() {}
+
 TextureID HeroSelectionScene::bgForHero(HeroList id) {
   switch (id) {
   case HeroList::Dracula:
@@ -46,10 +48,7 @@ SoundID HeroSelectionScene::soundForHero(HeroList id) {
   }
 }
 
-HeroSelectionScene::HeroSelectionScene(AudioManager *audioManager,
-                                       SceneManager *sceneManager,
-                                       TextureManager *textureManager,
-                                       FontManager *fontManager)
+HeroSelectionScene::HeroSelectionScene(AudioManager *audioManager, SceneManager *sceneManager,TextureManager *textureManager, FontManager *fontManager)
     : Scene(audioManager, sceneManager, textureManager, fontManager) {
 
   const HeroList hrs[] = {HeroList::Dracula, HeroList::SherlockHolms}; // heroes
@@ -85,8 +84,6 @@ HeroSelectionScene::HeroSelectionScene(AudioManager *audioManager,
   sw = (float)GetScreenWidth();
   sh = (float)GetScreenHeight();
 }
-
-HeroSelectionScene::~HeroSelectionScene() {}
 
 void HeroSelectionScene::onEnter() {
 
@@ -255,8 +252,7 @@ void HeroSelectionScene::drawBackButton() {
              buttonFontSize, 1, RAYWHITE);
 }
 
-void HeroSelectionScene::drawDifficultyStars(float x, float y, int rating,
-                                             int maxRating) {
+void HeroSelectionScene::drawDifficultyStars(float x, float y, int rating, int maxRating) {
   float spacing = statFontSize * 0.95f;
   float radius = statFontSize * 0.32f;
 
