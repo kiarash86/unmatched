@@ -1,14 +1,12 @@
+#pragma once
 #include <memory>
-#include "../model/card.h"
+#include "model/card.h"
+#include "model/deck.h"
 #include <nlohmann/json.hpp>
-#include "../utility/file.h"
+#include "utility/file.h"
 #include "cardFactory.h"
-class DeckFactory
-{
-private:
 
+class DeckFactory {
 public:
-
-static std::vector<std::unique_ptr<Card>> create(const std::string pathFolder);
-
+  static std::unique_ptr<Deck> create(const std::string &pathFolder);
 };
