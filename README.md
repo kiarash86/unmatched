@@ -282,15 +282,3 @@ data/
     └── sarpedonMap.json    # each: name + list of tiles (id, neighbors, tags, zones, position)
 ```
 
-## Known gaps in this export
-
-This zip does not include:
-
-- **`.git/`** — version history is kept locally and intentionally wasn't
-  bundled here.
-- **`assets/`** — images/fonts/audio referenced by `CMakeLists.txt` and
-  the manager classes. Without it, the post-build asset-copy step (and
-  therefore actually running the game) will fail, but the code itself
-  compiles and links cleanly without it.
-- **A PDF project report** — the assignment requires one; make sure it's
-  included alongside the real submission zip.
