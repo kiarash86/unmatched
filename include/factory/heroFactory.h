@@ -9,7 +9,6 @@
 
 class HeroFactory {
 public:
-  // `name` is the hero's data folder name, e.g. "Dracula" or
-  // "SherlockHolms" (matches the folders under data/).
+  // name is the hero's data folder name
   static std::unique_ptr<Hero> create(const std::string &name);
 };
