@@ -1,36 +1,20 @@
+#pragma once
 #include "effect.h"
-class ModifierEffect : public Effect
-{
+#include "model/card.h"
+
+class ModifierEffect : public Effect {
 private:
-    int value{};
+  int value{};
+
 public:
-    ModifierEffect(int value) : value(value){};
-    ~ModifierEffect();
-     
-    
-    void execute(gameData & gameData) override
-     {
-        int finalValue = value;
-        for (auto &&cond : conditions)
-        {
-            if (!cond->check(gameData))
-            {
-                return;
-            }
-            
-        }
-        for (auto &&query : queries)
-        {
+  explicit ModifierEffect(int value) : value(value) {}
+  ~ModifierEffect() override = default;
 
-            finalValue+= query->get(gameData);
-        }
-        
-        gameData.cardPlayed->modifyValue(finalValue);
+  void execute(gameData &gameData) override {
+    if (!conditionsMet(gameData)) return;
+    if (!gameData.cardPlayed) return;
 
-
-     }
-
-
-
-};  
-
+    int finalValue = value + sumQueries(gameData);
+    gameData.cardPlayed->modifyValue(finalValue);
+  }
+};
