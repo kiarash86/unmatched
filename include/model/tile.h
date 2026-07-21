@@ -1,23 +1,39 @@
+#pragma once
 #include "typeOfTile.h"
 #include <string>
 #include <unordered_set>
 #include <vector>
+
+struct Vector2D {
+  int x{};
+  int y{};
+  bool operator==(const Vector2D &other) const {
+    return x == other.x && y == other.y;
+  }
+};
+
 class Tile {
 private:
-  int id;
+  int id{};
   std::vector<int> neighbors;
   std::unordered_set<TypeOfTile> tags;
   std::unordered_set<std::string> zones;
-  vector2D position;
+  Vector2D position;
 
 public:
   void setId(const int &ID);
-  int getId();
-  std::vector<int> getNeighbors();
+  int getId() const;
+  std::vector<int> getNeighbors() const;
   void setNeighbors(const std::vector<int> &nghbrs);
   void addNeighbor(const int &neighbor);
   void addTag(const TypeOfTile &typeTle);
-  std::unordered_set<TypeOfTile> getTags();
+  std::unordered_set<TypeOfTile> getTags() const;
   void setTags(const std::unordered_set<TypeOfTile> &typeTiles);
-  bool isPortal();
+  bool isPortal() const;
+
+  void setPosition(const Vector2D &pos);
+  Vector2D getPosition() const;
+
+  void addZone(const std::string &zone);
+  const std::unordered_set<std::string> &getZones() const;
 };
