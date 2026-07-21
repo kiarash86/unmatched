@@ -11,7 +11,6 @@ private:
   // int screenHeight;
   // int screenWidth;
   AudioManager *audioManager;
-  SceneManager *sceneManager;
   TextureManager *textureManager;
   FontManager *fontManager;
   // current scene that is being shown
