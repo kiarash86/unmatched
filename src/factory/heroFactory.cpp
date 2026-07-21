@@ -8,7 +8,8 @@ void setStats(const nlohmann::json &stats, Hero *hero) {
   hero->setMaxHealth(stats.value("health", 1));
   hero->setMovement(stats.value("movement", 0));
   std::string attackType = stats.value("attackType", "melee");
-  if (attackType == "range") {
+
+  if (attackType == "ranged") {
     hero->setTypeOfAttack(TypeOfAttack::ranged);
   } else {
     hero->setTypeOfAttack(TypeOfAttack::melee);
@@ -31,8 +32,6 @@ std::unique_ptr<Hero> HeroFactory::create(const std::string &name) {
       hero->addSidekick(SidekickFactory::create(sidekickPath));
     }
   }
-
-  hero->setAbility(AbilityFactory::create(path + "/abilities"));
   hero->setDeck(DeckFactory::create(path + "/deck"));
 
   return hero;

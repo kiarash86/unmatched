@@ -5,7 +5,6 @@
 #include "../utility/file.h"
 #include "sidekickFactory.h"
 #include "deckFactory.h"
-#include "abilityFactory.h"
 
 class HeroFactory {
 public:
