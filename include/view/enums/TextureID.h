@@ -20,5 +20,35 @@ enum class TextureID {
   draculaButtonNormal,
   draculaButtonHovered ,
   titleHeroSelection , 
-  frame
+  frame,
+
+  // Dracula card art (assets/images/Dracula/cards/*.png)
+  draculaAmbush,
+  draculaBaptismOfBlood,
+  draculaBeastform,
+  draculaDash,
+  draculaDoMyBidding,
+  draculaExploit,
+  draculaFeedingFrenzy,
+  draculaFeint,
+  draculaLookIntoMyEyes,
+  draculaMistform,
+  draculaPreyUpon,
+  draculaRaveningSeduction,
+  draculaThirstForSustenance,
+
+  // Sherlock Holmes card art (assets/images/SherlockHolms/cards/*.png)
+  sherlockHolmsAdministerAid,
+  sherlockHolmsConfirmSuspicion,
+  sherlockHolmsCounterPunch,
+  sherlockHolmsDeduceStrategy,
+  sherlockHolmsEducationNeverEnds,
+  sherlockHolmsElementary,
+  sherlockHolmsEliminateTheImpossible,
+  sherlockHolmsFeint,
+  sherlockHolmsFixedPointInAChangingAge,
+  sherlockHolmsMasterOfDisguise,
+  sherlockHolmsServiceRevolver,
+  sherlockHolmsStudyMethods,
+  sherlockHolmsTheGameIsAfoot
 };
