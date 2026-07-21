@@ -1,17 +1,19 @@
+#pragma once
 #include "engine/gameData.h"
 #include "engine/conditions/condition.h"
-#include "model/typeOfFighter.h"
-class Query
-{
-    protected:
-      std::vector<std::unique_ptr<Condition>> conditions;
+#include <memory>
+#include <vector>
 
-private:
-    
+class Query {
+protected:
+  std::vector<std::unique_ptr<Condition>> conditions;
+
 public:
-Query();
-  void addCondition(std::unique_ptr<Condition> cond){ conditions.push_back(std::move(cond));}
- virtual int get(gameData gameData)= 0 ;
- //FIXME : JUST GET INT OR...?
- ~Query() = default;
+  Query() = default;
+  virtual ~Query() = default;
+
+  void addCondition(std::unique_ptr<Condition> cond) {
+    conditions.push_back(std::move(cond));
+  }
+  virtual int get(gameData &gameData) = 0;
 };
