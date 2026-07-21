@@ -13,25 +13,19 @@ private:
   std::string name;
   TypeOfCard type{};
   TypeOfPerformer performer{};
-  // Raw "performer" string from the json (e.g. "sherlock", "watson",
-  // "dracula"), kept alongside the coarse TypeOfPerformer enum.
-  // TypeOfPerformer only captures a card's *role* requirement
-  // (fighter/hero/sidekick) and can't tell "sherlock" from "watson"
-  // from "fighter" -- conditions that need a specific character's
-  // identity (e.g. is_sherlock_watson_card) need this instead.
+
   std::string performerName;
   int boost{};
   std::string imgSource;
   TypeOfEvent eventType{};
-  // Raw attack/defense stats from the card's json (top-level "attack"
-  // and "def" keys, or "attack/def" for multipurpose cards, which sets
-  // both). Read by GameManager::resolveCombat() to seed `value` (the
-  // card's working combat number) once it's committed to a round --
-  // see Card::setValue()/modifyValue() and DefEffect for how that
-  // number can then move before the round is compared.
+
   int attackStat{};
   int defStat{};
   std::vector<std::unique_ptr<Effect>> effects;
+
+  int cancelledEffects{0};
+
+  bool targetsAnyFighter{false};
 
 public:
   int getValue() const;
@@ -47,12 +41,10 @@ public:
   std::string getPerformerName() const;
   int getAttackStat() const;
   int getDefStat() const;
-  // True if any of this card's effects reads gameData.target (e.g. a
-  // damage or position-exchange effect) -- meaning it needs a specific
-  // fighter chosen rather than the simplified "next hero in turn
-  // order" default. See GameManager::playCard(Card*) vs. the full
-  // self/target/enemy overload.
+
   bool needsTarget() const;
+  bool isTargetsAnyFighter() const { return targetsAnyFighter; }
+  void setTargetsAnyFighter(bool v) { targetsAnyFighter = v; }
   void setBoost(const int &);
   void setName(const std::string &);
   void setCardType(const TypeOfCard &);
@@ -67,4 +59,10 @@ public:
   ~Card() = default;
 
   void addEffect(std::unique_ptr<Effect> eff);
+
+  void cancelEffects(int howMany);
+
+  bool consumeCancellation();
+
+  void resetCancellation();
 };
