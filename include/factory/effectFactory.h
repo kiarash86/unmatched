@@ -15,6 +15,7 @@
 #include "engine/effects/defEffect.h"
 #include "engine/effects/changeValueEffect.h"
 #include "engine/effects/choosePlaceEffect.h"
+#include "engine/effects/reviveEffect.h"
 #include "factory/conditionFactory.h"
 
 class EffectFactory {
