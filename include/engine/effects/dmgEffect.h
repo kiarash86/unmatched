@@ -1,14 +1,29 @@
+#pragma once
 #include "effect.h"
-class DmgEffect : public Effect
-{
-private:
-    
-public:
-    DmgEffect();
-    ~DmgEffect();
-     void excute(gameData & gameData) override
-     {
-        gameData.target->dmg(gameData.cardPlayed.value);
-     }
-};
+#include "model/fighter.h"
+#include "model/card.h"
 
+class DmgEffect : public Effect {
+private:
+  int value{};
+
+public:
+  explicit DmgEffect(int value = 0) : value(value) {}
+  ~DmgEffect() override = default;
+
+  bool needsTarget() const override { return true; }
+
+  void execute(gameData &gameData) override {
+    if (!conditionsMet(gameData)) return;
+    if (!gameData.target) return;
+
+    int finalValue = value;
+    if (gameData.cardPlayed) {
+      finalValue += gameData.cardPlayed->getValue();
+    }
+    finalValue += sumQueries(gameData);
+
+    gameData.target->damage(finalValue);
+  }
+};
+//adding value to value
