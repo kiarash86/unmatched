@@ -1,125 +1,108 @@
-#pragma once                   // once per program
-#include "view/scenes/Scene.h" // father 
-#include "factory/heroInfoFactory.h" // factory of info
-#include "model/InfoHero.h" // model of info0
-#include <sstream> // word wrap
-#include "view/ui/Particle.h" // particle
-class HeroSelectionScene : public Scene // hero selection menu
+#pragma once                         // once per prg
+#include "factory/heroInfoFactory.h" // factory for showing info
+#include "model/InfoHero.h"          // model of info hero
+#include "model/Player.h"            // saving heroes in players
+#include "model/heroList.h"          // list of heroes
+#include "view/scenes/Scene.h"       // father
+#include <memory>                    // ptr
+#include <sstream>                   //wrap texts
+#include <vector>                    //vector
+
+class HeroSelectionScene : public Scene // scene of selecting heroes
 {
 private:
-  struct PlayerState // player selection state
-  {
-    int selectedHeroIndex;
-    bool isReady;
-  };
+enum class PendingVoiceAction {
+none,
+Player2,
+startTransition
+  }; /*this is for controlling
+  sounds, if it is player2 then at first it should reach the end of dialog of
+  first hero then go for choosehero of player 2*/
+
+PendingVoiceAction pendingVoiceAction =
+PendingVoiceAction::none; //   where are we now?
+SoundID heroVoiceBeingWaitedOn =
+SoundID::draculaSpeech; // next sound (it is supposed to play after other
+                              // sound or first)
+
+std::vector<std::unique_ptr<InfoHero>> heroes; // saving in this vector
+
+std::vector<HeroList> heroIds; // FIXME
+
+int selectedHero = 0; // index for buttons
+
+static const int totalPlayers = 2; // number of player we need
+
+int currentPlayerIndex = 0; // which player turn it is
 
   // FONTS
-  Font cinzelBold;
-  Font cinzelSemiBold;
-  Font cormoMedium;
-  Font cormoRegular;
-  Font iconFont;
+Font cinzelBold;
+Font cinzelSemiBold;
+Font cormoMedium;
+Font cormoRegular;
   // FONTS
 
-  // HEROES
-  std::vector<std::unique_ptr<InfoHero>> heroes;
-  // HEROES
-
-  // PLAYERS
-  PlayerState players[2];
-  int currentPlayer{0};
-  int selected{0};
-  // PLAYERS
-
-  // ICONS
-  int codepoints[4] = {
-      0xf004, // heart
-      0xf132, // shield
-      0xf6de, // swords
-      0xf554  // shoe
-  };
-
-  std::string iconHeart;
-  std::string iconShield;
-  std::string iconSwords;
-  std::string iconShoe;
-  // ICONS
-
-  // PARTICLES
-  std::vector<Particle> particles;
-  // PARTICLES
-
-  // LAYOUT
-  float sw;
-  float sh;
-
-  Rectangle topBarRect;
-  Rectangle listPanelRect;
-  Rectangle infoPanelRect;
-  std::vector<Rectangle> cardRects;
-
-  Vector2 titlePos;
-  float footerLineY;
-  // LAYOUT
-
   // FONT SIZE
-  float titleFontSize = 0.0f;
-  float vsFontSize = 0.0f;
+float heroNameFontSize = 0;
 
-  float playerLabelFontSize = 0.0f;
-  float playerSubFontSize = 0.0f;
+float heroRoleFontSize = 0;
 
-  float cardNameFontSize = 0.0f;
+float panelTitleFontSize = 0;
 
-  float nameFontSize = 0.0f;
-  float roleFontSize = 0.0f;
-  float descFontSize = 0.0f;
+float descriptionFontSize = 0;
 
-  float abilityTitleFontSize = 0.0f;
-  float abilityDescFontSize = 0.0f;
+float statFontSize = 0;
 
-  float statIconFontSize = 0.0f;
-  float footerFontSize = 20.0f;
+float buttonFontSize = 0;
   // FONT SIZE
 
+  // LAYOUT
+float sw = 0; // screen width
+float sh = 0; // screen height
+
+Rectangle backButtonRect; // return to main menu
+Rectangle heroListRect;   // menu
+Rectangle infoPanelRect;  // info box
+Rectangle titleImageRect; // where to draw titleHeroSelection
+Rectangle paginationRect; // where to draw hero pagination dots
+
+std::vector<Rectangle> heroCardRects; // rect of each hero card in the list
+  // LAYOUT
+
   // FUNCS
-  std::vector<std::string> wrapTextToWidth(
-      const std::string &, Font, float, float);
+void UpdateLayout(); // layout controller
 
-  void UpdateLayout();
+void handleKeyboard(); // navigate and click with keyboard
+void handleMouse();    // navigate and click with mouse
 
-  void handleKeyboard();
-  void handleMouse();
+void confirmSelection();        // effect of selected for hero
+void moveToNextAvailableHero(); // go to next hero that is not selected by
+                                  // someone before
 
-  void initParticles();
-  void updateParticles();
-  void drawParticles();
+void drawBackground(); // draw background
+void drawTitle();      // draw title
+void drawBackButton(); // draw back button
+void drawHeroList();   // draw hero list(menu)
+void drawInfoPanel();  // draw panel of info
+void drawDifficultyStars(float x, float y, int rating,
+                          int maxRating = 5); // draw difficulty stars
 
-  void drawBackground();
-  void drawTitle();
-  void drawTopBar();
-  void drawHeroList();
-  void drawInfoHero();
-  void drawFooter();
+TextureID
+bgForHero(HeroList id); // helper func for get id and return texture id
 
-  void drawStatBar(float x,
-                   float y,
-                   float width,
-                   const char *icon,
-                   int value,
-                   int max,
-                   Color color);
-  // FUNCS
+TextureID normalButtonForHero(
+HeroList id); // helper func for get id and return texture()
+TextureID hoveredButtonForHero(
+HeroList id); // helper func for get id and return texture()
+
+SoundID soundForHero(HeroList id); // get id and return speech sound
 
 public:
-  HeroSelectionScene(AudioManager *,
-                     SceneManager *,
-                     TextureManager *,
-                     FontManager *);
-
-  ~HeroSelectionScene();
-
-  void Update() override;
-  void Draw() override;
-  void onEnter() override;
+HeroSelectionScene(AudioManager *, SceneManager *, TextureManager *,
+FontManager *); // constructor
+~HeroSelectionScene();             // destructor
+void Update() override;            // update
+void Draw() override;              // draw
+void onEnter() override;           // onEnter
+                                     // FUNCS
 };
