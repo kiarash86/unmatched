@@ -1,39 +1,49 @@
 #include "view/scenes/HeroSelectionScene.h"
+#include "controller/PlayerSelectionManager.h"
 #include "controller/SceneManager.h"
-//COLORS
-static const Color kBgDark = {15, 15, 15, 255};
-static const Color kPanelBg = {25, 25, 25, 235};
-static const Color kGoldBright = {228, 205, 155, 255};
-static const Color kGoldAccent = {205, 175, 105, 255}; 
-static const Color kTextLight = {220, 220, 220, 255};
-static const Color kTextMuted = {150, 150, 150, 255};
-//COLORS
 
-std::vector<std::string> HeroSelectionScene::wrapTextToWidth(
-    const std::string &text, Font font, float fontSize,
-    float maxWidth) 
-{
-  std::vector<std::string> lines;
-  std::istringstream words(text);
-  std::string word, currentLine;
-
-  while (words >> word) {
-    std::string testLine =
-        currentLine.empty() ? word : currentLine + " " + word;
-    float testWidth = MeasureTextEx(font, testLine.c_str(), fontSize, 1).x;
-
-    if (testWidth > maxWidth && !currentLine.empty()) {
-      lines.push_back(currentLine);
-      currentLine = word;
-    } else {
-      currentLine = testLine;
-    }
+TextureID HeroSelectionScene::bgForHero(HeroList id) {
+  switch (id) {
+  case HeroList::Dracula:
+    return TextureID::bgDracula;
+  case HeroList::SherlockHolms:
+    return TextureID::bgSherlock;
+  default:
+    return TextureID::bg2;
   }
-  if (!currentLine.empty()) {
-    lines.push_back(currentLine);
-  }
+}
 
-  return lines;
+TextureID HeroSelectionScene::normalButtonForHero(HeroList id) {
+  switch (id) {
+  case HeroList::Dracula:
+    return TextureID::draculaButtonNormal;
+  case HeroList::SherlockHolms:
+    return TextureID::sherlockButtonNormal;
+  default:
+    return TextureID::draculaButtonNormal;
+  }
+}
+
+TextureID HeroSelectionScene::hoveredButtonForHero(HeroList id) {
+  switch (id) {
+  case HeroList::Dracula:
+    return TextureID::draculaButtonHovered;
+  case HeroList::SherlockHolms:
+    return TextureID::sherlockButtonHovered;
+  default:
+    return TextureID::draculaButtonHovered;
+  }
+}
+
+SoundID HeroSelectionScene::soundForHero(HeroList id) {
+  switch (id) {
+  case HeroList::Dracula:
+    return SoundID::draculaSpeech;
+  case HeroList::SherlockHolms:
+    return SoundID::sherlockSpeech;
+  default:
+    return SoundID::draculaSpeech;
+  }
 }
 
 HeroSelectionScene::HeroSelectionScene(AudioManager *audioManager,
@@ -42,423 +52,547 @@ HeroSelectionScene::HeroSelectionScene(AudioManager *audioManager,
                                        FontManager *fontManager)
     : Scene(audioManager, sceneManager, textureManager, fontManager) {
 
-  cinzelBold = fontManager->getFont(FontID::CinzelBold, 72);
-  cinzelSemiBold = fontManager->getFont(FontID::CinzelSemiBold, 52);
-  cormoMedium = fontManager->getFont(FontID::CormorantGaramondMedium, 36);
-  cormoRegular = fontManager->getFont(FontID::CormorantGaramondRegular, 34);
+  const HeroList hrs[] = {HeroList::Dracula, HeroList::SherlockHolms}; // heroes
 
+  // font
+
+  cinzelBold = fontManager->getFont(FontID::CinzelBold, 70);
+
+  cinzelSemiBold = fontManager->getFont(FontID::CinzelSemiBold, 42);
+
+  cormoMedium = fontManager->getFont(FontID::CormorantGaramondMedium, 32);
+
+  cormoRegular = fontManager->getFont(FontID::CormorantGaramondRegular, 30);
+
+  // font
   SetTextureFilter(cinzelBold.texture, TEXTURE_FILTER_BILINEAR);
   SetTextureFilter(cinzelSemiBold.texture, TEXTURE_FILTER_BILINEAR);
   SetTextureFilter(cormoMedium.texture, TEXTURE_FILTER_BILINEAR);
   SetTextureFilter(cormoRegular.texture, TEXTURE_FILTER_BILINEAR);
 
-  iconFont = LoadFontEx("assets/fontawesome.otf", 64, codepoints, 4);
-  SetTextureFilter(iconFont.texture, TEXTURE_FILTER_BILINEAR);
+  for (const HeroList &id : hrs) {
+    auto hero = HeroInfoFactory::create(id);
 
-  int b = 0;
-  iconHeart.assign(CodepointToUTF8(codepoints[0], &b), b);
-  iconShield.assign(CodepointToUTF8(codepoints[1], &b), b);
-  iconSwords.assign(CodepointToUTF8(codepoints[2], &b), b);
-  iconShoe.assign(CodepointToUTF8(codepoints[3], &b), b);
+    hero->wallpaper = texture->getTexture(bgForHero(id));
 
+    hero->normalButton = texture->getTexture(normalButtonForHero(id));
+    hero->hoveredButton = texture->getTexture(hoveredButtonForHero(id));
 
-  heroes.push_back(HeroInfoFactory::create(HeroList::Dracula));
-  heroes.push_back(HeroInfoFactory::create(HeroList::SherlockHolms));
-  for (auto &hero : heroes) {
-    hero->wallpaper = LoadTexture(hero->wallpaperPath.c_str());
-    hero->logo = LoadTexture(hero->logoPath.c_str());
+    heroes.push_back(std::move(hero));
+    heroIds.push_back(id);
   }
-
-  players[0] = {-1, false};
-  players[1] = {-1, false};
-  currentPlayer = 0;
-  selected = 0;
 
   sw = (float)GetScreenWidth();
   sh = (float)GetScreenHeight();
 }
 
-void HeroSelectionScene::onEnter() {
-  initParticles();
-}
+HeroSelectionScene::~HeroSelectionScene() {}
 
-void HeroSelectionScene::Update() {
-  handleKeyboard();
-  handleMouse();
-  updateParticles();
+void HeroSelectionScene::onEnter() {
+
+  audio->playMusic(MusicID::mainBackgroundMusic, 0.40f, true);
+
+  PlayerSelectionManager::instance().reset();
+
+  currentPlayerIndex = 0;
+
+  selectedHero = 0;
+
+  pendingVoiceAction = PendingVoiceAction::none;
+
+  audio->playSound(SoundID::player1Choose, 1.0f);
 }
 
 void HeroSelectionScene::Draw() {
   UpdateLayout();
+
   drawBackground();
-  drawParticles();
+
   drawTitle();
-  drawTopBar();
+
+  drawBackButton();
+
   drawHeroList();
-  drawInfoHero();
-  drawFooter();
+
+  drawInfoPanel();
 }
 
-void HeroSelectionScene::handleKeyboard() {
-  if (IsKeyPressed(KEY_DOWN)) {
-    selected = (selected + 1) % (int)heroes.size();
-  }
-  if (IsKeyPressed(KEY_UP)) {
-    selected = (selected - 1 + (int)heroes.size()) % (int)heroes.size();
-  }
+void HeroSelectionScene::Update() {
+  UpdateLayout();
 
-  if (IsKeyPressed(KEY_ENTER)) {
-    if (currentPlayer < 2) {
-      players[currentPlayer].selectedHeroIndex = selected;
-      players[currentPlayer].isReady = true;
-      currentPlayer++;
-    }
-  }
-  if (IsKeyPressed(KEY_ESCAPE)) {
-    if (currentPlayer > 0) {
-      currentPlayer--;
-      players[currentPlayer].isReady = false;
-      players[currentPlayer].selectedHeroIndex = -1;
-    }
-  }
-}
-
-void HeroSelectionScene::handleMouse() {
-  Vector2 mouse = GetMousePosition();
-  for (size_t i = 0; i < cardRects.size(); i++) {
-    if (CheckCollisionPointRec(mouse, cardRects[i])) {
-      selected = (int)i;
-      if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && currentPlayer < 2) {
-        players[currentPlayer].selectedHeroIndex = selected;
-        players[currentPlayer].isReady = true;
-        currentPlayer++;
-      }
-      break;
-    }
-  }
-}
-
-void HeroSelectionScene::initParticles() {
-  particles.clear();
-  for (int i = 0; i < 70; i++) {
-    Particle p;
-    p.position = {(float)GetRandomValue(0, GetScreenWidth()),
-                  (float)GetRandomValue(0, GetScreenHeight())};
-    p.velocity = {GetRandomValue(-2, 2) / 24.0f,
-                  GetRandomValue(-5, -2) / 24.0f};
-    p.radius = GetRandomValue(12, 25) / 10.0f / 1.4f;
-    p.alpha = (float)GetRandomValue(40, 100);
-    particles.push_back(p);
-  }
-}
-
-void HeroSelectionScene::updateParticles() {
-  for (auto &p : particles) {
-    p.position.x += p.velocity.x;
-    p.position.y += p.velocity.y;
-    if (p.position.y < -10) {
-      p.position.y = (float)GetScreenHeight() + 10.0f;
-      p.position.x = (float)GetRandomValue(0, GetScreenWidth());
-    }
-  }
-}
-
-void HeroSelectionScene::drawParticles() {
-  float t = GetTime();
-  for (auto &p : particles) {
-    float phase = p.radius * 2.7f + p.alpha * 0.13f;
-    float swayAmplitude = 5.0f + p.radius * 3.0f;
-    float x = p.position.x + sinf(t * 0.35f + phase) * swayAmplitude;
-    float y = p.position.y;
-
-    float twinkle = 0.5f + 0.5f * sinf(t * 0.6f + phase * 1.7f);
-    float opacity = (p.alpha / 140.0f) * (0.3f + 0.7f * twinkle);
-
-    DrawCircleV({x, y}, p.radius, Fade(Color{218, 200, 165, 255}, opacity));
-  }
-}
-
-void HeroSelectionScene::drawBackground() {
-  auto currentHero = heroes[selected].get();
-
-  ClearBackground(kBgDark);
-
-  DrawRectangleGradientV(0, 0, (int)sw, (int)sh, currentHero->themeColor,
-                        kBgDark);
-
-  DrawTexturePro(currentHero->wallpaper,
-                {0, 0, (float)currentHero->wallpaper.width,
-                 (float)currentHero->wallpaper.height},
-                {0, 0, sw, sh}, {0, 0}, 0, WHITE);
-
-  DrawRectangleGradientH(0, 0, (int)sw, (int)sh, Fade(BLACK, 0.30f),
-                        Fade(BLACK, 0.04f));
-}
-
-void HeroSelectionScene::drawTitle() {
-  const char *title = "CHOOSE YOUR CHAMPION";
-  Vector2 tSize = MeasureTextEx(cinzelBold, title, titleFontSize, 2);
-  DrawTextEx(cinzelBold, title, titlePos, titleFontSize, 2, kGoldBright);
-
-  float lineY = titlePos.y + tSize.y + sh * 0.012f;
-  float lineWidth = sw * 0.16f;
-  float cx = titlePos.x + tSize.x * 0.5f;
-  DrawLineEx({cx - lineWidth * 0.5f, lineY}, {cx + lineWidth * 0.5f, lineY},
-             2.0f, Fade(kGoldAccent, 0.55f));
-}
-
-void HeroSelectionScene::drawTopBar() {
-  DrawRectangleRounded(topBarRect, 0.15f, 12, kPanelBg);
-  DrawRectangleRoundedLines(topBarRect, 0.15f, 12, 2.0f, Fade(kGoldAccent, 0.6f));
-
-  DrawTextEx(cinzelBold, "VS",
-            {sw * 0.5f - MeasureTextEx(cinzelBold, "VS", vsFontSize, 2).x * 0.5f,
-             topBarRect.y + topBarRect.height * 0.5f - vsFontSize * 0.5f},
-            vsFontSize, 2, kGoldBright);
-
-  float avatarSize = topBarRect.height * 0.68f;
-
-  for (int p = 0; p < 2; p++) {
-    bool onLeft = (p == 0);
-    float pad = topBarRect.width * 0.04f;
-    float pX = onLeft ? topBarRect.x + pad
-                      : topBarRect.x + topBarRect.width - pad - avatarSize -
-                            (sw * 0.20f);
-    float pY = topBarRect.y + (topBarRect.height - avatarSize) * 0.5f;
-    float textX = pX + avatarSize + pad * 0.6f;
-
-    Color playerAccent = onLeft ? SKYBLUE : Color{230, 120, 110, 255};
-
-    if (players[p].isReady) {
-      auto pickedHero = heroes[players[p].selectedHeroIndex].get();
-      DrawTexturePro(
-          pickedHero->logo,
-          {0, 0, (float)pickedHero->logo.width, (float)pickedHero->logo.height},
-          {pX, pY, avatarSize, avatarSize}, {0, 0}, 0, WHITE);
-
-      DrawTextEx(cinzelSemiBold, pickedHero->name.c_str(), {textX, pY},
-                playerLabelFontSize, 1, kGoldBright);
-      DrawTextEx(cormoMedium, pickedHero->role.c_str(),
-                {textX, pY + playerLabelFontSize + 2}, playerSubFontSize, 1,
-                kTextMuted);
-      DrawTextEx(cormoMedium, "READY",
-                {textX, pY + playerLabelFontSize + playerSubFontSize + 8},
-                playerSubFontSize, 1, playerAccent);
-    } else {
-      DrawRectangleRounded({pX, pY, avatarSize, avatarSize}, 0.2f, 8,
-                           Fade(DARKGRAY, 0.6f));
-      DrawRectangleRoundedLines({pX, pY, avatarSize, avatarSize}, 0.2f, 8, 1.5f,
-                                Fade(kGoldAccent, 0.4f));
-
-      const char *pLabel = onLeft ? "Player 1" : "Player 2";
-      bool isTurn = (currentPlayer == p);
-      DrawTextEx(cinzelSemiBold, pLabel, {textX, pY},
-                playerLabelFontSize, 1,
-                isTurn ? kGoldBright : kTextMuted);
-      DrawTextEx(cormoMedium, isTurn ? "Choosing..." : "Waiting...",
-                {textX, pY + playerLabelFontSize + 4}, playerSubFontSize, 1,
-                isTurn ? kTextLight : kTextMuted);
-    }
-  }
-}
-
-void HeroSelectionScene::drawHeroList() {
-  for (int i = 0; i < (int)heroes.size(); i++) {
-    Rectangle cardRect = cardRects[i];
-    bool isSelected = (i == selected);
-
-    Rectangle rec = cardRect;
-    if (isSelected) {
-      rec.x -= 4;
-      rec.width += 8;
+  if (pendingVoiceAction != PendingVoiceAction::none &&
+      !audio->isSoundPlaying(heroVoiceBeingWaitedOn)) {
+    if (pendingVoiceAction == PendingVoiceAction::Player2) {
+      audio->playSound(SoundID::player2Choose, 1.0f);
+    } else if (pendingVoiceAction == PendingVoiceAction::startTransition) {
+      // both players are locked in and player two's voice line just
+      // finished -- go straight to the board, no extra wait
+      pendingVoiceAction = PendingVoiceAction::none;
+      scene->changeScene(ScenesType::game);
+      return;
     }
 
-    Color fill = isSelected ? Color{40, 45, 60, 220} : Color{15, 15, 15, 170};
-    DrawRectangleRounded(rec, 0.12f, 10, fill);
-    DrawRectangleRoundedLines(rec, 0.12f, 10, isSelected ? 2.5f : 1.5f,
-                              isSelected ? kGoldAccent : Fade(kGoldAccent, 0.25f));
-
-    DrawTextEx(isSelected ? cinzelSemiBold : cormoMedium,
-              heroes[i]->name.c_str(),
-              {rec.x + rec.width * 0.08f,
-               rec.y + rec.height - cardNameFontSize * 1.6f},
-              cardNameFontSize, 1, isSelected ? kGoldBright : kTextMuted);
+    pendingVoiceAction = PendingVoiceAction::none;
   }
-}
 
-void HeroSelectionScene::drawStatBar(float x, float y, float width,
-                                     const char *icon, int value, int max,
-                                     Color color) {
-  float barH = sh * 0.012f;
-  float iconGap = statIconFontSize * 1.2f;
+  handleMouse();
 
-  DrawTextEx(iconFont, icon, {x, y - statIconFontSize * 0.6f}, statIconFontSize,
-            0, color);
-
-  Rectangle track = {x + iconGap, y - barH * 0.5f, width - iconGap, barH};
-  DrawRectangleRounded(track, 0.5f, 6, Fade(WHITE, 0.12f));
-
-  float ratio = max > 0 ? (float)value / (float)max : 0.0f;
-  if (ratio > 1.0f) ratio = 1.0f;
-  Rectangle fill = {track.x, track.y, track.width * ratio, barH};
-  if (fill.width > 0.5f) {
-    DrawRectangleRounded(fill, 0.5f, 6, color);
-  }
-}
-
-void HeroSelectionScene::drawInfoHero() {
-  auto hero = heroes[selected].get();
-  Rectangle panel = infoPanelRect;
-
-  DrawRectangleRounded(panel, 0.06f, 16, kPanelBg);
-  DrawRectangleRoundedLines(panel, 0.06f, 16, 2.0f, Fade(kGoldAccent, 0.45f));
-
-  float padX = panel.width * 0.05f;
-  float padY = panel.height * 0.05f;
-  float x = panel.x + padX;
-  float y = panel.y + padY;
-  float contentWidth = panel.width - padX * 2.0f;
-
-  DrawTextEx(cinzelBold, hero->name.c_str(), {x, y}, nameFontSize, 1,
-            kGoldBright);
-  y += nameFontSize * 1.1f;
-
-  DrawTextEx(cormoMedium, hero->role.c_str(), {x, y}, roleFontSize, 1,
-            SKYBLUE);
-  y += roleFontSize * 1.4f;
-
-  DrawLineEx({x, y}, {x + contentWidth, y}, 1.5f, Fade(kGoldAccent, 0.35f));
-  y += panel.height * 0.03f;
-
-  std::vector<std::string> descLines =
-      wrapTextToWidth(hero->desc, cormoRegular, descFontSize, contentWidth);
-  float descLineHeight = descFontSize * 1.3f;
-  for (auto &line : descLines) {
-    DrawTextEx(cormoRegular, line.c_str(), {x, y}, descFontSize, 1,
-              kTextLight);
-    y += descLineHeight;
-  }
-  y += panel.height * 0.035f;
-
-  float statGap = panel.height * 0.055f;
-  float statBarWidth = contentWidth * 0.55f;
-
-  drawStatBar(x, y, statBarWidth, iconHeart.c_str(), hero->hp, 10, RED);
-  y += statGap;
-  drawStatBar(x, y, statBarWidth, iconSwords.c_str(), hero->attack, 10,
-             ORANGE);
-  y += statGap;
-  drawStatBar(x, y, statBarWidth, iconShield.c_str(), hero->defense, 10,
-             kGoldBright);
-  y += statGap;
-  drawStatBar(x, y, statBarWidth, iconShoe.c_str(), hero->speed, 10, BLUE);
-  y += statGap * 1.3f;
-
-  DrawTextEx(cinzelSemiBold, "ABILITY", {x, y}, abilityTitleFontSize * 0.6f, 1,
-            kGoldAccent);
-  y += abilityTitleFontSize * 0.6f + panel.height * 0.012f;
-
-  DrawTextEx(cinzelSemiBold, hero->abilityTitle.c_str(), {x, y},
-            abilityTitleFontSize, 1, kGoldBright);
-  y += abilityTitleFontSize * 1.2f;
-
-  std::vector<std::string> abilityLines = wrapTextToWidth(
-      hero->abilityDesc, cormoRegular, abilityDescFontSize, contentWidth);
-  float abilityLineHeight = abilityDescFontSize * 1.3f;
-  for (auto &line : abilityLines) {
-    DrawTextEx(cormoRegular, line.c_str(), {x, y}, abilityDescFontSize, 1,
-              kTextMuted);
-    y += abilityLineHeight;
-  }
-}
-
-void HeroSelectionScene::drawFooter() {
-  DrawLineEx({sw * 0.03f, footerLineY}, {sw * 0.97f, footerLineY}, 1.5f,
-             Fade(Color{190, 170, 120, 255}, 0.30f));
-
-  const char *left = "UP/DOWN  Navigate";
-  const char *center = "ENTER  Select";
-  const char *right = "ESC  Back";
-
-  Vector2 l = MeasureTextEx(cormoMedium, left, footerFontSize, 1);
-  Vector2 c = MeasureTextEx(cormoMedium, center, footerFontSize, 1);
-  Vector2 r = MeasureTextEx(cormoMedium, right, footerFontSize, 1);
-
-  const float spacing = 55.0f;
-  float totalWidth = l.x + spacing + c.x + spacing + r.x;
-  float startX = (sw - totalWidth) * 0.5f;
-  float y = footerLineY + 16;
-
-  DrawTextEx(cormoMedium, left, {startX, y}, footerFontSize, 1,
-            Color{185, 185, 180, 255});
-  startX += l.x + spacing;
-  DrawTextEx(cormoMedium, center, {startX, y}, footerFontSize, 1,
-            Color{185, 185, 180, 255});
-  startX += c.x + spacing;
-  DrawTextEx(cormoMedium, right, {startX, y}, footerFontSize, 1,
-            Color{185, 185, 180, 255});
+  handleKeyboard();
 }
 
 void HeroSelectionScene::UpdateLayout() {
   sw = (float)GetScreenWidth();
   sh = (float)GetScreenHeight();
 
-  footerLineY = sh - 58.0f;
+  heroNameFontSize = sh * 0.028f;
+  heroRoleFontSize = sh * 0.020f;
 
-  // title
-  titleFontSize = sh * 0.05f;
-  Vector2 tSize =
-      MeasureTextEx(cinzelBold, "CHOOSE YOUR CHAMPION", titleFontSize, 2);
-  titlePos = {sw * 0.5f - tSize.x * 0.5f, sh * 0.025f};
+  panelTitleFontSize = sh * 0.024f;
+  descriptionFontSize = sh * 0.019f;
 
-  // top bar (vs banner)
-  float topBarY = titlePos.y + tSize.y + sh * 0.03f;
-  topBarRect = {sw * 0.05f, topBarY, sw * 0.90f, sh * 0.14f};
+  statFontSize = sh * 0.022f;
 
-  vsFontSize = sh * 0.045f;
-  playerLabelFontSize = sh * 0.026f;
-  playerSubFontSize = sh * 0.016f;
+  buttonFontSize = sh * 0.021f;
 
-  // main content area (hero list + info panel)
-  float contentTop = topBarRect.y + topBarRect.height + sh * 0.03f;
-  float contentBottom = footerLineY - sh * 0.03f;
-  float contentHeight = contentBottom - contentTop;
+  Texture2D titleTex = texture->getTexture(TextureID::titleHeroSelection);
 
-  listPanelRect = {sw * 0.05f, contentTop, sw * 0.22f, contentHeight};
+  float titleImgWidth = sw * 0.40f;
+  float titleImgHeight =
+      titleTex.width > 0
+          ? titleImgWidth * (float)titleTex.height / (float)titleTex.width
+          : 0.0f;
 
-  float gap = sw * 0.02f;
-  infoPanelRect = {listPanelRect.x + listPanelRect.width + gap, contentTop,
-                   sw * 0.95f - (listPanelRect.x + listPanelRect.width + gap),
-                   contentHeight};
+  titleImageRect = {sw * 0.5f - titleImgWidth * 0.5f, sh * 0.02f, titleImgWidth,
+                    titleImgHeight};
 
-  // hero cards, evenly stacked inside the list panel
-  cardRects.clear();
-  int n = (int)heroes.size();
-  if (n > 0) {
-    float cardSpacing = sh * 0.015f;
-    float cardHeight =
-        (listPanelRect.height - (n - 1) * cardSpacing) / (float)n;
-    for (int i = 0; i < n; i++) {
-      cardRects.push_back({listPanelRect.x,
-                           listPanelRect.y + i * (cardHeight + cardSpacing),
-                           listPanelRect.width, cardHeight});
+  backButtonRect = {sw * 0.03f, sh * 0.045f, sw * 0.11f, sh * 0.055f};
+
+  float listWidth = sw * 0.24f;
+  float cardSpacing = sh * 0.018f;
+
+  std::vector<float> cardHeights;
+  float totalCardsHeight = 0.0f;
+
+  for (size_t i = 0; i < heroes.size(); i++) {
+    Texture2D t = heroes[i]->normalButton;
+
+    float aspect = (t.width > 0) ? (float)t.height / (float)t.width : 0.32f;
+    float h = listWidth * aspect;
+
+    cardHeights.push_back(h);
+    totalCardsHeight += h;
+  }
+
+  if (heroes.size() > 1)
+    totalCardsHeight += cardSpacing * (float)(heroes.size() - 1);
+
+  float columnsY = titleImageRect.y + titleImageRect.height + sh * 0.02f;
+  float columnsHeight = sh * 0.87f - columnsY;
+
+  heroListRect = {sw * 0.03f, columnsY, listWidth,
+                  totalCardsHeight > 0.0f ? totalCardsHeight : sh * 0.11f};
+
+  paginationRect = {heroListRect.x,
+                    heroListRect.y + heroListRect.height + sh * 0.015f,
+                    heroListRect.width, sh * 0.03f};
+
+  float infoPanelHeight = sh * 0.62f;
+
+  if (infoPanelHeight > columnsHeight)
+    infoPanelHeight = columnsHeight;
+
+  infoPanelRect = {sw * 0.735f, columnsY, sw * 0.235f, infoPanelHeight};
+
+  heroCardRects.clear();
+
+  if (!heroes.empty()) {
+    float y = heroListRect.y;
+
+    for (size_t i = 0; i < heroes.size(); i++) {
+      heroCardRects.push_back(
+          {heroListRect.x, y, heroListRect.width, cardHeights[i]});
+
+      y += cardHeights[i] + cardSpacing;
     }
   }
-  cardNameFontSize = sh * 0.022f;
-
-  // info panel font sizes
-  nameFontSize = sh * 0.055f;
-  roleFontSize = sh * 0.022f;
-  descFontSize = sh * 0.019f;
-  abilityTitleFontSize = sh * 0.028f;
-  abilityDescFontSize = sh * 0.018f;
-  statIconFontSize = sh * 0.026f;
 }
 
-HeroSelectionScene::~HeroSelectionScene() {
-  for (auto &hero : heroes) {
-    UnloadTexture(hero->wallpaper);
-    UnloadTexture(hero->logo);
+void HeroSelectionScene::drawBackground() {
+  ClearBackground(BLACK);
+
+  Texture2D bg = (!heroes.empty() && selectedHero < (int)heroes.size())
+                     ? heroes[selectedHero]->wallpaper
+                     : texture->getTexture(TextureID::bg2);
+
+  DrawTexturePro(bg, {0, 0, (float)bg.width, (float)bg.height}, {0, 0, sw, sh},
+                 {0, 0}, 0, WHITE);
+}
+
+void HeroSelectionScene::drawTitle() {
+  Texture2D &titleTex = texture->getTexture(TextureID::titleHeroSelection);
+
+  DrawTexturePro(titleTex,
+                 {0, 0, (float)titleTex.width, (float)titleTex.height},
+                 titleImageRect, {0, 0}, 0, WHITE);
+}
+
+void HeroSelectionScene::drawBackButton() {
+  Vector2 mouse = GetMousePosition();
+
+  bool hover = CheckCollisionPointRec(mouse, backButtonRect);
+
+  Color bg = hover ? Color{45, 48, 58, 235} : Color{26, 28, 36, 215};
+
+  DrawRectangleRounded(backButtonRect, 0.18f, 12, bg);
+
+  DrawRectangleRoundedLines(backButtonRect, 0.18f, 12, 2,
+                            Color{195, 160, 90, 255});
+
+  DrawTextEx(cormoMedium, "BACK",
+             {backButtonRect.x + 18, backButtonRect.y +
+                                         backButtonRect.height / 2 -
+                                         (float)cormoMedium.baseSize / 2},
+             buttonFontSize, 1, RAYWHITE);
+}
+
+void HeroSelectionScene::drawDifficultyStars(float x, float y, int rating,
+                                             int maxRating) {
+  float spacing = statFontSize * 0.95f;
+  float radius = statFontSize * 0.32f;
+
+  for (int i = 0; i < maxRating; i++) {
+    bool filled = i < rating;
+
+    float cx = x + radius + (float)i * spacing;
+    float cy = y + radius;
+
+    if (filled) {
+      DrawCircle((int)cx, (int)cy, radius, GOLD);
+    } else {
+      DrawCircleLines((int)cx, (int)cy, radius, Fade(GOLD, 0.5f));
+    }
   }
-  UnloadFont(iconFont);
+}
+
+void HeroSelectionScene::drawHeroList() {
+  Vector2 mouse = GetMousePosition();
+
+  for (size_t i = 0; i < heroCardRects.size(); i++) {
+    Rectangle r = heroCardRects[i];
+
+    bool hover = CheckCollisionPointRec(mouse, r);
+
+    bool active = (int)i == selectedHero;
+
+    HeroList id = (i < heroIds.size()) ? heroIds[i] : HeroList::Dracula;
+    bool taken = PlayerSelectionManager::instance().isHeroTaken(id);
+
+    InfoHero *cardHero = heroes[i].get();
+
+    Texture2D buttonTex = (!taken && (hover || active))
+                              ? cardHero->hoveredButton
+                              : cardHero->normalButton;
+
+    DrawTexturePro(buttonTex,
+                   {0, 0, (float)buttonTex.width, (float)buttonTex.height}, r,
+                   {0, 0}, 0, WHITE);
+
+    if (taken) {
+      DrawRectangleRounded(r, 0.08f, 8, Fade(BLACK, 0.55f));
+
+      const char *label = "SELECTED";
+      Vector2 s = MeasureTextEx(cormoMedium, label, heroRoleFontSize, 1);
+
+      DrawTextEx(cormoMedium, label,
+                 {r.x + r.width * 0.5f - s.x * 0.5f,
+                  r.y + r.height * 0.5f - s.y * 0.5f},
+                 heroRoleFontSize, 1, GOLD);
+    }
+  }
+}
+
+//TODO: ATTRIBUTES
+void HeroSelectionScene::drawInfoPanel() {
+  if (heroes.empty())
+    return;
+
+  InfoHero *hero = heroes[selectedHero].get();
+
+  Rectangle infoContentRect = {infoPanelRect.x + infoPanelRect.width * 0.032f,
+                               infoPanelRect.y + infoPanelRect.height * 0.027f,
+                               infoPanelRect.width * 0.937f,
+                               infoPanelRect.height * 0.946f};
+
+  DrawRectangleRec(infoContentRect, Fade(BLACK, 0.75f));
+
+  Texture2D frameTex = texture->getTexture(TextureID::frame);
+
+  DrawTexturePro(frameTex,
+                 {0, 0, (float)frameTex.width, (float)frameTex.height},
+                 infoPanelRect, {0, 0}, 0, WHITE);
+
+  float x = infoContentRect.x + 25;
+  float y = infoContentRect.y + 25;
+
+  //----------------------------------
+  // Hero Name
+  //----------------------------------
+
+  DrawTextEx(cinzelBold, hero->name.c_str(), {x, y}, heroNameFontSize, 2, GOLD);
+
+  y += heroNameFontSize + 10;
+
+  //----------------------------------
+  // Hero Role
+  //----------------------------------
+
+  DrawTextEx(cormoMedium, hero->role.c_str(), {x, y}, heroRoleFontSize, 1,
+             LIGHTGRAY);
+
+  y += heroRoleFontSize + 16;
+
+  //----------------------------------
+  // Quote / description
+  //----------------------------------
+
+  if (!hero->desc.empty()) {
+    std::vector<std::string> descLines;
+    std::istringstream words(hero->desc);
+    std::string word, line;
+    float maxWidth = infoContentRect.width - 50;
+
+    while (words >> word) {
+      std::string test = line.empty() ? word : line + " " + word;
+      float w =
+          MeasureTextEx(cormoRegular, test.c_str(), descriptionFontSize, 1).x;
+
+      if (w > maxWidth && !line.empty()) {
+        descLines.push_back(line);
+        line = word;
+      } else {
+        line = test;
+      }
+    }
+    if (!line.empty())
+      descLines.push_back(line);
+
+    for (auto &l : descLines) {
+      DrawTextEx(cormoRegular, l.c_str(), {x, y}, descriptionFontSize, 1,
+                 Color{190, 185, 175, 255});
+      y += descriptionFontSize * 1.3f;
+    }
+
+    y += 14;
+  }
+
+  //----------------------------------
+  // Difficulty
+  //----------------------------------
+
+  DrawTextEx(cinzelSemiBold, "DIFFICULTY", {x, y}, panelTitleFontSize, 1,
+             RAYWHITE);
+
+  drawDifficultyStars(
+      x + MeasureTextEx(cinzelSemiBold, "DIFFICULTY", panelTitleFontSize, 1).x +
+          14,
+      y + panelTitleFontSize * 0.15f, hero->difficulty);
+
+  y += panelTitleFontSize + 34;
+
+  //----------------------------------
+  // Stats (real data from InfoHero)
+  //----------------------------------
+
+  DrawTextEx(cinzelSemiBold, "ATTRIBUTES", {x, y}, panelTitleFontSize, 1,
+             RAYWHITE);
+
+  y += panelTitleFontSize + 18;
+
+  y += 35;
+
+  y += 35;
+
+  y += 35;
+
+  y += 55;
+
+  DrawTextEx(cinzelSemiBold, "ABILITY", {x, y}, panelTitleFontSize, 1,
+             RAYWHITE);
+
+  y += panelTitleFontSize + 15;
+
+  Rectangle abilityRect = {x, y, infoContentRect.width - 50, 120};
+
+  DrawRectangleRounded(abilityRect, 0.05f, 8, Color{35, 38, 45, 255});
+
+  DrawRectangleRoundedLines(abilityRect, 0.05f, 8, 1, Fade(GOLD, 0.4f));
+
+  DrawTextEx(cinzelSemiBold, hero->abilityTitle.c_str(),
+             {abilityRect.x + 15, abilityRect.y + 15}, statFontSize, 1, GOLD);
+
+  std::vector<std::string> abilityLines;
+  {
+    std::istringstream words(hero->abilityDesc);
+    std::string word, line;
+    float maxWidth = abilityRect.width - 30;
+
+    while (words >> word) {
+      std::string test = line.empty() ? word : line + " " + word;
+      float w =
+          MeasureTextEx(cormoRegular, test.c_str(), descriptionFontSize, 1).x;
+
+      if (w > maxWidth && !line.empty()) {
+        abilityLines.push_back(line);
+        line = word;
+      } else {
+        line = test;
+      }
+    }
+    if (!line.empty())
+      abilityLines.push_back(line);
+  }
+
+  float lineY = abilityRect.y + 50;
+  for (auto &l : abilityLines) {
+    DrawTextEx(cormoRegular, l.c_str(), {abilityRect.x + 15, lineY},
+               descriptionFontSize, 1, LIGHTGRAY);
+    lineY += descriptionFontSize * 1.3f;
+  }
+}
+
+void HeroSelectionScene::handleMouse() {
+
+  Vector2 mouse = GetMousePosition(); // position of mouse
+
+  bool overInteractive = false; // for changing curser
+
+  for (size_t i = 0; i < heroCardRects.size(); i++) {
+    if (CheckCollisionPointRec(mouse, heroCardRects[i])) {
+
+      HeroList id = (i < heroIds.size()) ? heroIds[i] : HeroList::Dracula;
+
+      if (PlayerSelectionManager::instance().isHeroTaken(id))
+        continue;
+
+      overInteractive = true;
+      selectedHero = (int)i;
+
+      if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        confirmSelection();
+      }
+    }
+  }
+
+  if (CheckCollisionPointRec(mouse, backButtonRect)) {
+    overInteractive = true;
+
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+      scene->changeScene(ScenesType::mainScene);
+    }
+  }
+
+  SetMouseCursor(overInteractive ? MOUSE_CURSOR_POINTING_HAND
+                                 : MOUSE_CURSOR_DEFAULT);
+}
+
+void HeroSelectionScene::handleKeyboard() {
+  if (heroes.empty()) // no hero? then go away
+  {
+    return;
+  }
+
+  if (IsKeyPressed(KEY_DOWN)) {
+    int next = selectedHero;
+
+    for (int t = 0; t < (int)heroes.size(); t++) {
+      next++;
+
+      if (next >= (int)heroes.size())
+        next = 0;
+
+      HeroList id =
+          (next < (int)heroIds.size()) ? heroIds[next] : HeroList::Dracula;
+      if (!PlayerSelectionManager::instance().isHeroTaken(id)) {
+        selectedHero = next;
+        break;
+      }
+    }
+  }
+
+  if (IsKeyPressed(KEY_UP)) {
+    int next = selectedHero;
+
+    for (int t = 0; t < (int)heroes.size(); t++) {
+      next--;
+
+      if (next < 0)
+        next = (int)heroes.size() - 1;
+
+      HeroList id =
+          (next < (int)heroIds.size()) ? heroIds[next] : HeroList::Dracula;
+      if (!PlayerSelectionManager::instance().isHeroTaken(id)) {
+        selectedHero = next;
+        break;
+      }
+    }
+  }
+
+  if (IsKeyPressed(KEY_ENTER)) // ok so this is your choice for hero
+  {
+    confirmSelection();
+  }
+
+  if (IsKeyPressed(KEY_ESCAPE)) // return to main menu
+  {
+    scene->changeScene(ScenesType::mainScene);
+  }
+}
+
+void HeroSelectionScene::confirmSelection() {
+  if (heroes.empty())
+    return;
+
+  if (currentPlayerIndex >=
+      totalPlayers) // everyone select their hero? then just return
+  {
+    return;
+  }
+
+  HeroList chosenId = heroIds[selectedHero];
+
+  if (PlayerSelectionManager::instance().isHeroTaken(
+          chosenId)) // on a selected hero? return
+  {
+    return;
+  }
+
+  SoundID chosenSound = soundForHero(chosenId);
+  audio->playSound(chosenSound, 1.0f);
+
+  Player player(currentPlayerIndex, chosenId, heroes[selectedHero]->name);
+  PlayerSelectionManager::instance().addPlayer(player);
+
+  currentPlayerIndex++;
+
+  if (currentPlayerIndex >= totalPlayers) // next scene or next choosing hero?
+  {
+
+    pendingVoiceAction = PendingVoiceAction::startTransition;
+    heroVoiceBeingWaitedOn = chosenSound;
+  } else {
+
+    pendingVoiceAction = PendingVoiceAction::Player2;
+    heroVoiceBeingWaitedOn = chosenSound;
+
+    moveToNextAvailableHero();
+  }
+}
+
+void HeroSelectionScene::moveToNextAvailableHero() {
+  for (int i = 0; i < heroIds.size(); i++) {
+    if (!PlayerSelectionManager::instance().isHeroTaken(heroIds[i])) {
+      selectedHero = i;
+      return;
+    }
+  }
 }
