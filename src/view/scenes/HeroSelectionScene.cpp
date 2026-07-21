@@ -585,7 +585,7 @@ void HeroSelectionScene::confirmSelection() {
 }
 
 void HeroSelectionScene::moveToNextAvailableHero() {
-  for (int i = 0; i < heroIds.size(); i++) {
+  for (int i = 0; i < (int)heroIds.size(); i++) {
     if (!PlayerSelectionManager::instance().isHeroTaken(heroIds[i])) {
       selectedHero = i;
       return;
