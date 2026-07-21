@@ -44,3 +44,21 @@ void Card::modifyValue(const int &amount) { value += amount; }
 void Card::addEffect(std::unique_ptr<Effect> eff) {
   effects.push_back(std::move(eff));
 }
+
+void Card::cancelEffects(int howMany) {
+  if (howMany < 0) {
+    cancelledEffects = -1; // cancel effects
+    return;
+  }
+  if (howMany == 0) return;
+
+  cancelledEffects = (cancelledEffects < 0) ? -1 : cancelledEffects + howMany;
+}
+
+bool Card::consumeCancellation() {
+  if (cancelledEffects == 0) return false;
+  if (cancelledEffects > 0) cancelledEffects--;
+  return true; 
+}
+
+void Card::resetCancellation() { cancelledEffects = 0; }
