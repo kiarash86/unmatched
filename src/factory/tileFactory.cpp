@@ -18,9 +18,6 @@ std::unique_ptr<Tile> TileFactory::create(const nlohmann::json &tile) {
     for (const auto &tg : tile["tags"]) {
       std::string tag = tg.get<std::string>();
       auto parsed = magic_enum::enum_cast<TypeOfTile>(tag);
-      if (!parsed.has_value()) {
-        parsed = magic_enum::enum_cast<TypeOfTile>(tag);
-      }
       if (parsed.has_value()) {
         t->addTag(parsed.value());
       }
