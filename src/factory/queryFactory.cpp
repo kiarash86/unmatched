@@ -9,7 +9,10 @@ std::unique_ptr<Query> QueryFactory::create(const nlohmann::json &query) {
 
   std::string name = query.value("name", "");
   if (name == "countFighter") {
-    qry = std::make_unique<CountFighter>(query.value("type", "Fighter"));
+    std::string typeStr = query.value("type", "fighter");
+    auto fighterType = magic_enum::enum_cast<TypeOfFighter>(typeStr).value_or(TypeOfFighter::fighter);
+    bool useEnemy = query.value("who", "self") == "enemy";
+    qry = std::make_unique<CountFighter>(fighterType, useEnemy);
   } else if (name == "cardBoost") {
     bool useEnemy = query.value("who", "self") == "enemy";
     qry = std::make_unique<CardBoost>(useEnemy);
@@ -19,7 +22,8 @@ std::unique_ptr<Query> QueryFactory::create(const nlohmann::json &query) {
   }
 
   if (!qry) {
-    return nullptr; 
+    return nullptr;
+  }
 
   if (query.contains("conditions")) {
     for (auto &&cnd : query["conditions"]) {
