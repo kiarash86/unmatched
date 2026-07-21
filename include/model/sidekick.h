@@ -6,5 +6,5 @@ public:
   Sidekick();
   ~Sidekick() override = default;
 
-  TypeOfFighter getFighterType() const override { return TypeOfFighter::Sidekick; }
+  TypeOfFighter getFighterType() const override { return TypeOfFighter::sidekick; }
 };
