@@ -1,3 +1,5 @@
+#pragma once
+#include "raylib.h"
 #include "controller/AudioManager.h"
 #include "controller/FontManager.h"
 #include "controller/SceneManager.h"
@@ -17,7 +19,7 @@ public:
   ~app();
 };
 
-app::app() {
+inline app::app() {
 SetConfigFlags(
     FLAG_WINDOW_RESIZABLE |
     FLAG_WINDOW_UNDECORATED);  InitWindow(1980, 1080, "UNMATCHED");
@@ -36,7 +38,7 @@ SetWindowSize(
   sceneManager->changeScene(ScenesType::mainScene);
 }
 
-app::~app() {
+inline app::~app() {
   sceneManager.reset();
   audioManager.reset();
   fontManager.reset();
@@ -45,7 +47,7 @@ app::~app() {
   CloseWindow();
 }
 
-void app::run() {
+inline void app::run() {
   while (!WindowShouldClose()) {
     sceneManager->update();
     audioManager->update();
