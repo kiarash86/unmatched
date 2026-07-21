@@ -1,6 +1,7 @@
 #pragma once
 #include "effect.h"
 #include "model/fighter.h"
+#include "model/hero.h"
 #include "model/card.h"
 #include "model/map.h"
 #include "model/typeOfFighter.h"
@@ -17,6 +18,14 @@ private:
   std::vector<Fighter *> resolveTargets(gameData &gameData) const {
     if (toWho == "enemy") return {gameData.enemy};
     if (toWho == "target") return {gameData.target};
+    if (toWho == "hero") {
+      // Owning hero of whoever played the card (e.g. a sidekick healing its hero),
+      // not gameData.self itself. Mirrors DrawEffect's owner-hero lookup.
+      Fighter *player = gameData.self;
+      Hero *hero = gameData.getOwnerHero ? gameData.getOwnerHero(player)
+                                          : dynamic_cast<Hero *>(player);
+      return {hero};
+    }
     if (toWho == "all") {
      
       std::vector<Fighter *> team;
