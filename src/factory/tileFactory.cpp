@@ -1,12 +1,14 @@
 #include "factory/tileFactory.h"
 #include "libraries/magic_enum.hpp"
+#include "utility/exceptions.h"
 #include <cctype>
 #include <string>
 
 
 std::unique_ptr<Tile> TileFactory::create(const nlohmann::json &tile) {
+  try {
   auto t = std::make_unique<Tile>();
-  t->setId(tile["id"]);
+  t->setId(json_util::requireInt(tile, "id", "Tile"));
 
   if (tile.contains("neighbors")) {
     for (const auto &neigh : tile["neighbors"]) {
@@ -39,4 +41,10 @@ std::unique_ptr<Tile> TileFactory::create(const nlohmann::json &tile) {
   }
 
   return t;
+  } catch (const AppException &e) {
+    throw FactoryException(std::string("Failed to build Tile: ") + e.what());
+  } catch (const nlohmann::json::exception &e) {
+    throw FactoryException(std::string("Failed to build Tile: malformed data (") +
+                            e.what() + ")");
+  }
 }
