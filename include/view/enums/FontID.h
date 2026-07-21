@@ -4,5 +4,6 @@ enum class FontID {
   CinzelSemiBold,
   CormorantGaramondMedium,
   CormorantGaramondRegular,
-  awesome
+  awesome, 
+  t
 };
