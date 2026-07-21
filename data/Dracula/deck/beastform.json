@@ -1,22 +1,22 @@
 {
     "name": "beastform",
-        "type": "attack", 
+    "type": "attack",
     "performer": "dracula",
     "img": "../../../../assets/images/dracula/beastform.png",
-    "eventType":"during_combat" , 
-    "attack" : 6 , 
-    "boost" : 4,
-    "effects" :
-    [
-          {
-            "type":"add",
-            "toWhat":"attack" , 
+    "eventType": "during_combat",
+    "attack": 6,
+    "boost": 4,
+    "effects": [
+        {
+            "type": "add",
+            "toWhat": "attack",
             "howMuch": "queries",
             "queries": [
-                { "name": "countRemovedCards" }
+                {
+                    "name": "countRemovedCards"
+                }
             ]
         }
-
-        
-    ]
+    ],
+    "quantity": 2
 }

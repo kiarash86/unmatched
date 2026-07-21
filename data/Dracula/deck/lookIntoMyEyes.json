@@ -1,21 +1,23 @@
 {
-    "name":"look_into_my_eyes",
-            "type": "def", 
+    "name": "look_into_my_eyes",
+    "type": "def",
     "performer": "dracula",
     "img": "../../../../assets/images/dracula/look_into_my_eyes.png",
-    "boost":2 ,
+    "boost": 2,
     "def": 1,
     "eventType": "during_combat",
-    "effects":[
+    "effects": [
         {
-            "type":"modify",
-            "toWhat":"value" , 
-
+            "type": "modify",
+            "toWhat": "value",
             "howMuch": "queries",
             "queries": [
-                { "name": "cardBoost", "who": "enemy" }
+                {
+                    "name": "cardBoost",
+                    "who": "enemy"
+                }
             ]
         }
-    ]
-
+    ],
+    "quantity": 2
 }

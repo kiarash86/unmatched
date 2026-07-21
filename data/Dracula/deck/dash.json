@@ -1,23 +1,20 @@
 {
-    "name" : "dash",
-        "type": "multipurpose", 
+    "name": "dash",
+    "type": "multipurpose",
     "performer": "fighter",
     "img": "../../../../assets/images/dracula/dash.png",
-    "boost": 1 ,
-    "eventType":"after_combat",  
-    "attack/def": 3 , 
-
+    "boost": 1,
+    "eventType": "after_combat",
+    "attack/def": 3,
     "effects": [
-    
         {
             "type": "move",
-            "howMany": 1 ,
-            "whichOne":"both",
-            "distance" :3 ,
+            "howMany": 1,
+            "whichOne": "both",
+            "distance": 3,
             "condition": "none",
             "toWhere": "none"
-
         }
-    ]
-
+    ],
+    "quantity": 3
 }

@@ -1,32 +1,28 @@
 {
-    "name": "administer_aid", 
+    "name": "administer_aid",
     "img": "../../../../assets/images/sherlock/administer_aid.png",
-    "boost" : 2,
-    "performer":"watson", 
+    "boost": 2,
+    "performer": "watson",
     "type": "event",
     "effects": [
-                {
-            "type" :"add",
+        {
+            "type": "add",
             "toWhat": "health",
-            "howMuch": 1 , 
-            "who":"hero"
-
+            "howMuch": 1,
+            "who": "hero"
         },
         {
             "type": "move",
-            "howMany": 1 ,
-            "whichOne":"sidekick",
+            "howMany": 1,
+            "whichOne": "sidekick",
             "condition": "none",
             "distance": -1,
             "toWhere": "nearHero"
-
         },
-         {
+        {
             "type": "draw_card",
-            "howMany": 1 
-
+            "howMany": 1
         }
-    ]
-
+    ],
+    "quantity": 2
 }
-

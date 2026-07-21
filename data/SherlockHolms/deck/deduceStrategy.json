@@ -1,20 +1,18 @@
 {
-    "name": "deduce_strategy", 
+    "name": "deduce_strategy",
     "img": "../../../../assets/images/sherlock/deduce_strategy.png",
-    "boost" : 1,
-    "performer":"sherlock", 
+    "boost": 1,
+    "performer": "sherlock",
     "type": "multipurpose",
-    "eventType":"during_combat",
-    "attack/def" : 3,
+    "eventType": "during_combat",
+    "attack/def": 3,
     "effects": [
-           {
-            "type":"change_value",
-            "onWho":"enemy",
-            "whichOne":"attack/def/or" , 
+        {
+            "type": "change_value",
+            "onWho": "enemy",
+            "whichOne": "attack/def/or",
             "changeWith": "boost"
-        
-        }      
-    ]
-
+        }
+    ],
+    "quantity": 3
 }
-

@@ -1,29 +1,37 @@
 {
-    "name":"ravening_seduction",
-                "type": "event", 
+    "name": "ravening_seduction",
+    "type": "event",
     "performer": "sisiters",
     "img": "../../../../assets/images/dracula/ravening_seduction.png",
     "boost": 2,
-    "effects":[
-       {
+    "effects": [
+        {
             "type": "move",
-            "howMany": "queries" ,
+            "howMany": "queries",
             "queries": [
-                { "name": "countFighter", "type": "sidekick" }
+                {
+                    "name": "countFighter",
+                    "type": "sidekick"
+                }
             ],
-            "whichOne":"all",
+            "whichOne": "all",
             "condition": "none",
             "distance": 2
-
         },
         {
-            "type":"attack",
-            "toWhat":"near_sidekick" , 
+            "type": "attack",
+            "toWhat": "near_sidekick",
             "howMuch": "queries",
             "queries": [
-                { "name": "countFighter", "type": "sidekick", "conditions": ["same_scope_with_enemy"] }
+                {
+                    "name": "countFighter",
+                    "type": "sidekick",
+                    "conditions": [
+                        "same_scope_with_enemy"
+                    ]
+                }
             ]
         }
-    ]
-
+    ],
+    "quantity": 3
 }

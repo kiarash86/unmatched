@@ -1,23 +1,22 @@
 {
-    "name": "eliminate_the_impossible", 
+    "name": "eliminate_the_impossible",
     "img": "../../../../assets/images/sherlock/eliminate_the_impossible.png",
-    "boost" : 2,
-    "performer":"sherlock", 
+    "boost": 2,
+    "performer": "sherlock",
     "type": "event",
     "effects": [
-           {
-            "type" : "seeHand",
+        {
+            "type": "seeHand",
             "whichcards": "all",
             "who": "enemy",
             "condition": "none"
-        } 
-        ,
+        },
         {
-                     "type" : "remove_card",
+            "type": "remove_card",
             "from": "enemy",
-            "howMany": 1
-            , "how": "user_choosen"
+            "howMany": 1,
+            "how": "user_choosen"
         }
-    ]
-
+    ],
+    "quantity": 2
 }

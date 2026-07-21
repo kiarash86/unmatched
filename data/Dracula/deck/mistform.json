@@ -1,21 +1,19 @@
 {
-    "name":"mistform" ,
-        "type": "event", 
+    "name": "mistform",
+    "type": "event",
     "performer": "dracula",
-    
     "img": "../../../../assets/images/dracula/mistform.png",
-    "boost":2 , 
-    "effects":[
-{
-    "type" :"add" ,
-    "toWhat": "actions",
-    "howMuch":1
-},
-{
-
-    "type":"choose_place",
-    "who" : "self"
-}   
-    ]
-    
+    "boost": 2,
+    "effects": [
+        {
+            "type": "add",
+            "toWhat": "actions",
+            "howMuch": 1
+        },
+        {
+            "type": "choose_place",
+            "who": "self"
+        }
+    ],
+    "quantity": 2
 }

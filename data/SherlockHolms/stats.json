@@ -3,6 +3,8 @@
     "img": "../../../../assets/images/sherlock/sherlock_holms.webp",
     "health" : 16 , 
     "movement": 2, 
-    "attackType": "melee"
+    "attackType": "melee",
+    "sidekickList": [
+        "watson"
+    ]
 }
-//TODO :ADD LIST OF SIDEKICKS

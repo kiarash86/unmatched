@@ -15,9 +15,12 @@
                 {
                     "name": "countFighter",
                     "type": "sidekick",
-                    "conditions": ["same_scope_with_enemy"]
+                    "conditions": [
+                        "same_scope_with_enemy"
+                    ]
                 }
             ]
         }
-    ]
+    ],
+    "quantity": 2
 }

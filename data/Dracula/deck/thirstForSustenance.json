@@ -1,22 +1,19 @@
 {
-    "name" : "thirst_for_sustenance",
-                "type": "attack", 
+    "name": "thirst_for_sustenance",
+    "type": "attack",
     "performer": "sisiters",
     "img": "../../../../assets/images/dracula/thirst_for_sustenance.png",
-    "boost": 3 ,
-    "eventType":"after_combat",  
-    "attack": 3 , 
-
+    "boost": 3,
+    "eventType": "after_combat",
+    "attack": 3,
     "effects": [
-    
         {
             "type": "move",
-            "howMany": 1 ,
-            "whichOne":"hero",
-            "distance" :-1 ,
+            "howMany": 1,
+            "whichOne": "hero",
+            "distance": -1,
             "toWhere": "near_enemy_fighters"
-
         }
-    ]
-
+    ],
+    "quantity": 3
 }

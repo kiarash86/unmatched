@@ -1,21 +1,19 @@
 {
-    "name": "the_game_is_afoot", 
+    "name": "the_game_is_afoot",
     "img": "../../../../assets/images/sherlock/the_game_is_afoot.png",
-    "boost" : 2,
-    "performer":"sherlock", 
+    "boost": 2,
+    "performer": "sherlock",
     "type": "attack",
-    "eventType":"after_combat",
-    "attack" : 5,
+    "eventType": "after_combat",
+    "attack": 5,
     "effects": [
-           {
+        {
             "type": "move",
-            "howMany": 1 ,
-            "whichOne":"hero",
+            "howMany": 1,
+            "whichOne": "hero",
             "condition": "none",
             "distance": 3
-
         }
-    ]
-
+    ],
+    "quantity": 2
 }
-

@@ -1,27 +1,39 @@
 {
-    "name":"prey_upon",
-            "type": "event", 
+    "name": "prey_upon",
+    "type": "event",
     "performer": "dracula",
     "img": "../../../../assets/images/dracula/prey_upon.png",
     "boost": 4,
-    "effects":[
+    "effects": [
         {
-            "type":"attack",
+            "type": "attack",
             "toWhat": "near_Hero",
-            "howMuch":1,
+            "howMuch": 1,
             "howMany": "queries",
             "queries": [
-                { "name": "countFighter", "type": "fighter", "conditions": ["near_hero"] }
+                {
+                    "name": "countFighter",
+                    "type": "fighter",
+                    "conditions": [
+                        "near_hero"
+                    ]
+                }
             ]
-       },
+        },
         {
-            "type":"add",
-            "toWhat":"health" , 
+            "type": "add",
+            "toWhat": "health",
             "howMuch": "queries",
             "queries": [
-                { "name": "countFighter", "type": "fighter", "conditions": ["near_hero"] }
+                {
+                    "name": "countFighter",
+                    "type": "fighter",
+                    "conditions": [
+                        "near_hero"
+                    ]
+                }
             ]
         }
-    ]
-
+    ],
+    "quantity": 2
 }
