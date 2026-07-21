@@ -13,14 +13,31 @@ private:
 
   const std::string texturePath = "assets/images/"; // path of textures
 
+  Texture2D makePlaceholder() // if couldnt load imgs we will use this instead of ruining scene
+  {
+    Image img = GenImageColor(64, 64, MAGENTA);
+    Texture2D tex = LoadTextureFromImage(img);
+    UnloadImage(img);
+    return tex;
+  }
+
 public:
   Texture2D &getTexture(TextureID texture) // get texture
   {
-    return textures.at(texture); // return texture
+    auto it = textures.find(texture);
+    if (it == textures.end()) // checking img is loaded or no, if not placeholder
+    {
+      it = textures.emplace(texture, makePlaceholder()).first;
+    }
+    return it->second;
   }
 
   void loadAllTextures() // loading all images
   {
+    if (!std::filesystem::exists(texturePath)) {
+      return; // nothing in path? then use placeholder
+    }
+
     for (auto &entry : std::filesystem::recursive_directory_iterator(
              texturePath)) // checking every folder in images
     {
