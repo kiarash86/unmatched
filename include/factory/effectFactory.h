@@ -1,16 +1,23 @@
+#pragma once
 #include <memory>
 #include <nlohmann/json.hpp>
-#include "../utility/file.h"
-#include "cardFactory.h"
+#include "utility/file.h"
 #include "engine/effects/effect.h"
-#include"engine/effects/modifierEffect.h"
+#include "engine/effects/modifierEffect.h"
+#include "engine/effects/dmgEffect.h"
+#include "engine/effects/drawEffect.h"
+#include "engine/effects/moveEffect.h"
+#include "engine/effects/removeCardEffect.h"
+#include "engine/effects/removeEffectEffect.h"
+#include "engine/effects/seeHandEffect.h"
+#include "engine/effects/positionExchangeEffect.h"
+#include "engine/effects/addEffect.h"
+#include "engine/effects/defEffect.h"
+#include "engine/effects/changeValueEffect.h"
+#include "engine/effects/choosePlaceEffect.h"
 #include "factory/conditionFactory.h"
-class EffectFactory
-{
-private:
 
+class EffectFactory {
 public:
-
-static std::unique_ptr<Effect> create(const nlohmann::json & effect);
-
+  static std::unique_ptr<Effect> create(const nlohmann::json &effect);
 };
