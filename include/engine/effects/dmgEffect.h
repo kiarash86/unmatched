@@ -17,11 +17,7 @@ public:
     if (!conditionsMet(gameData)) return;
     if (!gameData.target) return;
 
-    int finalValue = value;
-    if (gameData.cardPlayed) {
-      finalValue += gameData.cardPlayed->getValue();
-    }
-    finalValue += sumQueries(gameData);
+    int finalValue = value + sumQueries(gameData);
 
     gameData.target->damage(finalValue);
   }
