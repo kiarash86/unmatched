@@ -1,4 +1,5 @@
 #include "factory/sidekickFactory.h"
+#include "utility/exceptions.h"
 
 namespace {
 void setStats(const nlohmann::json &stats, Sidekick *sidekick) {
@@ -19,8 +20,15 @@ void setStats(const nlohmann::json &stats, Sidekick *sidekick) {
 } // namespace
 
 std::unique_ptr<Sidekick> SidekickFactory::create(const std::string &path) {
-  auto sidekick = std::make_unique<Sidekick>();
-  nlohmann::json jSidekick = load(path);
-  setStats(jSidekick, sidekick.get());
-  return sidekick;
+  try {
+    auto sidekick = std::make_unique<Sidekick>();
+    nlohmann::json jSidekick = load(path);
+    setStats(jSidekick, sidekick.get());
+    return sidekick;
+  } catch (const AppException &e) {
+    throw FactoryException("Failed to build Sidekick from '" + path + "': " + e.what());
+  } catch (const nlohmann::json::exception &e) {
+    throw FactoryException("Failed to build Sidekick from '" + path +
+                            "': malformed data (" + e.what() + ")");
+  }
 }

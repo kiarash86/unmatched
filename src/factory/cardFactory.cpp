@@ -1,5 +1,6 @@
 #include "factory/cardFactory.h"
 #include "libraries/magic_enum.hpp"
+#include "utility/exceptions.h"
 #include <cctype>
 
 namespace {
@@ -15,37 +16,46 @@ Enum enumConvert(const std::string &raw, Enum fallback) {
 }
 
 std::unique_ptr<Card> CardFactory::create(const nlohmann::json &card) {
-  auto crd = std::make_unique<Card>();
+  std::string name = card.value("name", "<unnamed>");
 
-  crd->setName(card.value("name", ""));
-  crd->setImgSource(card.value("img", ""));
-  crd->setBoost(card.value("boost", 0));
-  crd->setPerformer(enumConvert(card.value("performer", "fighter"), TypeOfPerformer::fighter));
- 
-  crd->setPerformerName(card.value("performer", ""));
-  crd->setTargetsAnyFighter(card.value("targetScope", "enemy") == "any");
-  crd->setCardType(enumConvert(card.value("type", "multipurpose"), TypeOfCard::multipurpose));
-  crd->setEventType(enumConvert(card.value("eventType", "none"), TypeOfEvent::none));
-  if (card.contains("attack") && card["attack"].is_number()) {
-    crd->setAttackStat(card["attack"].get<int>());
-  }
-  if (card.contains("def") && card["def"].is_number()) {
-    crd->setDefStat(card["def"].get<int>());
-  }
-  if (card.contains("attack/def") && card["attack/def"].is_number()) {
-    int both = card["attack/def"].get<int>();
-    crd->setAttackStat(both);
-    crd->setDefStat(both);
-  }
+  try {
+    auto crd = std::make_unique<Card>();
 
-  if (card.contains("effects")) {
-    for (const auto &eff : card["effects"]) {
-      auto built = EffectFactory::create(eff);
-      if (built) {
-        crd->addEffect(std::move(built));
+    crd->setName(name);
+    crd->setImgSource(card.value("img", ""));
+    crd->setBoost(card.value("boost", 0));
+    crd->setPerformer(enumConvert(card.value("performer", "fighter"), TypeOfPerformer::fighter));
+
+    crd->setPerformerName(card.value("performer", ""));
+    crd->setTargetsAnyFighter(card.value("targetScope", "enemy") == "any");
+    crd->setCardType(enumConvert(card.value("type", "multipurpose"), TypeOfCard::multipurpose));
+    crd->setEventType(enumConvert(card.value("eventType", "none"), TypeOfEvent::none));
+    if (card.contains("attack") && card["attack"].is_number()) {
+      crd->setAttackStat(card["attack"].get<int>());
+    }
+    if (card.contains("def") && card["def"].is_number()) {
+      crd->setDefStat(card["def"].get<int>());
+    }
+    if (card.contains("attack/def") && card["attack/def"].is_number()) {
+      int both = card["attack/def"].get<int>();
+      crd->setAttackStat(both);
+      crd->setDefStat(both);
+    }
+
+    if (card.contains("effects")) {
+      for (const auto &eff : card["effects"]) {
+        auto built = EffectFactory::create(eff);
+        if (built) {
+          crd->addEffect(std::move(built));
+        }
       }
     }
-  }
 
-  return crd;
+    return crd;
+  } catch (const AppException &e) {
+    throw FactoryException("Failed to build Card '" + name + "': " + e.what());
+  } catch (const nlohmann::json::exception &e) {
+    throw FactoryException("Failed to build Card '" + name + "': malformed data (" +
+                            e.what() + ")");
+  }
 }

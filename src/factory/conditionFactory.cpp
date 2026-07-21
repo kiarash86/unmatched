@@ -1,4 +1,5 @@
 #include "factory/conditionFactory.h"
+#include "utility/exceptions.h"
 
 std::unique_ptr<Condition> ConditionFactory::create(const std::string &condition, int distance) {
   if (condition == "isNearEnemyCondition" || condition == "near_enemy" ||

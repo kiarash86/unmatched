@@ -1,4 +1,5 @@
 #include "factory/heroFactory.h"
+#include "utility/exceptions.h"
 
 namespace {
 void setStats(const nlohmann::json &stats, Hero *hero) {
@@ -20,19 +21,26 @@ void setStats(const nlohmann::json &stats, Hero *hero) {
 std::unique_ptr<Hero> HeroFactory::create(const std::string &name) {
   std::string path = "data/" + name;
 
-  auto hero = std::make_unique<Hero>();
+  try {
+    auto hero = std::make_unique<Hero>();
 
-  nlohmann::json stats = load(path + "/stats.json");
-  setStats(stats, hero.get());
+    nlohmann::json stats = load(path + "/stats.json");
+    setStats(stats, hero.get());
 
-  if (stats.contains("sidekickList")) {
-    for (auto &&sidekickName : stats["sidekickList"]) {
-      std::string sidekickPath =
-          path + "/sidekicks/" + sidekickName.get<std::string>() + ".json";
-      hero->addSidekick(SidekickFactory::create(sidekickPath));
+    if (stats.contains("sidekickList")) {
+      for (auto &&sidekickName : stats["sidekickList"]) {
+        std::string sidekickPath =
+            path + "/sidekicks/" + sidekickName.get<std::string>() + ".json";
+        hero->addSidekick(SidekickFactory::create(sidekickPath));
+      }
     }
-  }
-  hero->setDeck(DeckFactory::create(path + "/deck"));
+    hero->setDeck(DeckFactory::create(path + "/deck"));
 
-  return hero;
+    return hero;
+  } catch (const AppException &e) {
+    throw FactoryException("Failed to build Hero '" + name + "': " + e.what());
+  } catch (const nlohmann::json::exception &e) {
+    throw FactoryException("Failed to build Hero '" + name + "': malformed data (" +
+                            e.what() + ")");
+  }
 }

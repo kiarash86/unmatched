@@ -1,13 +1,15 @@
 #include "factory/queryFactory.h"
 #include "libraries/magic_enum.hpp"
+#include "utility/exceptions.h"
 #include <cctype>
 
 
 
 std::unique_ptr<Query> QueryFactory::create(const nlohmann::json &query) {
-  std::unique_ptr<Query> qry;
-
   std::string name = query.value("name", "");
+
+  try {
+  std::unique_ptr<Query> qry;
   if (name == "countFighter") {
     std::string typeStr = query.value("type", "fighter");
     auto fighterType = magic_enum::enum_cast<TypeOfFighter>(typeStr).value_or(TypeOfFighter::fighter);
@@ -35,4 +37,10 @@ std::unique_ptr<Query> QueryFactory::create(const nlohmann::json &query) {
   }
 
   return qry;
+  } catch (const AppException &e) {
+    throw FactoryException("Failed to build Query '" + name + "': " + e.what());
+  } catch (const nlohmann::json::exception &e) {
+    throw FactoryException("Failed to build Query '" + name + "': malformed data (" +
+                            e.what() + ")");
+  }
 }

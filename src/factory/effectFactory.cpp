@@ -1,5 +1,6 @@
 #include "factory/effectFactory.h"
 #include "factory/queryFactory.h"
+#include "utility/exceptions.h"
 
 namespace {
 
@@ -12,9 +13,10 @@ int baseAmount(const nlohmann::json &effect, const char *k) {
 }
 
 std::unique_ptr<Effect> EffectFactory::create(const nlohmann::json &effect) {
-  std::unique_ptr<Effect> eff;
-
   std::string type = effect.value("type", effect.value("name", ""));
+
+  try {
+  std::unique_ptr<Effect> eff;
 
   if (type == "modify") {
     eff = std::make_unique<ModifierEffect>(baseAmount(effect, "howMuch"));
@@ -116,6 +118,12 @@ std::unique_ptr<Effect> EffectFactory::create(const nlohmann::json &effect) {
   }
 
   return eff;
+  } catch (const AppException &e) {
+    throw FactoryException("Failed to build Effect of type '" + type + "': " + e.what());
+  } catch (const nlohmann::json::exception &e) {
+    throw FactoryException("Failed to build Effect of type '" + type +
+                            "': malformed data (" + e.what() + ")");
+  }
 }
 // at first with else if making a effect then addng conditions and then queries
 // of course with factories they have
