@@ -1,25 +1,10 @@
 #pragma once
-#include "typeOfAttack.h"
-#include "ability.h"
-#include "sidekick.h"
-#include "deck.h"
-#include <memory>
-#include <vector>
-#include<string>
 #include "fighter.h"
-class Sidekick : public Fighter
-{
-private:
- 
- 
 
+class Sidekick : public Fighter {
 public:
-  
+  Sidekick();
+  ~Sidekick() override = default;
 
-
-    Sidekick();
-    ~Sidekick()= default;
+  TypeOfFighter getFighterType() const override { return TypeOfFighter::Sidekick; }
 };
-
-
-//TODO: DELETE THINGS THAT ARE ALREADY IN FIGHTER
