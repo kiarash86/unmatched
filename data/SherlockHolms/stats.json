@@ -1,5 +1,5 @@
 {
-    "name" : "sherlock_holms", 
+    "name" : "SherlockHolms", 
     "img": "../../../../assets/images/sherlock/sherlock_holms.webp",
     "health" : 16 , 
     "movement": 2, 
