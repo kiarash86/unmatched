@@ -18,8 +18,10 @@ std::unique_ptr<Effect> EffectFactory::create(const nlohmann::json &effect) {
   try {
   std::unique_ptr<Effect> eff;
 
-  if (type == "modify") {
-    eff = std::make_unique<ModifierEffect>(baseAmount(effect, "howMuch"));
+  if (type == "modify" || type == "def") {
+    // "modify" (was ModifierEffect) and "def" (was DefEffect) were identical:
+    // add howMuch to the current player's own played card.
+    eff = std::make_unique<ChangeValueEffect>(false, false, baseAmount(effect, "howMuch"));
   } else if (type == "attack" || type == "dmg" || type == "damage") {
     eff = std::make_unique<DmgEffect>(baseAmount(effect, "howMuch"));
   } else if (type == "draw_card" || type == "draw") {
@@ -76,8 +78,6 @@ std::unique_ptr<Effect> EffectFactory::create(const nlohmann::json &effect) {
     std::string toWhat = effect.value("toWhat", "");
     std::string toWho = effect.value("towho", effect.value("who", ""));
     eff = std::make_unique<AddEffect>(toWhat, toWho, baseAmount(effect, "howMuch"));
-  } else if (type == "def") {
-    eff = std::make_unique<DefEffect>(baseAmount(effect, "howMuch"));
   } else if (type == "change_value") {
     bool targetEnemy = effect.value("onWho", "") == "enemy";
     bool useBoost = effect.value("changeWith", "") == "boost";
