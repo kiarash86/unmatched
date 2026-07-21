@@ -12,7 +12,7 @@ std::unique_ptr<Deck> DeckFactory::create(const std::string &pathFolder) {
   }
 
   auto deck = std::make_unique<Deck>();
-  deck->setDraw(std::move(cards));
+  deck->setPileDraw(std::move(cards));
   deck->shuffle();
   return deck;
 }
