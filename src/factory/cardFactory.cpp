@@ -23,6 +23,7 @@ std::unique_ptr<Card> CardFactory::create(const nlohmann::json &card) {
   crd->setPerformer(enumConvert(card.value("performer", "fighter"), TypeOfPerformer::fighter));
  
   crd->setPerformerName(card.value("performer", ""));
+  crd->setTargetsAnyFighter(card.value("targetScope", "enemy") == "any");
   crd->setCardType(enumConvert(card.value("type", "multipurpose"), TypeOfCard::multipurpose));
   crd->setEventType(enumConvert(card.value("eventType", "none"), TypeOfEvent::none));
   if (card.contains("attack") && card["attack"].is_number()) {
