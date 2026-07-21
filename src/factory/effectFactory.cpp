@@ -22,14 +22,49 @@ std::unique_ptr<Effect> EffectFactory::create(const nlohmann::json &effect) {
     eff = std::make_unique<DmgEffect>(baseAmount(effect, "howMuch"));
   } else if (type == "draw_card" || type == "draw") {
     int amount = baseAmount(effect, "howMany");
-    eff = std::make_unique<DrawEffect>(amount > 0 ? amount : 1);
+    std::string toWho = effect.value("toWho", effect.value("who", "self"));
+    auto drawEff = std::make_unique<DrawEffect>(amount > 0 ? amount : 1, toWho);
+
+    if (effect.contains("else") && effect["else"].is_object()) {
+      const auto &elseObj = effect["else"];
+      int elseAmount = baseAmount(elseObj, "howMany");
+      std::string elseToWho = elseObj.value("toWho", elseObj.value("who", toWho));
+      drawEff->setElse(elseAmount > 0 ? elseAmount : 1, elseToWho);
+    }
+
+    eff = std::move(drawEff);
   } else if (type == "move") {
-    eff = std::make_unique<MoveEffect>();
+    int howMany = (effect.contains("howMany") && effect["howMany"].is_number())
+                      ? effect["howMany"].get<int>()
+                      : -1; // non-numeric (e.g. "queries") -> no fixed cap
+    std::string whichOne = effect.value("whichOne", "self");
+    int distance = (effect.contains("distance") && effect["distance"].is_number())
+                       ? effect["distance"].get<int>()
+                       : -1;
+    std::string toWhere = effect.value("toWhere", "none");
+    eff = std::make_unique<MoveEffect>(howMany, whichOne, distance, toWhere);
   } else if (type == "remove_card") {
     int amount = baseAmount(effect, "howMany");
-    eff = std::make_unique<RemoveCardEffect>(amount > 0 ? amount : 1);
+    if (amount == 0) amount = baseAmount(effect, "amount");
+    if (amount == 0) amount = 1; // default: remove one card
+
+    bool fromEnemy = effect.value("from", "self") == "enemy";
+    bool userChosen = effect.value("how", "random") == "user_choosen";
+
+    int bonusPerCard = 0;
+    if (effect.contains("bonusPerCard") && effect["bonusPerCard"].is_object()) {
+      bonusPerCard = effect["bonusPerCard"].value("amount", 0);
+    }
+
+    eff = std::make_unique<RemoveCardEffect>(amount, fromEnemy, userChosen, bonusPerCard);
   } else if (type == "remove_effect") {
-    eff = std::make_unique<RemoveEffectEffect>();
+    int howMany = effect.contains("howMany") && effect["howMany"].is_number()
+                      ? effect["howMany"].get<int>()
+                      : -1;
+    std::string whichOne = effect.value("whichOne", "all");
+    bool targetEnemy = effect.value("who", "enemy") == "enemy";
+    bool targetsAbility = effect.value("target", "card") == "ability";
+    eff = std::make_unique<RemoveEffectEffect>(howMany, whichOne, targetEnemy, targetsAbility);
   } else if (type == "see_hand" || type == "seeHand") {
 
     eff = std::make_unique<SeeHandEffect>();
@@ -47,6 +82,8 @@ std::unique_ptr<Effect> EffectFactory::create(const nlohmann::json &effect) {
     eff = std::make_unique<ChangeValueEffect>(targetEnemy, useBoost, baseAmount(effect, "changeWith"));
   } else if (type == "choose_place") {
     eff = std::make_unique<ChoosePlaceEffect>(effect.value("who", "self"));
+  } else if (type == "revive") {
+    eff = std::make_unique<ReviveEffect>(effect.value("whichOne", effect.value("who", "sidekick")));
   }
 
   if (!eff) {
