@@ -1,19 +1,41 @@
 #pragma once
 #include "effect.h"
-#include "model/ability.h"
+#include "model/fighter.h"
 #include "model/hero.h"
+#include "model/card.h"
+#include <string>
 
 class RemoveEffectEffect : public Effect {
 private:
   int howMany{-1};
+  std::string whichOne{"all"};
+  bool targetEnemy{true};
+  bool targetsAbility{false};
 
 public:
-  explicit RemoveEffectEffect(int howMany = -1) : howMany(howMany) {}
+  RemoveEffectEffect(int howMany = -1, std::string whichOne = "all",
+                      bool targetEnemy = true, bool targetsAbility = false)
+      : howMany(howMany), whichOne(std::move(whichOne)),
+        targetEnemy(targetEnemy), targetsAbility(targetsAbility) {}
   ~RemoveEffectEffect() override = default;
 
   void execute(gameData &gameData) override {
     if (!conditionsMet(gameData)) return;
-   
-    (void)howMany;
+
+    Fighter *who = targetEnemy ? gameData.enemy : gameData.self;
+    if (!who) return;
+
+    if (targetsAbility) {
+      auto *hero = dynamic_cast<Hero *>(who);
+      if (!hero || !gameData.disableAbility) return;
+      gameData.disableAbility(hero); // no-op for Sherlock/Watson, by design
+      return;
+    }
+
+    Card *targetCard = targetEnemy ? gameData.enemyCardPlayed : gameData.cardPlayed;
+    if (!targetCard) return;
+
+    int amount = (whichOne == "all" || howMany < 0) ? -1 : howMany;
+    targetCard->cancelEffects(amount);
   }
 };
