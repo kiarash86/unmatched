@@ -12,8 +12,8 @@ class FontManager // controll fonts
 private:
   const std::string pathFonts = "assets/fonts/"; // where we save fonts
   std::unordered_map<std::string, Font> fonts;   // map of fonts(string key)
-  std::unordered_set<std::string> isFallback; // fonts we should NOT unload
-                                              // (raylib's shared default font)
+  std::unordered_set<std::string> isFallback; // fonts we shouldnt unload
+                                             
 
   static constexpr int awesomeCodepoints[] = {
       0xf004, // heart
