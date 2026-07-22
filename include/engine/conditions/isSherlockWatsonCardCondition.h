@@ -5,8 +5,7 @@
 #include <cctype>
 #include <string>
 
-
-class IsSherlockWatsonCardCondition : public Condition {
+class IsSherlockWatsonCardCondition : public Condition { // ability of sherlock
 public:
   IsSherlockWatsonCardCondition() = default;
   ~IsSherlockWatsonCardCondition() override = default;
@@ -17,8 +16,11 @@ public:
       return false;
     }
     std::string name = gameData.cardPlayed->getPerformerName();
-    std::transform(name.begin(), name.end(), name.begin(),
-                    [](unsigned char c) { return (char)std::tolower(c); });
+
+    std::transform(name.begin(), name.end(), name.begin(), [](char c) {
+      return (char)std::tolower(c);
+    }); //  make it lowercase
+
     return name == "sherlock" || name == "watson";
   }
 };
