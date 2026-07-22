@@ -1,9 +1,8 @@
 #pragma once
 #include "effect.h"
+#include "model/deck.h"
 #include "model/fighter.h"
 #include "model/hero.h"
-#include "model/deck.h"
-
 
 class SeeHandEffect : public Effect {
 private:
@@ -13,14 +12,26 @@ public:
   SeeHandEffect() = default;
   ~SeeHandEffect() override = default;
 
-  void execute(gameData &gameData) override {
-    if (!conditionsMet(gameData)) return;
-    if (!gameData.enemy) return;
+  void executeImmediate(gameData &gameData) override {
+    if (!conditionsMet(gameData)) {
+      return;
+    }
+    if (!gameData.enemy) {
+      return;
+    }
 
-    auto *enemyHero = dynamic_cast<Hero *>(gameData.enemy);
-    if (!enemyHero || !enemyHero->getDeck()) return;
+    auto *enemyHero = gameData.getOwnerHero
+                          ? gameData.getOwnerHero(gameData.enemy)
+                          : dynamic_cast<Hero *>(gameData.enemy);
+    if (!enemyHero || !enemyHero->getDeck()) {
+      return;
+    }
 
     lastSeenHand = enemyHero->getDeck()->getHand();
+
+    if (gameData.onHandRevealed) {
+      gameData.onHandRevealed(enemyHero, lastSeenHand);
+    }
   }
 
   const std::vector<Card *> &getSeenHand() const { return lastSeenHand; }
