@@ -1,7 +1,7 @@
 #pragma once
-#include "typeOfAttack.h"
 #include "model/typeOfFighter.h"
 #include "tile.h"
+#include "typeOfAttack.h"
 #include <memory>
 #include <string>
 #include <vector>
@@ -9,18 +9,24 @@
 class Fighter {
 protected:
   std::string imgSource;
+
   std::string name;
+
   int health{};
+
   int maxHealth{};
+
   int movement{};
+
   TypeOfAttack typeOfAttack{};
+
   Vector2D position;
+
   int currentTileId{-1};
+
   int ownerPlayer{-1};
-  // Set when this fighter takes Empty-Deck fatigue damage; cleared at the
-  // start of its owning hero's next turn. Purely a status flag for other
-  // cards/abilities to query -- it has no built-in effect of its own.
-  bool fatigued{false};
+
+  bool fatigued{false}; //damaging after becomming tired
 
   bool canBeHealed() const;
 
