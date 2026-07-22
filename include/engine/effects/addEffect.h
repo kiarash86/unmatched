@@ -15,7 +15,7 @@ private:
   std::string toWho;
   int value{};
 
-  std::vector<Fighter *> resolveTargets(gameData &gameData) const {
+  std::vector<Fighter *> resolveTargets(gameData &gameData) const { // who is target
     if (toWho == "enemy") return {gameData.enemy};
     if (toWho == "target") return {gameData.target};
     if (toWho == "hero") {
@@ -25,7 +25,7 @@ private:
                                           : dynamic_cast<Hero *>(player);
       return {hero};
     }
-    if (toWho == "all") {
+    if (toWho == "all") { 
      
       std::vector<Fighter *> team;
       if (gameData.self && gameData.map) {
@@ -43,13 +43,23 @@ private:
   }
 
 public:
+//constructor
   AddEffect(std::string toWhat, std::string toWho, int value)
       : toWhat(std::move(toWhat)), toWho(std::move(toWho)), value(value) {}
-  ~AddEffect() override = default;
+//constructor
+  
+//destrcutor
+      ~AddEffect() override = default;
+//destrcutor
 
+  // obvious , who is target?
   bool needsTarget() const override { return toWho == "target"; }
+  // obvious , who is target?
 
-  void execute(gameData &gameData) override {
+
+
+  //do it immediatly(find targets and check cond... and queries ) then exccute it hear
+  void executeImmediate(gameData &gameData) override {
     if (!conditionsMet(gameData)) return;
 
     int finalValue = value + sumQueries(gameData);
