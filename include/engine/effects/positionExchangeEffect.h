@@ -3,7 +3,7 @@
 #include "model/fighter.h"
 #include "model/map.h"
 
-// Swaps gameData.self and gameData.target's tiles.
+// Swaps gameData.self and gameData.target
 class PositionExchangeEffect : public Effect {
 public:
   PositionExchangeEffect() = default;
@@ -11,10 +11,13 @@ public:
 
   bool needsTarget() const override { return true; }
 
-  void execute(gameData &gameData) override {
-    if (!conditionsMet(gameData)) return;
-    if (!gameData.self || !gameData.target || !gameData.map) return;
-
+  void executeImmediate(gameData &gameData) override {
+    if (!conditionsMet(gameData)) {
+      return;
+    }
+    if (!gameData.self || !gameData.target || !gameData.map) {
+      return;
+    }
     gameData.map->exchangePosition(gameData.self, gameData.target);
   }
 };
