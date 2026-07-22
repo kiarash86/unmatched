@@ -1,0 +1,15 @@
+{
+    "name": "elementary",
+    "img": "../../../../assets/images/sherlock/elementary.png",
+    "boost": 3,
+    "performer": "fighter",
+    "type": "def",
+    "eventType": "during_combat",
+    "def": 3,
+    "effects": [
+        {
+            "type": "predict"
+        }
+    ],
+    "quantity": 2
+}

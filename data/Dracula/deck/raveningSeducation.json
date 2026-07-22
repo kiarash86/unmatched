@@ -11,7 +11,8 @@
             "howMany": 1,
             "whichOne": "target",
             "condition": "none",
-            "distance": 2
+            "distance": 2,
+            "allowStay": true
         },
         {
             "type": "attack",

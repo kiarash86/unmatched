@@ -13,7 +13,8 @@
             "whichOne": "self",
             "distance": 3,
             "condition": "none",
-            "toWhere": "none"
+            "toWhere": "none",
+            "allowStay": true
         }
     ],
     "quantity": 3
