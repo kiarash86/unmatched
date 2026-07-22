@@ -1,117 +1,259 @@
-#pragma once                   // once per prg
-#include "raylib.h"            // Rectangle/Vector2/Color/Font/Texture2D
-#include "view/scenes/Scene.h" // father
-#include <string>              // std::string
-#include <unordered_map>       // tile id -> view position
-#include <vector>              // containers
-class GameScene : public Scene // in-match board (hero/map/actions/hand)
+#pragma once
+#include "raylib.h"
+#include "view/scenes/Scene.h"
+#include "controller/GameManager.h"
+#include "engine/observer/observer.h"
+#include <deque>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
+class GameScene : public Scene, public IGameObserver
 {
 private:
-  // NOTE: view/ui/Button.h's RayButton (rect/hoverColor/label/isHovered)
-  // doesn't carry an icon or a second line of text, and MainScene doesn't
-  // actually use it either -- it defines its own nested Button struct.
-  // Following that same real precedent here instead of RayButton.
-  struct ActionButton // one row in the actions panel, also mouse/key selectable
+
+  struct ActionButton
   {
-    Rectangle rec;     // hit-box + draw position
-    Texture2D icon;    // action icon
-    std::string title; // Move / Attack / Defend / End Turn
-    std::string desc;  // short description line
+    Rectangle rec;
+    Texture2D icon;
+    std::string title;
+    std::string desc;
   };
-  struct BoardTileView // one tile as drawn on screen (view-only, no game logic)
+  struct BoardTileView
   {
-    int id;       // must match Tile::getId() from the real model
-    Vector2 pos;  // pixel position on the board panel
-    float radius; // draw radius
-    Color color;  // zone color
-    int badge;    // number shown on the tile, 0 = none
+    int id;
+    Vector2 rawPos;
+    Vector2 pos;
+    float radius;
+    Color color;
+    int badge;
+    bool isPortal{false};
+    Fighter *occupant{nullptr};
+
+    Color color2{};
+    bool hasSecondZone{false};
+    Color color3{};
+    bool hasThirdZone{false};
   };
-  struct HandCardView // one card drawn in the hand row
+  struct HeroSummaryView
+
   {
-    std::string name;     // card title
-    std::string category; // move/attack/defend label
-    int cost;             // number shown top-left of the card
+    std::string name;
+    int health{0};
+    int maxHealth{0};
+    int ownerPlayer{0};
+    bool isCurrentTurn{false};
+    std::vector<std::string> sidekickLines;
   };
-  struct AbilityRow // one row in the hero panel's ability list
+  struct HandCardView
   {
-    std::string title; // ability name
-    std::string desc;  // ability description
+    Card *card;
+    std::string name;
+    std::string category;
+    int boost{0};
+    bool hasAttackDef{false};
+    int attackDefValue{0};
+    std::string timing;
+    Texture2D *art{nullptr};
   };
-  // FONTS
-  Font titleFont; // hero name / panel titles
-  Font labelFont; // ability/action titles
-  Font smallFont; // descriptions, muted text
-  // FONTS
-  // TEXTURES
-  Texture2D iconSword;  // attack icon
-  Texture2D iconShield; // defend icon
-  Texture2D iconBook;   // ability icon
-  Texture2D iconCards;  // deck icon
-  Texture2D map;        // map
-  // TEXTURES
-  // COLORS
-  Color bgDark;         // base background
-  Color panelBg;        // panel fill
-  Color gold;           // accents / borders
-  Color textLight;      // primary text
-  Color textMuted;      // secondary text
-  Color zoneGarden;     // outdoor tile color
-  Color zoneRoom;       // brown room tile color
-  Color zoneHallway;    // green hallway tile color
-  Color zonePurpleRoom; // purple room tile color
-  // COLORS
-  // BOARD DATA (view-only, see BuildMockBoard/TODO below)
-  std::vector<BoardTileView> tiles;       // tiles to draw
-  std::vector<std::pair<int, int>> edges; // connections between tile ids
-  std::unordered_map<int, int> idToIndex; // tile id -> index in `tiles`
-  // BOARD DATA
-  // GAME-FACING DATA (mock for now, replace with real Hero/Card/gameData)
-  std::vector<HandCardView> hand;    // cards currently in hand
-  std::vector<AbilityRow> abilities; // hero abilities
-  std::string heroName;              // hero display name
-  std::string mapName;               // map display name
-  int heroHealth{0};                 // hero HP
-  int heroShield{0};                 // hero defense value
-  int cardsInDeck{0};                // remaining deck count
-  int tokens{0};                     // generic token/resource count
-  // GAME-FACING DATA
-  std::vector<ActionButton> actionButtons; // Move/Attack/Defend/End Turn
-  std::vector<Rectangle> handRects;        // hit-box per hand card
-  int selectedAction{-1};                  // which action button is hovered
-  int selectedCard{-1};                    // which hand card is hovered
-  // LAYOUT
-  float sw; // screen width
-  float sh; // screen height
-  // LAYOUT
-  // POSITIONS
-  Rectangle heroPanelRect;    // top-left hero panel
-  Rectangle actionsPanelRect; // top-right actions panel
-  Rectangle deckRect;         // deck widget under actions panel
-  Rectangle boardRect;        // center board frame
-  Rectangle endTurnRect;      // bottom-right end turn button
-  // POSITIONS
-  // FUNCS
-  void BuildMockBoard(); // TODO: replace with a real Map/Tile -> tilePositions
-                         // loader
-  void UpdateLayout();   // recompute panel/board rects from sw/sh
-  void drawBackground(); // base gradient fill
-  void drawHeroPanel();  // portrait, hp/shield, abilities
-  void drawActionsPanel(); // Move/Attack/Defend/End Turn rows
-  void drawDeck();         // deck widget
-  void drawBoard();        // tiles + edges
-  void drawHand();         // hand row of cards
-  void drawBottomBar();    // deck/token counters, title strip, end turn button
-  void handleMouse();      // hover/click on action buttons + hand cards
-  void handleKeyboard();   // left/right + enter navigation for hand/actions
-  void activateAction(int index); // Move/Attack/Defend/End Turn was chosen
-  // FUNCS
+  struct AbilityRow
+  {
+    std::string title;
+    std::string desc;
+  };
+
+  Font titleFont;
+  Font labelFont;
+  Font smallFont;
+
+  Texture2D iconSword;
+  Texture2D iconShield;
+  Texture2D iconBook;
+  Texture2D iconCards;
+  Texture2D map;
+
+  Color bgDark;
+  Color panelBg;
+  Color gold;
+  Color textLight;
+  Color textMuted;
+
+  std::unordered_map<std::string, Color> zoneColors;
+  Color unknownZoneColor;
+  Color portalRingColor;
+  std::unique_ptr<GameManager> gameManager;
+
+  std::vector<BoardTileView> tiles;
+  std::vector<std::pair<int, int>> edges;
+  std::unordered_map<int, int> idToIndex;
+
+  std::vector<HandCardView> hand;
+  std::vector<AbilityRow> abilities;
+  std::string heroName;
+  std::string mapName;
+  int heroHealth{0};
+  int heroShield{0};
+  int cardsInDeck{0};
+  int tokens{0};
+  std::deque<std::string> eventLog;
+  std::vector<HeroSummaryView> heroSummaries;
+  std::vector<ActionButton> actionButtons;
+  std::vector<Rectangle> handRects;
+  int selectedAction{-1};
+  int selectedCard{-1};
+
+  bool moveModeActive{false};
+  std::vector<int> legalMoveTiles;
+  int hoveredMoveTile{-1};
+
+  bool targetModeActive{false};
+  Card *pendingTargetCard{nullptr};
+  std::vector<Fighter *> legalTargets;
+  int hoveredTargetTile{-1};
+
+  int hoveredGenericTile{-1};
+
+  int hoveredFighterChoiceTile{-1};
+  Rectangle fighterChoiceDeclineRect{};
+
+  bool pendingTargetIsAttack{false};
+
+  bool attackModeActive{false};
+
+  std::vector<int> attackRangeTiles;
+  std::vector<Fighter *> attackRangeTargets;
+
+  bool schemeModeActive{false};
+
+  Fighter *activeFighter{nullptr};
+
+  bool combatDefensePending{false};
+  std::vector<Card *> defenseCardOptions;
+  std::vector<Rectangle> defenseOptionRects;
+  Rectangle noDefenseRect;
+  Rectangle defensePanelRect;
+
+  bool defenseHandRevealed{false};
+  Rectangle revealHandRect;
+
+  bool predictionPromptActive{false};
+  Card *pendingPredictionCard{nullptr};
+  std::vector<int> predictionValues;
+  std::vector<Rectangle> predictionValueRects;
+  Rectangle predictionCancelRect;
+  Rectangle predictionPanelRect;
+
+  std::vector<Rectangle> cardChoiceOptionRects;
+  Rectangle cardChoiceDeclineRect;
+  Rectangle cardChoicePanelRect;
+
+  bool handRevealActive{false};
+  std::string handRevealOwnerName;
+  std::vector<Card *> handRevealCards;
+  std::vector<Rectangle> handRevealCardRects;
+  Rectangle handRevealCloseRect;
+  Rectangle handRevealPanelRect;
+
+  float sw;
+  float sh;
+
+  Rectangle heroPanelRect;
+  Rectangle opponentsPanelRect;
+  Rectangle actionsPanelRect;
+  Rectangle deckRect;
+  Rectangle eventLogRect;
+  Rectangle boardRect;
+
+  static constexpr float kMapImageWidth = 1337.0f;
+  static constexpr float kMapImageHeight = 866.0f;
+  static constexpr float kBaseTileRadius = 34.0f;
+  Rectangle mapDestRect{};
+  Rectangle endTurnRect;
+  Rectangle finishMovingRect;
+  Rectangle stayPutRect;
+
+  Rectangle resultMenuRect;
+
+  bool matchOver{false};
+  std::string winnerName;
+
+  void BuildBoardLayout();
+  void refreshFromGameManager();
+  void UpdateLayout();
+  void drawBackground();
+  void drawHeroPanel();
+  void drawOpponentsPanel();
+  void drawActionsPanel();
+  void drawDeck();
+  void drawBoard();
+  void drawHand();
+  void drawBottomBar();
+  void drawEventLog();
+  void drawResultScreen();
+  void handleMouse();
+  void handleKeyboard();
+  void activateAction(int index);
+  void playHandCard(int index);
+  void tryBoostMovement(int index);
+  void beginMovePicker();
+  void cancelMovePicker();
+  void tryMoveToTile(int tileId);
+  void beginTargetPicker(Card *card);
+  void cancelTargetPicker();
+  void tryTargetFighter(Fighter *fighter);
+  void handleGenericTilePick();
+  void handleGenericFighterPick();
+
+  Fighter *getActiveFighter() const;
+  void trySelectActiveFighter(Fighter *fighter);
+
+  Hero *getDefaultEnemyHero() const;
+
+  void beginAttackPicker(Card *card);
+
+  void updateAttackRangePreview();
+  void clearAttackRangePreview();
+
+  void beginDefensePrompt();
+  void resolveDefense(Card *defenseCard, int predictedValue = -1);
+  void drawDefensePrompt();
+  void handleDefenseMouse();
+
+  bool isPredictionPromptActive() const { return predictionPromptActive; }
+  void beginPredictionPrompt(Card *defenseCard);
+  void resolvePrediction(int guessedValue);
+  void drawPredictionPrompt();
+  void handlePredictionMouse();
+
+  bool isCardChoicePromptActive() const;
+  void drawCardChoicePrompt();
+  void handleCardChoiceMouse();
+
+  bool isDiscardPromptActive() const;
+  void drawDiscardPrompt();
+  void handleDiscardMouse();
+
+  bool isHandRevealPromptActive() const { return handRevealActive; }
+  void drawHandRevealPrompt();
+  void handleHandRevealMouse();
+
 public:
-  // FUNCS
-  GameScene(AudioManager *, SceneManager *, TextureManager *,
-            FontManager *); // constructor
-  void Update() override;   // update
-  void Draw() override;     // drawing
-  void onEnter() override;  // entering scene
-  ~GameScene() override;    // no texture/font ownership (managers own them)
-  // FUNCS
+  GameScene(AudioManager *, SceneManager *, TextureManager *, FontManager *);
+  void Update() override;
+  void Draw() override;
+  void onEnter() override;
+  ~GameScene() override;
+
+  void onGameStarted() override;
+  void onTurnEnded(int newCurrentPlayer) override;
+  void onCardPlayed(Hero *player, Card *card) override;
+  void onCardDiscarded(Hero *player, Card *card) override;
+  void onFighterMoved(Fighter *fighter, int fromTileId, int toTileId) override;
+  void onFighterDamaged(Fighter *fighter, int amount) override;
+  void onManeuverPerformed(Hero *hero, bool deckWasEmpty) override;
+  void onFighterRemoved(Fighter *fighter) override;
+  void onCombatResolved(Fighter *attacker, Fighter *defender, Fighter *winner,
+                        Fighter *loser, int damage) override;
+  void onGameOver(Hero *winner) override;
+  void onHandSeen(Hero *target, const std::vector<Card *> &hand) override;
 };
