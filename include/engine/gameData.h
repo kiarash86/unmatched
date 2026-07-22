@@ -35,4 +35,6 @@ struct gameData {
   std::function<void(int)> grantAction;
 
   std::function<Hero *(Fighter *)> getOwnerHero;
+
+  std::function<void(Hero *, const std::vector<Card *> &)> onHandRevealed;
 };
