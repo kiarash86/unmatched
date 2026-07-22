@@ -12,8 +12,8 @@ void Deck::setPileDraw(std::vector<std::unique_ptr<Card>> cards) {
 
 void Deck::shuffle() {
   static std::random_device rd;
-  static std::mt19937 rng(rd());
-  std::shuffle(drawPile.begin(), drawPile.end(), rng);
+  static std::mt19937 r(rd());
+  std::shuffle(drawPile.begin(), drawPile.end(), r);
 }
 
 void Deck::draw(int amount) {
