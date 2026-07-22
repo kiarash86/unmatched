@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 
 class Hero;
 class Fighter;
@@ -9,11 +10,17 @@ public:
   virtual ~IGameObserver() = default;
 
   virtual void onGameStarted() {}
+
+  virtual void onHandSeen(Hero *target, const std::vector<Card *> &hand) {}
+
   virtual void onTurnEnded(int newCurrentPlayer) {}
+
   virtual void onCardPlayed(Hero *player, Card *card) {}
   
   virtual void onCardDiscarded(Hero *player, Card *card) {}
+
   virtual void onFighterMoved(Fighter *fighter, int fromTileId, int toTileId) {}
+  
   virtual void onFighterDamaged(Fighter *fighter, int amount) {}
   
   virtual void onCombatResolved(Fighter *attacker, Fighter *defender,
