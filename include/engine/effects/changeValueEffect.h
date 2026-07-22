@@ -14,7 +14,7 @@ public:
       : targetEnemy(targetEnemy), useBoost(useBoost), flatAmount(flatAmount) {}
   ~ChangeValueEffect() override = default;
 
-  void execute(gameData &gameData) override {
+  void executeImmediate(gameData &gameData) override {
     if (!conditionsMet(gameData)) return;
 
     Card *targetCard = targetEnemy ? gameData.enemyCardPlayed : gameData.cardPlayed;
