@@ -19,11 +19,11 @@ std::unique_ptr<Effect> EffectFactory::create(const nlohmann::json &effect) {
   std::unique_ptr<Effect> eff;
 
   if (type == "modify" || type == "def") {
-    // "modify" (was ModifierEffect) and "def" (was DefEffect) were identical:
-    // add howMuch to the current player's own played card.
+
     eff = std::make_unique<ChangeValueEffect>(false, false, baseAmount(effect, "howMuch"));
-  } else if (type == "attack" || type == "dmg" || type == "damage") {
-    eff = std::make_unique<DmgEffect>(baseAmount(effect, "howMuch"));
+  } else if (type == "attack" || type == "dmg" || type == "damage") { //  part of attacking and dmg and damage
+    eff = std::make_unique<DmgEffect>(baseAmount(effect, "howMuch"),
+                                       effect.value("toWhat", ""));
   } else if (type == "draw_card" || type == "draw") {
     int amount = baseAmount(effect, "howMany");
     std::string toWho = effect.value("toWho", effect.value("who", "self"));
@@ -40,17 +40,18 @@ std::unique_ptr<Effect> EffectFactory::create(const nlohmann::json &effect) {
   } else if (type == "move") {
     int howMany = (effect.contains("howMany") && effect["howMany"].is_number())
                       ? effect["howMany"].get<int>()
-                      : -1; // non-numeric (e.g. "queries") -> no fixed cap
+                      : -1; 
     std::string whichOne = effect.value("whichOne", "self");
     int distance = (effect.contains("distance") && effect["distance"].is_number())
                        ? effect["distance"].get<int>()
                        : -1;
     std::string toWhere = effect.value("toWhere", "none");
-    eff = std::make_unique<MoveEffect>(howMany, whichOne, distance, toWhere);
+    bool allowStay = effect.value("allowStay", false);
+    eff = std::make_unique<MoveEffect>(howMany, whichOne, distance, toWhere, allowStay);
   } else if (type == "remove_card") {
     int amount = baseAmount(effect, "howMany");
     if (amount == 0) amount = baseAmount(effect, "amount");
-    if (amount == 0) amount = 1; // default: remove one card
+    if (amount == 0) amount = 1; 
 
     bool fromEnemy = effect.value("from", "self") == "enemy";
     bool userChosen = effect.value("how", "random") == "user_choosen";
@@ -58,7 +59,7 @@ std::unique_ptr<Effect> EffectFactory::create(const nlohmann::json &effect) {
     int bonusPerCard = 0;
     if (effect.contains("bonusPerCard") && effect["bonusPerCard"].is_object()) {
       bonusPerCard = effect["bonusPerCard"].value("amount", 0);
-    }
+    } // for beastform, we use bonuspercard here 
 
     eff = std::make_unique<RemoveCardEffect>(amount, fromEnemy, userChosen, bonusPerCard);
   } else if (type == "remove_effect") {
@@ -67,7 +68,7 @@ std::unique_ptr<Effect> EffectFactory::create(const nlohmann::json &effect) {
                       : -1;
     std::string whichOne = effect.value("whichOne", "all");
     bool targetEnemy = effect.value("who", "enemy") == "enemy";
-    bool targetsAbility = effect.value("target", "card") == "ability";
+    bool targetsAbility = effect.value("target", "card") == "ability"; //using this to cancel effect with abiltiy(\)
     eff = std::make_unique<RemoveEffectEffect>(howMany, whichOne, targetEnemy, targetsAbility);
   } else if (type == "see_hand" || type == "seeHand") {
 
@@ -86,13 +87,15 @@ std::unique_ptr<Effect> EffectFactory::create(const nlohmann::json &effect) {
     eff = std::make_unique<ChoosePlaceEffect>(effect.value("who", "self"));
   } else if (type == "revive") {
     eff = std::make_unique<ReviveEffect>(effect.value("whichOne", effect.value("who", "sidekick")));
+  } else if (type == "predict") {
+    eff = std::make_unique<PredictEffect>();
   }
 
   if (!eff) {
     return nullptr; 
   }
 
-  if (effect.contains("condition") && effect["condition"].is_string()) {
+  if (effect.contains("condition") && effect["condition"].is_string()) { // adding conditions here
     auto cond = ConditionFactory::create(effect["condition"].get<std::string>(),
                                           effect.value("distance", 1));
     if (cond) {
@@ -108,7 +111,7 @@ std::unique_ptr<Effect> EffectFactory::create(const nlohmann::json &effect) {
     }
   }
 
-  if (effect.contains("queries")) {
+  if (effect.contains("queries")) { //adding queries here
     for (auto &&qry : effect["queries"]) {
       auto query = QueryFactory::create(qry);
       if (query) {
@@ -125,5 +128,5 @@ std::unique_ptr<Effect> EffectFactory::create(const nlohmann::json &effect) {
                             "': malformed data (" + e.what() + ")");
   }
 }
-// at first with else if making a effect then addng conditions and then queries
+// at first with else if making a effect then add conditions and then queries
 // of course with factories they have
