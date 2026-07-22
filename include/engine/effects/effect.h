@@ -1,4 +1,5 @@
 #pragma once
+#include <functional>
 #include <memory>
 #include <vector>
 #include "engine/gameData.h"
@@ -10,8 +11,7 @@ protected:
   std::vector<std::unique_ptr<Condition>> conditions;
   std::vector<std::unique_ptr<Query>> queries;
 
-
-  bool conditionsMet(gameData &gameData) {
+  bool conditionsMet(gameData &gameData) { // checking all conds
     for (auto &&cond : conditions) {
       if (!cond->check(gameData)) {
         return false;
@@ -20,13 +20,15 @@ protected:
     return true;
   }
 
-  int sumQueries(gameData &gameData) {
+  int sumQueries(gameData &gameData) { // adding all queries
     int total = 0;
     for (auto &&query : queries) {
       total += query->get(gameData);
     }
     return total;
   }
+
+  virtual void executeImmediate(gameData &) {}
 
 public:
   Effect() = default;
@@ -35,11 +37,17 @@ public:
   void addCondition(std::unique_ptr<Condition> cond) {
     conditions.push_back(std::move(cond));
   }
+  
   void addQuery(std::unique_ptr<Query> query) {
     queries.push_back(std::move(query));
   }
 
   virtual bool needsTarget() const { return false; }
 
-  virtual void execute(gameData &gameData) = 0;
+  virtual bool requiresPrediction() const { return false; } // for that extra card(i dont remember name)
+
+  virtual void execute(gameData &gameData, std::function<void()> onDone) { //there is excute for defalut and we develop this immediate excture to customize excute
+    executeImmediate(gameData);
+    if (onDone) onDone();
+  }
 };
