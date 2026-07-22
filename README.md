@@ -4,7 +4,7 @@ A C++17, data-driven digital implementation of the *Unmatched* board game
 (Dracula vs. Sherlock Holmes), built with [raylib](https://www.raylib.com/)
 for rendering and [nlohmann/json](https://github.com/nlohmann/json) for
 loading heroes, decks, and maps from data files instead of hard-coding them.
----
+
 ## Contibutor
 - kiarash habibi 40412358014
 - yusef pak 4041299002
