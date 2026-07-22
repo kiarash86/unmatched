@@ -33,7 +33,7 @@ public:
     elseToWho = std::move(toWho);
   }
 
-  void execute(gameData &gameData) override {
+  void executeImmediate(gameData &gameData) override {
     bool met = conditionsMet(gameData);
     if (!met && !hasElse) return;
 
