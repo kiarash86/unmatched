@@ -2,9 +2,13 @@
 #include "libraries/magic_enum.hpp" //use name of enums
 #include "raylib.h"                 // for texture type
 #include "view/enums/TextureID.h"   // the key to textures
+#include <cctype>                   // toupper/tolower
 #include <filesystem>               // cheking folders
+#include <optional>                 // optional return for card lookup
 #include <string>                   // string
 #include <unordered_map>            // saving data in map
+#include <utility>                  // std::pair
+#include <vector>                   // vector
 
 class TextureManager // controlling textures
 {
@@ -12,6 +16,7 @@ private:
   std::unordered_map<TextureID, Texture2D> textures; // saving textures here
 
   const std::string texturePath = "assets/images/"; // path of textures
+
 
   Texture2D makePlaceholder() // if couldnt load imgs we will use this instead of ruining scene
   {
@@ -58,6 +63,8 @@ public:
   {
     loadAllTextures();
   }
+
+ 
 
   ~TextureManager() // unloading textures
   {
