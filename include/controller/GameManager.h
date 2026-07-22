@@ -1,80 +1,191 @@
 #pragma once
 #include "model/card.h"
 #include "model/map.h"
+#include "model/hero.h"
+#include "engine/gameData.h"
+#include "engine/observer/observer.h"
+#include <functional>
+#include <memory>
+#include <string>
+#include <unordered_map>
 #include <variant>
 #include <vector>
-class Player;
 
 using PendingSelection =
     std::variant<std::monostate, std::vector<Tile *>, std::vector<Fighter *>,
                  std::vector<Card *>>;
+
 class GameManager {
-public:
-  void requestTileChoice(std::vector<Tile *> options) {
-    pending = std::move(options);
-  }
-  void requestFighterChoice(std::vector<Fighter *> options) {
-    pending = std::move(options);
-  }
-  void requestCardChoice(std::vector<Card *> options) {
-    pending = std::move(options);
-  }
+private:
+  std::vector<std::unique_ptr<Hero>> heroes;
+  std::unique_ptr<Map> map;
+  int currentTurn{0};
 
-  bool isWaitingForTile() {
-    return std::holds_alternative<std::vector<Tile *>>(pending);
-  }
+  std::unordered_map<Fighter *, int> movesRemainingByFighter;
+  int actionsRemaining{0};
+  bool maneuverActive{false};
+  bool maneuverBoosted{false};
 
-  bool isWaitingForFighter() {
-    return std::holds_alternative<std::vector<Fighter *>>(pending);
-  }
-  bool isWaitingForCard() {
-    return std::holds_alternative<std::vector<Card *>>(pending);
-  }
+  std::vector<IGameObserver *> observers;
 
-  std::vector<Tile *> getValidTiles() {
-    return std::get<std::vector<Tile *>>(pending);
-  }
-  std::vector<Fighter *> getValidFighters() {
-    return std::get<std::vector<Fighter *>>(pending);
-  }
-  std::vector<Card *> getValidCards() {
-    return std::get<std::vector<Card *>>(pending);
-  }
-
-  void submitTile(Tile *chosen) {
-    if (!isWaitingForTile()) {
-      return;
-    }
-
-    // TODO : what do u want to do here?
-  }
-  void submitFighter(Fighter *chosen) {
-    if (!isWaitingForFighter()) {
-      return;
-    }
-
-    // TODO : what do u want to do here?
-  }
-  void submitCard(Card *chosen) {
-    if (!isWaitingForCard()) {
-      return;
-    }
-
-    // TODO : what do u want to do here?
-  }
-  void clearPending() { pending = std::monostate{}; }
-
-  private:
-  std::vector<Player> players;
-  int currentTurn{};
-  int moves{};
-  Map map;
   PendingSelection pending;
+  std::function<void(void *)> onSelectionResolved;
 
-  Map &getMap() { return map; }
+  struct CombatRound {
+    bool active{false};
+    Fighter *attacker{nullptr};
+    Fighter *defender{nullptr};
+    Card *attackerCard{nullptr};
+    Card *defenderCard{nullptr};
+  };
+  CombatRound combat;
 
-  void gameLoop();
-  // FIXME: here maps should be controlled with enums
-  GameManager(Map map) : map(map){};
+  std::function<void()> combatContinuation;
+  void runCombatContinuationIfReady();
+  void finishResolveCombat(Fighter *attacker, Fighter *defender, Card *attackerCard,
+                            Card *defenseCard, Hero *attackingHero, Hero *defendingHero,
+                            int defenderHealthBefore);
+
+  Fighter *lastCombatWinner{nullptr};
+  Fighter *lastCombatLoser{nullptr};
+
+  bool matchOver{false};
+  Hero *winningHero{nullptr};
+  void checkForGameOver();
+
+  void resetTurnState();
+
+  std::vector<int> allStartTileIds;
+  void placeHeroesFrom(int heroIndex, std::vector<int> availableStartTileIds);
+  Hero *heroAwaitingStartPlacement{nullptr};
+
+  void placeSidekicksFrom(int heroIndex, std::size_t sidekickIndex);
+  void finishSetup();
+  Fighter *sidekickAwaitingPlacement{nullptr};
+
+  void applyFatigue(Hero *hero);
+
+  void checkFighterDeath(Fighter *fighter);
+
+  
+  void notifyDamage(Fighter *fighter, int healthBefore);
+
+ 
+  bool heroHasCardInHand(const Hero *hero, const Card *card) const;
+
+  bool performerAllows(const Card *card, const Fighter *actingFighter) const;
+
+public:
+  bool canPerform(const Card *card, const Fighter *actingFighter) const {
+    return performerAllows(card, actingFighter);
+  }
+
+private:
+  Hero *getNextHero(int fromPlayer) const;
+
+  void triggerStartOfTurnAbility();
+
+  void triggerDraculaBloodHarvest(Hero *hero);
+
+  bool isAbilityProtected(const Hero *hero) const;
+  bool isAbilityDisabled(const Hero *hero) const;
+  std::vector<Hero *> disabledAbilityHeroes;
+
+  gameData buildGameData(Fighter *self, Fighter *target, Fighter *enemy,
+                         Card *cardPlayed, Card *enemyCardPlayed,
+                         const TypeOfEvent &event);
+
+  void runCombatEvent(const TypeOfEvent &event, Fighter *cardOwner, Card *ownCard,
+                      Fighter *opponent, Card *opponentCard);
+
+public:
+  GameManager(std::vector<std::unique_ptr<Hero>> heroes, std::unique_ptr<Map> map);
   ~GameManager();
+
+  static std::unique_ptr<GameManager> createFromSelection(const std::string &mapName);
+
+  void startGame();
+
+  int getCurrentTurn() const;
+  Hero *getCurrentHero() const;
+  Hero *getHero(int player) const;
+  int getPlayerCount() const;
+  Map &getMap();
+
+  int getMovesRemaining(Fighter *fighter) const;
+
+  int getMovesRemaining() const;
+
+  void addObserver(IGameObserver *observer);
+  void removeObserver(IGameObserver *observer);
+
+  bool isAwaitingHeroStartPlacement() const { return heroAwaitingStartPlacement != nullptr; }
+  Hero *getHeroAwaitingStartPlacement() const { return heroAwaitingStartPlacement; }
+
+  bool isAwaitingSidekickPlacement() const { return sidekickAwaitingPlacement != nullptr; }
+  Fighter *getSidekickAwaitingPlacement() const { return sidekickAwaitingPlacement; }
+
+  bool isGameOver() const;
+  Hero *getWinner() const;
+
+  bool endTurn();
+
+  int getActionsRemaining() const;
+
+  bool performManeuver();
+
+  bool needsEndOfTurnDiscard() const;
+  bool discardExcessCard(Card *card);
+
+  bool moveFighter(Fighter *fighter, int tileId);
+
+  bool boostMovement(Card *card, Fighter *fighter = nullptr);
+
+  bool canBoostMovement() const;
+
+  void finishManeuver();
+  bool isManeuverActive() const;
+
+  bool startCombat(Card *attackCard, Fighter *attacker, Fighter *target);
+
+  bool startCombat(Card *attackCard, Fighter *target);
+  bool isCombatActive() const;
+  Fighter *getCombatAttacker() const;
+  Fighter *getCombatDefender() const;
+  Card *getCombatAttackerCard() const;
+
+  Hero *getCombatDefendingHero() const;
+
+  bool resolveCombat(Card *defenseCard, int predictedAttackValue = -1);
+  void cancelCombat();
+
+  bool playCard(Card *card, Fighter *self, Fighter *target, Fighter *enemy);
+
+  bool playCard(Card *card);
+
+  bool cardNeedsTarget(const Card *card) const;
+  std::vector<Fighter *> getValidTargetsForCard(const Card *card) const;
+
+  bool disableAbility(Hero *hero);
+  void enableAbility(Hero *hero);
+
+  void requestTileChoice(std::vector<Tile *> options, std::function<void(Tile *)> onChosen);
+  void requestFighterChoice(std::vector<Fighter *> options, std::function<void(Fighter *)> onChosen);
+  void requestCardChoice(std::vector<Card *> options, std::function<void(Card *)> onChosen);
+
+  bool isWaitingForTile() const;
+  bool isWaitingForFighter() const;
+  bool isWaitingForCard() const;
+  bool isWaitingForSelection() const;
+
+  std::vector<Tile *> getValidTiles() const;
+  std::vector<Fighter *> getValidFighters() const;
+  std::vector<Card *> getValidCards() const;
+
+  Tile *getStayTileOption() const;
+
+  void submitTile(Tile *chosen);
+  void submitFighter(Fighter *chosen);
+  void submitCard(Card *chosen);
+  void clearPending();
 };
