@@ -19,7 +19,7 @@ public:
         targetEnemy(targetEnemy), targetsAbility(targetsAbility) {}
   ~RemoveEffectEffect() override = default;
 
-  void execute(gameData &gameData) override {
+  void executeImmediate(gameData &gameData) override {
     if (!conditionsMet(gameData)) return;
 
     Fighter *who = targetEnemy ? gameData.enemy : gameData.self;
@@ -28,7 +28,7 @@ public:
     if (targetsAbility) {
       auto *hero = dynamic_cast<Hero *>(who);
       if (!hero || !gameData.disableAbility) return;
-      gameData.disableAbility(hero); // no-op for Sherlock/Watson, by design
+      gameData.disableAbility(hero); //disable it by sherlock ability
       return;
     }
 
