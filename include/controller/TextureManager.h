@@ -17,7 +17,6 @@ private:
 
   const std::string texturePath = "assets/images/"; // path of textures
 
-
   Texture2D makePlaceholder() // if couldnt load imgs we will use this instead of ruining scene
   {
     Image img = GenImageColor(64, 64, MAGENTA);
@@ -27,6 +26,7 @@ private:
   }
 
 public:
+
   Texture2D &getTexture(TextureID texture) // get texture
   {
     auto it = textures.find(texture);
@@ -63,8 +63,6 @@ public:
   {
     loadAllTextures();
   }
-
- 
 
   ~TextureManager() // unloading textures
   {
