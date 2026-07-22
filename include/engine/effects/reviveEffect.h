@@ -15,12 +15,18 @@ private:
   std::string whichOne;
 
   Fighter *findDefeatedSidekick(gameData &gameData) const {
-    if (!gameData.self || !gameData.getOwnerHero) return nullptr;
+    if (!gameData.self || !gameData.getOwnerHero) {
+      return nullptr;
+    }
     Hero *hero = gameData.getOwnerHero(gameData.self);
-    if (!hero) return nullptr;
+    if (!hero) {
+      return nullptr;
+    }
 
     for (auto &sk : hero->getSidekicks()) {
-      if (sk && !sk->isAlive()) return sk.get();
+      if (sk && !sk->isAlive()) {
+        return sk.get();
+      }
     }
     return nullptr;
   }
@@ -30,31 +36,66 @@ public:
       : whichOne(std::move(whichOne)) {}
   ~ReviveEffect() override = default;
 
-  void execute(gameData &gameData) override {
-    if (!conditionsMet(gameData)) return;
-    if (!gameData.map || !gameData.self || !gameData.requestTileChoice) return;
-    if (whichOne != "sidekick") return; 
+  void execute(gameData &gameData, std::function<void()> onDone) override {
+    if (!conditionsMet(gameData)) {
+      if (onDone) {
+        onDone();
+      }
+      return;
+    }
+    if (!gameData.map || !gameData.self || !gameData.requestTileChoice) {
+      if (onDone) {
+        onDone();
+      }
+      return;
+    }
+    if (whichOne != "sidekick") {
+      if (onDone) {
+        onDone();
+      }
+      return;
+    }
 
     Fighter *defeated = findDefeatedSidekick(gameData);
-    if (!defeated) return; 
+    if (!defeated) {
+      if (onDone) {
+        onDone();
+      }
+      return;
+    }
 
     Map *map = gameData.map;
     int selfTileId = map->getTileIdOf(gameData.self);
     Tile *selfTile = map->getTile(selfTileId);
-    if (!selfTile) return;
+    if (!selfTile) {
+      if (onDone) {
+        onDone();
+      }
+      return;
+    }
 
-   
+
     std::vector<Tile *> candidates = map->getTilesInZones(selfTile->getZones());
     candidates.erase(std::remove_if(candidates.begin(), candidates.end(),
-                                     [&](Tile *t) { return map->isOccupied(t->getId()); }),
+                                     [&](Tile *t) {
+                                       return map->isOccupied(t->getId());
+                                     }),
                       candidates.end());
-    if (candidates.empty()) return;
+    if (candidates.empty()) {
+      if (onDone) {
+        onDone();
+      }
+      return;
+    }
 
-    gameData.requestTileChoice(candidates, [map, defeated](Tile *chosen) {
-      if (!chosen) return;
-     
-      defeated->setHealth(defeated->getMaxHealth());
-      map->placeFighter(defeated, chosen->getId());
+    gameData.requestTileChoice(candidates, [map, defeated, onDone](Tile *chosen) {
+      if (chosen) {
+        defeated->setHealth(defeated->getMaxHealth());
+        map->placeFighter(defeated, chosen->getId());
+      }
+      if (onDone) {
+        onDone();
+      }
     });
   }
 };
