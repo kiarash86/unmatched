@@ -10,6 +10,8 @@ TextureID HeroSelectionScene::bgForHero(HeroList id) {
     return TextureID::bgDracula;
   case HeroList::SherlockHolms:
     return TextureID::bgSherlock;
+  case HeroList::InvisibleMan:
+    return TextureID::bgInvisibleMan;
   default:
     return TextureID::bg2;
   }
@@ -21,6 +23,8 @@ TextureID HeroSelectionScene::normalButtonForHero(HeroList id) {
     return TextureID::draculaButtonNormal;
   case HeroList::SherlockHolms:
     return TextureID::sherlockButtonNormal;
+  case HeroList::InvisibleMan:
+    return TextureID::invisibleManButtonNormal;
   default:
     return TextureID::draculaButtonNormal;
   }
@@ -32,6 +36,8 @@ TextureID HeroSelectionScene::hoveredButtonForHero(HeroList id) {
     return TextureID::draculaButtonHovered;
   case HeroList::SherlockHolms:
     return TextureID::sherlockButtonHovered;
+  case HeroList::InvisibleMan:
+    return TextureID::invisibleManButtonHovered;
   default:
     return TextureID::draculaButtonHovered;
   }
@@ -43,6 +49,8 @@ SoundID HeroSelectionScene::soundForHero(HeroList id) {
     return SoundID::draculaSpeech;
   case HeroList::SherlockHolms:
     return SoundID::sherlockSpeech;
+  case HeroList::InvisibleMan:
+    return SoundID::invisiblemanSpeech;
   default:
     return SoundID::draculaSpeech;
   }
@@ -51,7 +59,7 @@ SoundID HeroSelectionScene::soundForHero(HeroList id) {
 HeroSelectionScene::HeroSelectionScene(AudioManager *audioManager, SceneManager *sceneManager,TextureManager *textureManager, FontManager *fontManager)
     : Scene(audioManager, sceneManager, textureManager, fontManager) {
 
-  const HeroList hrs[] = {HeroList::Dracula, HeroList::SherlockHolms}; // heroes
+  const HeroList hrs[] = {HeroList::Dracula, HeroList::SherlockHolms, HeroList::InvisibleMan}; // heroes
 
   // font
 
