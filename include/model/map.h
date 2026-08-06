@@ -52,7 +52,21 @@ public:
 
   void exchangePosition(Fighter *fighter1, Fighter *fighter2);
 
+  void addFogToken(int tileId);
+
+  bool removeFogToken(int tileId);
+
+  bool hasFogToken(int tileId) const;
+
+  int fogTokenCountAt(int tileId) const;
+
+  std::vector<int> getFogTokenTileIds() const;
+
+  void moveFogToken(int fromTileId, int toTileId);
+
 private:
  
   std::vector<int> getPortalTileIds() const;
+
+  std::unordered_map<int, int> fogTokensByTile;
 };

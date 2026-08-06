@@ -1,5 +1,6 @@
 #include "model/map.h"
 #include "model/fighter.h"
+#include <algorithm>
 #include <queue>
 #include <unordered_set>
 // setting name
@@ -319,4 +320,52 @@ void Map::exchangePosition(Fighter *fighter1, Fighter *fighter2) {
   }
   placeFighter(fighter1, tile2);
   placeFighter(fighter2, tile1);
+}
+
+// --- Fog tokens (Invisible Man) ---
+void Map::addFogToken(int tileId) {
+  if (!getTile(tileId)) {
+    return;
+  }
+  fogTokensByTile[tileId]++;
+}
+
+bool Map::removeFogToken(int tileId) {
+  auto it = fogTokensByTile.find(tileId);
+  if (it == fogTokensByTile.end() || it->second <= 0) {
+    return false;
+  }
+  it->second--;
+  if (it->second <= 0) {
+    fogTokensByTile.erase(it);
+  }
+  return true;
+}
+
+bool Map::hasFogToken(int tileId) const { return fogTokenCountAt(tileId) > 0; }
+
+int Map::fogTokenCountAt(int tileId) const {
+  auto it = fogTokensByTile.find(tileId);
+  return it == fogTokensByTile.end() ? 0 : it->second;
+}
+
+std::vector<int> Map::getFogTokenTileIds() const {
+  std::vector<int> ids;
+  for (auto &[tileId, count] : fogTokensByTile) {
+    if (count > 0) {
+      ids.push_back(tileId);
+    }
+  }
+  std::sort(ids.begin(), ids.end());
+  return ids;
+}
+
+void Map::moveFogToken(int fromTileId, int toTileId) {
+  if (!getTile(toTileId)) {
+    return;
+  }
+  if (!removeFogToken(fromTileId)) {
+    return;
+  }
+  addFogToken(toTileId);
 }
