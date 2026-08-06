@@ -34,6 +34,9 @@ std::unique_ptr<Hero> HeroFactory::create(const std::string &name) {
         hero->addSidekick(SidekickFactory::create(sidekickPath));
       }
     }
+    if (stats.contains("fogTokenList") && stats["fogTokenList"].is_array()) {
+      hero->setStartingFogTokenCount((int)stats["fogTokenList"].size());
+    }
     hero->setDeck(DeckFactory::create(path + "/deck"));
 
     return hero;
