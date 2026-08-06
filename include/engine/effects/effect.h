@@ -50,4 +50,10 @@ public:
     executeImmediate(gameData);
     if (onDone) onDone();
   }
+
+  // for effets that has effect in future
+  // for example they excuted at the first of next round and...
+  virtual void executeDeferred(gameData &gameData, std::function<void()> onDone) {
+    execute(gameData, std::move(onDone));
+  }
 };
