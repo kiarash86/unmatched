@@ -15,3 +15,6 @@ void Hero::addSidekick(std::unique_ptr<Sidekick> sidekick) {
 
 Deck *Hero::getDeck() const { return deck.get(); }
 void Hero::setDeck(std::unique_ptr<Deck> newDeck) { deck = std::move(newDeck); }
+
+int Hero::getStartingFogTokenCount() const { return startingFogTokenCount; }
+void Hero::setStartingFogTokenCount(int count) { startingFogTokenCount = count; }

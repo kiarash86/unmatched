@@ -10,6 +10,7 @@ class Hero : public Fighter {
 private:
   std::vector<std::unique_ptr<Sidekick>> sidekicks;
   std::unique_ptr<Deck> deck;
+  int startingFogTokenCount{0};
 
 public:
   const std::vector<std::unique_ptr<Sidekick>> &getSidekicks() const;
@@ -17,6 +18,9 @@ public:
 
   Deck *getDeck() const;
   void setDeck(std::unique_ptr<Deck> newDeck);
+
+  int getStartingFogTokenCount() const;
+  void setStartingFogTokenCount(int count);
 
   Hero();
   ~Hero() override;
