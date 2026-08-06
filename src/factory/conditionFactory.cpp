@@ -27,5 +27,11 @@ std::unique_ptr<Condition> ConditionFactory::create(const std::string &condition
   if (condition == "is_sherlock_watson_card") {
     return std::make_unique<IsSherlockWatsonCardCondition>();
   }
+  if (condition == "self_on_fog_token") {
+    return std::make_unique<IsOnFogTileCondition>(false);
+  }
+  if (condition == "self_started_turn_on_fog_token") {
+    return std::make_unique<IsOnFogTileCondition>(true);
+  }
   return nullptr;
 }

@@ -6,6 +6,7 @@
 #include "engine/conditions/combatOutcomeCondition.h"
 #include "engine/conditions/isTeamAdjacentCondition.h"
 #include "engine/conditions/isSherlockWatsonCardCondition.h"
+#include "engine/conditions/isOnFogTileCondition.h"
 #include "utility/file.h"
 
 class ConditionFactory {
