@@ -36,6 +36,8 @@ public:
 
   int handPileCount() const;
 
+  std::vector<std::unique_ptr<Card>> releaseAllCards();
+
   void restoreState(std::vector<std::unique_ptr<Card>> newHand,
                      std::vector<std::unique_ptr<Card>> newDrawPile,
                      std::vector<std::unique_ptr<Card>> newDiscardPile);

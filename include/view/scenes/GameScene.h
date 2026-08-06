@@ -182,6 +182,18 @@ private:
   bool matchOver{false};
   std::string winnerName;
 
+  bool savePromptActive{false};
+  Rectangle saveButtonRect{};
+  Rectangle saveSlotPanelRect{};
+  std::vector<Rectangle> saveSlotRects;
+  std::vector<bool> saveSlotHasSave;
+  Rectangle saveSlotCancelRect{};
+
+  void refreshSaveSlotInfo();
+  void openSavePrompt();
+  void drawSavePrompt();
+  void handleSaveMouse();
+
   void BuildBoardLayout();
   void refreshFromGameManager();
   void UpdateLayout();
