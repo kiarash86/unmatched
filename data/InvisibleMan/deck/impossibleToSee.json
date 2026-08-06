@@ -1,0 +1,20 @@
+{
+    "name": "impossible_to_see",
+    "type": "multipurpose",
+    "performer": "fighter",
+    "img": "../../../../assets/images/invisibleman/impossible_to_see.png",
+    "boost": 2,
+    "eventType": "before_combat",
+    "attack/def": 2,
+    "effects": [
+        {
+            "type": "set_value_fixed",
+            "toWhat": "value",
+            "howMuch": 0,
+            "who": "enemy",
+            "unmodifiable": true,
+            "note": "other card effects still occur"
+        }
+    ],
+    "quantity": 2
+}
