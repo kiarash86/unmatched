@@ -16,8 +16,12 @@ private:
   int value{};
 
   std::vector<Fighter *> resolveTargets(gameData &gameData) const { // who is target
-    if (toWho == "enemy") return {gameData.enemy};
-    if (toWho == "target") return {gameData.target};
+    if (toWho == "enemy") {
+      return {gameData.enemy};
+    }
+    if (toWho == "target") {
+      return {gameData.target};
+    }
     if (toWho == "hero") {
   
       Fighter *player = gameData.self;
@@ -60,24 +64,31 @@ public:
 
   //do it immediatly(find targets and check cond... and queries ) then exccute it hear
   void executeImmediate(gameData &gameData) override {
-    if (!conditionsMet(gameData)) return;
+    if (!conditionsMet(gameData)) {
+      return;
+    }
 
     int finalValue = value + sumQueries(gameData);
 
     if (toWhat == "health") {
       for (auto *fighter : resolveTargets(gameData)) {
-        if (fighter) fighter->heal(finalValue);
+        if (fighter) {
+          fighter->heal(finalValue);
+        }
       }
       return;
     }
     if (toWhat == "attack" || toWhat == "value") {
-      if (gameData.cardPlayed) gameData.cardPlayed->modifyValue(finalValue);
+      if (gameData.cardPlayed) {
+        gameData.cardPlayed->modifyValue(finalValue);
+      }
       return;
     }
     if (toWhat == "actions" || toWhat == "action") {
-      if (gameData.grantAction) gameData.grantAction(finalValue);
+      if (gameData.grantAction) {
+        gameData.grantAction(finalValue);
+      }
       return;
     }
-
   }
 };
