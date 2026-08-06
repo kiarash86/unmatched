@@ -1,0 +1,25 @@
+{
+    "name": "step_lightly",
+    "type": "event",
+    "performer": "hero",
+    "img": "../../../../assets/images/invisibleman/step_lightly.png",
+    "boost": 1,
+    "effects": [
+        {
+            "type": "attack",
+            "toWhat": "adjacent_fighter",
+            "howMuch": 1,
+            "howMuchIfCondition": 3,
+            "condition": "self_on_fog_token"
+        },
+        {
+            "type": "move",
+            "whichOne": "fog_token",
+            "howMany": 1,
+            "distance": 2,
+            "toWhere": "none",
+            "performer": "enemy"
+        }
+    ],
+    "quantity": 2
+}
