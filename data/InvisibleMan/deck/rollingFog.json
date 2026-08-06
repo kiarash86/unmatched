@@ -1,0 +1,22 @@
+{
+    "name": "rolling_fog",
+    "type": "event",
+    "performer": "hero",
+    "img": "../../../../assets/images/invisibleman/rolling_fog.png",
+    "boost": 1,
+    "effects": [
+        {
+            "type": "move",
+            "whichOne": "fog_token",
+            "howMany": 1,
+            "distance": 99,
+            "toWhere": "any"
+        },
+        {
+            "type": "add",
+            "toWhat": "actions",
+            "howMuch": 1
+        }
+    ],
+    "quantity": 2
+}
