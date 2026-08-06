@@ -4,6 +4,7 @@
 #include "view/enums/ScenesType.h"            // for changing scenes
 #include "view/scenes/GameScene.h"            // board scene
 #include "view/scenes/HeroSelectionScene.h" // selection scene
+#include "view/scenes/LoadGameScene.h"       // load-game scene
 #include "view/scenes/MainScene.h"            // start scene
 #include "view/scenes/Scene.h"                // scene
 #include <iostream>                           // for logging recovered errors
@@ -39,6 +40,10 @@ private:
     case ScenesType::heroSelection:
       currentScene = std::make_unique<HeroSelectionScene>(
           audioManager, this, textureManager, fontManager);
+      break;
+    case ScenesType::loadGame:
+      currentScene = std::make_unique<LoadGameScene>(audioManager, this,
+                                                      textureManager, fontManager);
       break;
     }
   }
