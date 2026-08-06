@@ -19,6 +19,9 @@ enum class TextureID {
   sherlockButtonHovered , 
   draculaButtonNormal,
   draculaButtonHovered ,
+  bgInvisibleMan ,
+  invisibleManButtonNormal ,
+  invisibleManButtonHovered ,
   titleHeroSelection , 
   frame,
 
@@ -50,5 +53,20 @@ enum class TextureID {
   sherlockHolmsMasterOfDisguise,
   sherlockHolmsServiceRevolver,
   sherlockHolmsStudyMethods,
-  sherlockHolmsTheGameIsAfoot
+  sherlockHolmsTheGameIsAfoot,
+
+  // Invisible Man card art (assets/images/InvisibleMan/cards/*.png)
+  invisibleManCodedNotes,
+  invisibleManConfound,
+  invisibleManCovertPreparation,
+  invisibleManDreamingOfRevenge,
+  invisibleManEmergeFromMist,
+  invisibleManImpossibleToSee,
+  invisibleManIntoThinAir,
+  invisibleManLurking,
+  invisibleManReignOfTerror,
+  invisibleManRollingFog,
+  invisibleManSlipAway,
+  invisibleManStepLightly,
+  invisibleManVanish
 };
