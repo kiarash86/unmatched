@@ -40,6 +40,20 @@ bool Deck::discard(Card *card) {
   return true;
 }
 
+bool Deck::placeOnTop(Card *card) {
+  auto it = std::find_if(hand.begin(), hand.end(),
+                          [card](const std::unique_ptr<Card> &c) {
+                            return c.get() == card;
+                          });
+  if (it == hand.end()) {
+    return false;
+  }
+
+  drawPile.push_back(std::move(*it));
+  hand.erase(it);
+  return true;
+}
+
 std::vector<Card *> Deck::getHand() const {
   std::vector<Card *> result;
   result.reserve(hand.size());

@@ -23,6 +23,8 @@ public:
 
   bool discard(Card *card);
 
+  bool placeOnTop(Card *card);
+
   std::vector<Card *> getHand() const;
 
   int drawPileCount() const;
