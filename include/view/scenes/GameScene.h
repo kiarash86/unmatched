@@ -34,6 +34,8 @@ private:
     bool hasSecondZone{false};
     Color color3{};
     bool hasThirdZone{false};
+
+    int fogTokenCount{0};
   };
   struct HeroSummaryView
 
@@ -147,6 +149,9 @@ private:
   Rectangle cardChoiceDeclineRect;
   Rectangle cardChoicePanelRect;
 
+  std::vector<Rectangle> effectChoiceOptionRects;
+  Rectangle effectChoicePanelRect;
+
   bool handRevealActive{false};
   std::string handRevealOwnerName;
   std::vector<Card *> handRevealCards;
@@ -228,6 +233,10 @@ private:
   bool isCardChoicePromptActive() const;
   void drawCardChoicePrompt();
   void handleCardChoiceMouse();
+
+  bool isEffectChoicePromptActive() const;
+  void drawEffectChoicePrompt();
+  void handleEffectChoiceMouse();
 
   bool isDiscardPromptActive() const;
   void drawDiscardPrompt();
