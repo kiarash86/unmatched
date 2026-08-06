@@ -5,9 +5,11 @@
 #include "model/sidekick.h"
 #include "model/deck.h"
 #include "model/typeOfTile.h"
+#include "engine/effects/effect.h"
 #include "libraries/magic_enum.hpp"
 #include "utility/exceptions.h"
 #include <algorithm>
+#include <filesystem>
 
 namespace {
 
@@ -17,6 +19,9 @@ bool isDracula(const Fighter *fighter) {
 bool isSherlockOrWatson(const Fighter *fighter) {
   return fighter && (fighter->getName() == "SherlockHolms" ||
                       fighter->getName() == "watson");
+}
+bool isInvisibleMan(const Fighter *fighter) {
+  return fighter && fighter->getName() == "InvisibleMan";
 }
 }
 
@@ -45,6 +50,24 @@ std::unique_ptr<GameManager> GameManager::createFromSelection(const std::string 
     throw FactoryException("Failed to set up match on map '" + mapName + "': " +
                             e.what());
   }
+}
+
+std::string GameManager::saveFilePath(int slot) {
+  return "saves/save" + std::to_string(slot) + ".json";
+}
+
+bool GameManager::hasSave(int slot) {
+  return std::filesystem::exists(saveFilePath(slot));
+}
+
+bool GameManager::saveGame(int slot) const {
+(void)slot;
+  return false;
+}
+
+std::unique_ptr<GameManager> GameManager::loadGame(int slot) {
+(void)slot;
+  return nullptr;
 }
 
 void GameManager::resetTurnState() {
@@ -112,6 +135,9 @@ void GameManager::placeHeroesFrom(int heroIndex, std::vector<int> availableStart
     map->placeFighter(hero, chosen->getId());
     for (auto &sidekick : hero->getSidekicks()) {
       sidekick->setOwnerPlayer(heroIndex);
+    }
+  for (int i = 0; i < hero->getStartingFogTokenCount(); i++) {
+      map->addFogToken(chosen->getId());
     }
 
     std::vector<int> remaining;
@@ -409,6 +435,42 @@ bool GameManager::moveFighter(Fighter *fighter, int tileId) {
   return true;
 }
 
+bool GameManager::moveThroughFog(Fighter *fighter, int destinationTileId) {
+  if (!fighter || matchOver) {
+    return false;
+  }
+
+  Hero *owner = dynamic_cast<Hero *>(fighter);
+  if (!owner) {
+    owner = getHero(fighter->getOwnerPlayer());
+  }
+  if (!isInvisibleMan(owner) || isAbilityDisabled(owner)) {
+    return false;
+  }
+
+  int fromTileId = map->getTileIdOf(fighter);
+  if (fromTileId < 0 || fromTileId == destinationTileId) {
+    return false;
+  }
+  if (!map->hasFogToken(fromTileId) || !map->hasFogToken(destinationTileId)) {
+    return false;
+  }
+  if (map->isOccupied(destinationTileId)) {
+    return false;
+  }
+
+  int remaining = getMovesRemaining(fighter);
+  if (remaining <= 0) {
+    return false;
+  }
+
+  map->placeFighter(fighter, destinationTileId);
+  movesRemainingByFighter[fighter] = remaining - 1;
+
+  for (auto *obs : observers) obs->onFighterMoved(fighter, fromTileId, destinationTileId);
+  return true;
+}
+
 bool GameManager::canBoostMovement() const {
   return !matchOver && maneuverActive && !maneuverBoosted;
 }
@@ -480,10 +542,14 @@ bool GameManager::playCard(Card *card, Fighter *self, Fighter *target, Fighter *
 
   card->resetCancellation();
 
+ bool wasFirstActionThisTurn = (actionsRemaining == 2);
+  deferredPlacementRequestedThisCard = false;
+
   auto &effects = card->getEffects();
   auto index = std::make_shared<size_t>(0);
   auto stepPtr = std::make_shared<std::function<void()>>();
-  *stepPtr = [this, &effects, index, data, stepPtr, card, hero, target, healthBefore]() {
+  *stepPtr = [this, &effects, index, data, stepPtr, card, hero, target, healthBefore,
+              wasFirstActionThisTurn]() {
     while (*index < effects.size()) {
       Effect *effect = effects[*index].get();
       ++*index;
@@ -496,6 +562,10 @@ bool GameManager::playCard(Card *card, Fighter *self, Fighter *target, Fighter *
 
     hero->getDeck()->discard(card);
     actionsRemaining--;
+
+    if (deferredPlacementRequestedThisCard && wasFirstActionThisTurn) {
+      actionsRemaining = 0;
+    }
 
     for (auto *obs : observers) obs->onCardPlayed(hero, card);
     if (target) {
@@ -536,8 +606,47 @@ void GameManager::triggerStartOfTurnAbility() {
     return;
   }
 
+ resolvePendingStartOfTurnEffects(hero);
+
+  snapshotFogTileAtTurnStart(hero);
   triggerDraculaBloodHarvest(hero);
   checkForGameOver();
+}
+
+void GameManager::resolvePendingStartOfTurnEffects(Hero *hero) {
+  if (!hero || pendingStartOfTurnEffects.empty()) {
+    return;
+  }
+
+  std::vector<PendingEffect> due;
+  std::vector<PendingEffect> remaining;
+  for (auto &entry : pendingStartOfTurnEffects) {
+    if (entry.owner && entry.owner->getOwnerPlayer() == hero->getOwnerPlayer()) {
+      due.push_back(entry);
+    } else {
+      remaining.push_back(entry);
+    }
+  }
+  pendingStartOfTurnEffects = std::move(remaining);
+
+  for (auto &entry : due) {
+    if (!entry.owner || !entry.effect) {
+      continue;
+    }
+  auto data = std::make_shared<gameData>(
+        buildGameData(entry.owner, entry.owner, nullptr, nullptr, nullptr, TypeOfEvent::none));
+    entry.effect->executeDeferred(*data, [data]() {});
+  }
+}
+
+void GameManager::snapshotFogTileAtTurnStart(Hero *hero) {
+  if (!hero || !map) {
+    return;
+  }
+ fogTileAtOwnerTurnStart[hero] = map->hasFogToken(map->getTileIdOf(hero));
+  for (auto &sk : hero->getSidekicks()) {
+    fogTileAtOwnerTurnStart[sk.get()] = map->hasFogToken(map->getTileIdOf(sk.get()));
+  }
 }
 
 bool GameManager::isAbilityDisabled(const Hero *hero) const {
@@ -647,11 +756,33 @@ gameData GameManager::buildGameData(Fighter *self, Fighter *target, Fighter *ene
   data.event = event;
   data.lastCombatWinner = lastCombatWinner;
   data.lastCombatLoser = lastCombatLoser;
+  if (self) {
+    auto it = fogTileAtOwnerTurnStart.find(self);
+    data.selfStartedTurnOnFogTile = it != fogTileAtOwnerTurnStart.end() && it->second;
+  }
   data.requestTileChoice = [this](std::vector<Tile *> options, std::function<void(Tile *)> onChosen) {
     this->requestTileChoice(std::move(options), std::move(onChosen));
   };
+  data.requestTileChoiceFor = [this](Fighter *chooser, std::vector<Tile *> options,
+                                     std::function<void(Tile *)> onChosen) {
+    this->requestTileChoice(chooser, std::move(options), std::move(onChosen));
+  };
   data.requestCardChoice = [this](std::vector<Card *> options, std::function<void(Card *)> onChosen) {
     this->requestCardChoice(std::move(options), std::move(onChosen));
+  };
+  data.requestEffectChoice = [this](std::vector<std::string> labels, std::function<void(int)> onChosen) {
+    this->requestEffectChoice(std::move(labels), std::move(onChosen));
+  };
+  data.requestEffectChoiceFor = [this](Fighter *chooser, std::vector<std::string> labels,
+                                       std::function<void(int)> onChosen) {
+    this->requestEffectChoice(chooser, std::move(labels), std::move(onChosen));
+  };
+  data.deferToStartOfNextTurn = [this](Fighter *owner, Effect *effect) {
+    if (!owner || !effect) {
+      return;
+    }
+    pendingStartOfTurnEffects.push_back({owner, effect});
+    deferredPlacementRequestedThisCard = true;
   };
   data.disableAbility = [this](Hero *hero) { return this->disableAbility(hero); };
   data.grantAction = [this](int amount) { this->actionsRemaining += amount; };
@@ -675,17 +806,28 @@ void GameManager::runCombatEvent(const TypeOfEvent &event, Fighter *cardOwner, C
   if (!cardOwner) {
     return;
   }
+  if (!ownCard || ownCard->getEventType() != event) {
+    return;
+  }
 
-  gameData data = buildGameData(cardOwner, opponent, opponent, ownCard, opponentCard, event);
+auto data = std::make_shared<gameData>(
+      buildGameData(cardOwner, opponent, opponent, ownCard, opponentCard, event));
 
-  if (ownCard && ownCard->getEventType() == event) {
-    for (auto &effect : ownCard->getEffects()) {
+  auto &effects = ownCard->getEffects();
+  auto index = std::make_shared<size_t>(0);
+  auto stepPtr = std::make_shared<std::function<void()>>();
+  *stepPtr = [ownCard, &effects, index, data, stepPtr]() {
+    while (*index < effects.size()) {
+      Effect *effect = effects[*index].get();
+      ++*index;
       if (ownCard->consumeCancellation()) {
         continue;
       }
-      effect->execute(data, []() {});
+      effect->execute(*data, [stepPtr]() { (*stepPtr)(); });
+      return;
     }
-  }
+  };
+  (*stepPtr)();
 }
 
 bool GameManager::startCombat(Card *attackCard, Fighter *attacker, Fighter *target) {
@@ -800,6 +942,12 @@ bool GameManager::resolveCombat(Card *defenseCard, int predictedAttackValue) {
   attackerCard->setValue(attackerCard->getAttackStat());
   if (defenseCard) {
     defenseCard->setValue(defenseCard->getDefStat());
+
+   int defenderTile = map->getTileIdOf(defender);
+    if (defenderTile >= 0 && map->hasFogToken(defenderTile) &&
+        isInvisibleMan(defendingHero) && !isAbilityDisabled(defendingHero)) {
+      defenseCard->setValue(defenseCard->getValue() + 1);
+    }
   }
   attackerCard->resetCancellation();
   if (defenseCard) {
@@ -908,16 +1056,33 @@ void GameManager::runCombatContinuationIfReady() {
 }
 
 void GameManager::requestTileChoice(std::vector<Tile *> options, std::function<void(Tile *)> onChosen) {
+  requestTileChoice(nullptr, std::move(options), std::move(onChosen));
+}
+void GameManager::requestTileChoice(Fighter *chooser, std::vector<Tile *> options, std::function<void(Tile *)> onChosen) {
+  pendingChooser = chooser;
   pending = std::move(options);
   onSelectionResolved = [onChosen](void *raw) { onChosen(static_cast<Tile *>(raw)); };
 }
 void GameManager::requestFighterChoice(std::vector<Fighter *> options, std::function<void(Fighter *)> onChosen) {
+  pendingChooser = nullptr;
   pending = std::move(options);
   onSelectionResolved = [onChosen](void *raw) { onChosen(static_cast<Fighter *>(raw)); };
 }
 void GameManager::requestCardChoice(std::vector<Card *> options, std::function<void(Card *)> onChosen) {
+  pendingChooser = nullptr;
   pending = std::move(options);
   onSelectionResolved = [onChosen](void *raw) { onChosen(static_cast<Card *>(raw)); };
+}
+
+void GameManager::requestEffectChoice(std::vector<std::string> labels, std::function<void(int)> onChosen) {
+  requestEffectChoice(nullptr, std::move(labels), std::move(onChosen));
+}
+void GameManager::requestEffectChoice(Fighter *chooser, std::vector<std::string> labels,
+                                      std::function<void(int)> onChosen) {
+  pendingChooser = chooser;
+  pendingEffectChoiceLabels = std::move(labels);
+  waitingForEffectChoice = true;
+  onEffectChoiceResolved = std::move(onChosen);
 }
 
 bool GameManager::isWaitingForTile() const {
@@ -929,8 +1094,11 @@ bool GameManager::isWaitingForFighter() const {
 bool GameManager::isWaitingForCard() const {
   return std::holds_alternative<std::vector<Card *>>(pending);
 }
+bool GameManager::isWaitingForEffectChoice() const {
+  return waitingForEffectChoice;
+}
 bool GameManager::isWaitingForSelection() const {
-  return !std::holds_alternative<std::monostate>(pending);
+  return !std::holds_alternative<std::monostate>(pending) || waitingForEffectChoice;
 }
 
 std::vector<Tile *> GameManager::getValidTiles() const {
@@ -953,6 +1121,9 @@ std::vector<Fighter *> GameManager::getValidFighters() const {
 }
 std::vector<Card *> GameManager::getValidCards() const {
   return std::get<std::vector<Card *>>(pending);
+}
+std::vector<std::string> GameManager::getValidEffectChoiceLabels() const {
+  return pendingEffectChoiceLabels;
 }
 
 void GameManager::submitTile(Tile *chosen) {
@@ -1003,7 +1174,29 @@ void GameManager::submitCard(Card *chosen) {
   }
   runCombatContinuationIfReady();
 }
+void GameManager::submitEffectChoice(int index) {
+  if (!waitingForEffectChoice) {
+    return;
+  }
+  if (index < 0 || static_cast<std::size_t>(index) >= pendingEffectChoiceLabels.size()) {
+    return;
+  }
+
+  auto callback = onEffectChoiceResolved;
+  waitingForEffectChoice = false;
+  pendingEffectChoiceLabels.clear();
+  onEffectChoiceResolved = nullptr;
+  pendingChooser = nullptr;
+  if (callback) {
+    callback(index);
+  }
+  runCombatContinuationIfReady();
+}
 void GameManager::clearPending() {
   pending = std::monostate{};
   onSelectionResolved = nullptr;
+  pendingChooser = nullptr;
+  waitingForEffectChoice = false;
+  pendingEffectChoiceLabels.clear();
+  onEffectChoiceResolved = nullptr;
 }

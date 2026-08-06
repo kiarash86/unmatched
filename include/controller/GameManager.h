@@ -15,6 +15,8 @@ using PendingSelection =
     std::variant<std::monostate, std::vector<Tile *>, std::vector<Fighter *>,
                  std::vector<Card *>>;
 
+class Effect;
+
 class GameManager {
 private:
   std::vector<std::unique_ptr<Hero>> heroes;
@@ -30,6 +32,21 @@ private:
 
   PendingSelection pending;
   std::function<void(void *)> onSelectionResolved;
+
+Fighter *pendingChooser{nullptr};
+
+std::vector<std::string> pendingEffectChoiceLabels;
+  bool waitingForEffectChoice{false};
+  std::function<void(int)> onEffectChoiceResolved;
+
+struct PendingEffect {
+    Fighter *owner{nullptr};
+    Effect *effect{nullptr};
+  };
+  std::vector<PendingEffect> pendingStartOfTurnEffects;
+  void resolvePendingStartOfTurnEffects(Hero *hero);
+
+bool deferredPlacementRequestedThisCard{false};
 
   struct CombatRound {
     bool active{false};
@@ -91,6 +108,9 @@ private:
   bool isAbilityDisabled(const Hero *hero) const;
   std::vector<Hero *> disabledAbilityHeroes;
 
+std::unordered_map<Fighter *, bool> fogTileAtOwnerTurnStart;
+  void snapshotFogTileAtTurnStart(Hero *hero);
+
   gameData buildGameData(Fighter *self, Fighter *target, Fighter *enemy,
                          Card *cardPlayed, Card *enemyCardPlayed,
                          const TypeOfEvent &event);
@@ -103,6 +123,14 @@ public:
   ~GameManager();
 
   static std::unique_ptr<GameManager> createFromSelection(const std::string &mapName);
+
+static constexpr int kSaveSlotCount = 3;
+  static std::string saveFilePath(int slot);
+  static bool hasSave(int slot);
+
+ bool saveGame(int slot) const;
+
+ static std::unique_ptr<GameManager> loadGame(int slot);
 
   void startGame();
 
@@ -139,6 +167,8 @@ public:
 
   bool moveFighter(Fighter *fighter, int tileId);
 
+bool moveThroughFog(Fighter *fighter, int destinationTileId);
+
   bool boostMovement(Card *card, Fighter *fighter = nullptr);
 
   bool canBoostMovement() const;
@@ -170,22 +200,31 @@ public:
   void enableAbility(Hero *hero);
 
   void requestTileChoice(std::vector<Tile *> options, std::function<void(Tile *)> onChosen);
+
+  void requestTileChoice(Fighter *chooser, std::vector<Tile *> options, std::function<void(Tile *)> onChosen);
   void requestFighterChoice(std::vector<Fighter *> options, std::function<void(Fighter *)> onChosen);
   void requestCardChoice(std::vector<Card *> options, std::function<void(Card *)> onChosen);
+void requestEffectChoice(std::vector<std::string> labels, std::function<void(int)> onChosen);
+  void requestEffectChoice(Fighter *chooser, std::vector<std::string> labels, std::function<void(int)> onChosen);
 
   bool isWaitingForTile() const;
   bool isWaitingForFighter() const;
   bool isWaitingForCard() const;
+  bool isWaitingForEffectChoice() const;
   bool isWaitingForSelection() const;
 
   std::vector<Tile *> getValidTiles() const;
   std::vector<Fighter *> getValidFighters() const;
   std::vector<Card *> getValidCards() const;
+  std::vector<std::string> getValidEffectChoiceLabels() const;
+
+ Fighter *getPendingChooser() const { return pendingChooser; }
 
   Tile *getStayTileOption() const;
 
   void submitTile(Tile *chosen);
   void submitFighter(Fighter *chosen);
   void submitCard(Card *chosen);
+  void submitEffectChoice(int index);
   void clearPending();
 };
