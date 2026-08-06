@@ -2,10 +2,12 @@
 #include "controller/PlayerSelectionManager.h"
 #include "controller/SceneManager.h"
 #include "libraries/magic_enum.hpp"
+#include "model/LoadGameSelection.h"
 #include "model/deck.h"
 #include "model/sidekick.h"
 #include "model/typeOfCard.h"
 #include <algorithm>
+#include <cctype>
 #include <cmath>
 namespace {
 const std::string kDefaultMap = "baskervilleManor";
@@ -25,6 +27,8 @@ std::string categoryLabel(TypeOfCard type) {
     return "Event";
   }
 }
+
+
 
 std::string timingLabel(TypeOfEvent event) {
   switch (event) {
@@ -107,9 +111,18 @@ GameScene::GameScene(AudioManager *audioManager, SceneManager *sceneManager,
       {{}, iconCards, "End Turn", "Discard down to 7, then end your turn."},
   };
 
-  gameManager = GameManager::createFromSelection(kDefaultMap);
+
+  int requestedSlot = LoadGameSelection::instance().getRequestedSlot();
+  LoadGameSelection::instance().clear();
+
+  if (requestedSlot >= 0) {
+    gameManager = GameManager::loadGame(requestedSlot);
+  }
+  if (!gameManager) {
+    gameManager = GameManager::createFromSelection(kDefaultMap);
+    gameManager->startGame();
+  }
   gameManager->addObserver(this);
-  gameManager->startGame();
 
   BuildBoardLayout();
   refreshFromGameManager();
@@ -172,6 +185,11 @@ void GameScene::refreshFromGameManager() {
         {"Unyielding Deduction",
          "Card effects cannot cancel or disable the abilities of Sherlock "
          "Holmes or Dr. Watson."});
+  } else if (heroName == "InvisibleMan") {
+    abilities.push_back(
+        {"Veil of Mist",
+         "While on a space with a fog token, defense cards gain +1. May "
+         "move directly between any two spaces with fog tokens."});
   }
 
   hand.clear();
@@ -184,8 +202,8 @@ void GameScene::refreshFromGameManager() {
                           ? card->getDefStat()
                           : card->getAttackStat();
       Texture2D *art = nullptr;
-      if (auto texId =
-              magic_enum::enum_cast<TextureID>((heroName, card->getName()))) {
+      if (auto texId = magic_enum::enum_cast<TextureID>(
+              (heroName+ card->getName()))) {
         art = &texture->getTexture(*texId);
       }
 
@@ -201,6 +219,7 @@ void GameScene::refreshFromGameManager() {
     Fighter *occ = gameManager->getMap().getFighterAt(t.id);
     t.occupant = occ;
     t.badge = occ ? 1 : 0;
+    t.fogTokenCount = gameManager->getMap().fogTokenCountAt(t.id);
   }
 
   heroSummaries.clear();
@@ -409,6 +428,20 @@ void GameScene::UpdateLayout() {
   } else {
     cardChoiceDeclineRect = {0, 0, 0, 0};
   }
+
+std::vector<std::string> effectChoiceLabels =
+      gameManager->isWaitingForEffectChoice()
+          ? gameManager->getValidEffectChoiceLabels()
+          : std::vector<std::string>{};
+  float effectChoiceRowH = 46.0f;
+  float effectChoicePanelH =
+      110.0f + (float)effectChoiceLabels.size() * (effectChoiceRowH + 10.0f);
+  float effectChoicePanelW = 360.0f;
+  effectChoicePanelRect =
+      centeredPanel(sw, sh, effectChoicePanelW, effectChoicePanelH);
+  effectChoiceOptionRects.clear();
+  layoutStackedRows(effectChoicePanelRect, 90.0f, effectChoiceRowH,
+                    (int)effectChoiceLabels.size(), &effectChoiceOptionRects);
 
   float revealCardH = 46.0f;
   float revealPanelH = 150.0f + handRevealCards.size() * (revealCardH + 10.0f);
@@ -730,6 +763,20 @@ void GameScene::drawBoard() {
     }
 
     DrawCircleLines((int)c.x, (int)c.y, t.radius, Color{0, 0, 0, 90});
+
+    if (t.fogTokenCount > 0) {
+      Color fogColor = Color{210, 210, 220, 170};
+      Color fogRing = Color{235, 235, 240, 210};
+      int wisps = t.fogTokenCount;
+      for (int i = 0; i < wisps; i++) {
+        float angle = (float)i * 2.0f * 3.14159265f / (float)wisps;
+        float orbit = t.radius * 0.5f;
+        Vector2 wispPos = {c.x + orbit * cosf(angle), c.y + orbit * sinf(angle)};
+        float wispRadius = t.radius * 0.32f;
+        DrawCircleV(wispPos, wispRadius, fogColor);
+        DrawCircleLines((int)wispPos.x, (int)wispPos.y, (int)wispRadius, fogRing);
+      }
+    }
 
     if (t.occupant) {
 
@@ -1122,6 +1169,70 @@ void GameScene::handleCardChoiceMouse() {
 
 bool GameScene::isCardChoicePromptActive() const {
   return gameManager->isWaitingForCard();
+}
+
+void GameScene::drawEffectChoicePrompt() {
+  DrawRectangle(0, 0, (int)sw, (int)sh, Color{0, 0, 0, 190});
+
+  DrawRectangleRounded(effectChoicePanelRect, 0.06f, 8, panelBg);
+  DrawRectangleRoundedLines(effectChoicePanelRect, 0.06f, 8, 3, gold);
+
+  const char *title = "CHOOSE ONE";
+  int titleWidth = MeasureTextEx(titleFont, title, 26, 1).x;
+  DrawTextEx(titleFont, title,
+             {effectChoicePanelRect.x + effectChoicePanelRect.width / 2 -
+                  titleWidth / 2.0f,
+              effectChoicePanelRect.y + 16},
+             26, 1, gold);
+
+
+  std::string subtitle = "Pick an option";
+  if (Fighter *chooser = gameManager->getPendingChooser()) {
+    if (Hero *ownerHero = gameManager->getHero(chooser->getOwnerPlayer())) {
+      subtitle = ownerHero->getName() + "'s choice";
+    }
+  }
+  DrawTextEx(smallFont, subtitle.c_str(),
+             {effectChoicePanelRect.x + 20, effectChoicePanelRect.y + 56}, 14,
+             1, textMuted);
+
+  std::vector<std::string> options = gameManager->isWaitingForEffectChoice()
+                                          ? gameManager->getValidEffectChoiceLabels()
+                                          : std::vector<std::string>{};
+
+  Vector2 mouse = GetMousePosition();
+  for (size_t i = 0; i < effectChoiceOptionRects.size() && i < options.size();
+       i++) {
+    Rectangle &r = effectChoiceOptionRects[i];
+    bool hovered = CheckCollisionPointRec(mouse, r);
+
+    DrawRectangleRounded(r, 0.1f, 6, Color{30, 27, 22, 255});
+    DrawRectangleRoundedLines(r, 0.1f, 6, 2,
+                              hovered ? gold : Color{110, 100, 80, 255});
+    DrawTextEx(labelFont, options[i].c_str(), {r.x + 12, r.y + 8}, 16, 1,
+               textLight);
+  }
+}
+
+void GameScene::handleEffectChoiceMouse() {
+  if (!IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+    return;
+  Vector2 mouse = GetMousePosition();
+
+  std::vector<std::string> options = gameManager->getValidEffectChoiceLabels();
+
+  for (size_t i = 0; i < effectChoiceOptionRects.size() && i < options.size();
+       i++) {
+    if (CheckCollisionPointRec(mouse, effectChoiceOptionRects[i])) {
+      gameManager->submitEffectChoice((int)i);
+      refreshFromGameManager();
+      return;
+    }
+  }
+}
+
+bool GameScene::isEffectChoicePromptActive() const {
+  return gameManager->isWaitingForEffectChoice();
 }
 
 void GameScene::drawDiscardPrompt() {
@@ -1534,6 +1645,19 @@ void GameScene::beginMovePicker() {
   for (Tile *t : board.getReachableTiles(fromTileId, moves, mover)) {
     legalMoveTiles.push_back(t->getId());
   }
+
+if (mover->getName() == "InvisibleMan" && board.hasFogToken(fromTileId)) {
+    for (int fogTileId : board.getFogTokenTileIds()) {
+      if (fogTileId == fromTileId || board.isOccupied(fogTileId)) {
+        continue;
+      }
+      if (std::find(legalMoveTiles.begin(), legalMoveTiles.end(), fogTileId) ==
+          legalMoveTiles.end()) {
+        legalMoveTiles.push_back(fogTileId);
+      }
+    }
+  }
+
   moveModeActive = !legalMoveTiles.empty();
 }
 
@@ -1550,7 +1674,9 @@ void GameScene::tryMoveToTile(int tileId) {
     return;
   }
 
-  gameManager->moveFighter(mover, tileId);
+  if (!gameManager->moveFighter(mover, tileId)) {
+    gameManager->moveThroughFog(mover, tileId);
+  }
   cancelMovePicker();
   refreshFromGameManager();
 }
@@ -1861,6 +1987,11 @@ void GameScene::Update() {
 
     return;
   }
+  if (isEffectChoicePromptActive()) {
+    handleEffectChoiceMouse();
+
+    return;
+  }
   if (isDiscardPromptActive()) {
     handleDiscardMouse();
 
@@ -1903,6 +2034,10 @@ void GameScene::Draw() {
 
     handRevealActive = false;
     drawCardChoicePrompt();
+  } else if (isEffectChoicePromptActive()) {
+
+    handRevealActive = false;
+    drawEffectChoicePrompt();
   } else if (isDiscardPromptActive())
     drawDiscardPrompt();
   else if (isHandRevealPromptActive())
