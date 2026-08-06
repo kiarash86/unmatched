@@ -5,5 +5,6 @@ enum class ScenesType {
     setting ,
     collection ,
     heroSelection ,
-    game
+    game,
+    loadGame
 };
