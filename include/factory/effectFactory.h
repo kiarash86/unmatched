@@ -15,6 +15,11 @@
 #include "engine/effects/choosePlaceEffect.h"
 #include "engine/effects/reviveEffect.h"
 #include "engine/effects/predictEffect.h"
+#include "engine/effects/setValueEffect.h"
+#include "engine/effects/removeFromBoardEffect.h"
+#include "engine/effects/placeOnDeckEffect.h"
+#include "engine/effects/chooseEffectEffect.h"
+#include "engine/effects/opponentChoiceEffect.h"
 #include "factory/conditionFactory.h"
 
 class EffectFactory {
