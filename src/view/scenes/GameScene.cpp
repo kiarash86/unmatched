@@ -154,6 +154,7 @@ void GameScene::onEnter() {
   winnerName.clear();
   handRevealActive = false;
   handRevealCards.clear();
+  savePromptActive = false;
   refreshFromGameManager();
 }
 
@@ -349,6 +350,19 @@ void GameScene::UpdateLayout() {
   stayPutRect = {sw - 340, sh - 60, 150, 44};
   resultMenuRect = {sw / 2 - 110, sh / 2 + 60, 220, 48};
 
+  saveButtonRect = {sw - 170, sh - 116, 150, 44};
+  {
+    float slotH = 56.0f;
+    float gap = 12.0f;
+    float panelW = 380.0f;
+    float panelH = 90.0f + GameManager::kSaveSlotCount * (slotH + gap) + 50.0f;
+    saveSlotPanelRect = centeredPanel(sw, sh, panelW, panelH);
+    saveSlotRects.clear();
+    float y = layoutStackedRows(saveSlotPanelRect, 90.0f, slotH,
+                                GameManager::kSaveSlotCount, &saveSlotRects);
+    saveSlotCancelRect = {saveSlotPanelRect.x + 20, y, panelW - 40, 40};
+  }
+
   float rowY = actionsPanelRect.y + 50;
   for (auto &btn : actionButtons) {
     btn.rec = {actionsPanelRect.x + 10, rowY, actionsPanelRect.width - 20, 46};
@@ -429,7 +443,9 @@ void GameScene::UpdateLayout() {
     cardChoiceDeclineRect = {0, 0, 0, 0};
   }
 
-std::vector<std::string> effectChoiceLabels =
+  // Effect-choice prompt (ChooseEffectEffect / OpponentChoiceEffect):
+  // simple stacked-button menu, one row per labeled option.
+  std::vector<std::string> effectChoiceLabels =
       gameManager->isWaitingForEffectChoice()
           ? gameManager->getValidEffectChoiceLabels()
           : std::vector<std::string>{};
@@ -861,6 +877,19 @@ void GameScene::drawBottomBar() {
   DrawTextEx(labelFont, "END TURN", {endTurnRect.x + 22, endTurnRect.y + 11},
              24, 1, WHITE);
 
+  {
+    bool saveEnabled = !gameManager->isWaitingForSelection() &&
+                       !gameManager->isCombatActive();
+    Color saveBg = saveEnabled ? Color{45, 35, 70, 255} : Color{35, 32, 30, 180};
+    Color saveBorder = saveEnabled ? Color{170, 130, 220, 255}
+                                   : Fade(Color{170, 130, 220, 255}, 0.35f);
+    Color saveText = saveEnabled ? WHITE : Fade(WHITE, 0.4f);
+    DrawRectangleRounded(saveButtonRect, 0.15f, 6, saveBg);
+    DrawRectangleRoundedLines(saveButtonRect, 0.15f, 6, 2, saveBorder);
+    DrawTextEx(labelFont, "SAVE", {saveButtonRect.x + 50, saveButtonRect.y + 11},
+               24, 1, saveText);
+  }
+
   if (gameManager->isManeuverActive()) {
     DrawRectangleRounded(finishMovingRect, 0.15f, 6, Color{55, 45, 20, 255});
     DrawRectangleRoundedLines(finishMovingRect, 0.15f, 6, 2, gold);
@@ -1235,6 +1264,83 @@ bool GameScene::isEffectChoicePromptActive() const {
   return gameManager->isWaitingForEffectChoice();
 }
 
+void GameScene::refreshSaveSlotInfo() {
+  saveSlotHasSave.assign(GameManager::kSaveSlotCount, false);
+  for (int i = 0; i < GameManager::kSaveSlotCount; i++) {
+    saveSlotHasSave[i] = GameManager::hasSave(i + 1);
+  }
+}
+
+void GameScene::openSavePrompt() {
+  if (gameManager->isWaitingForSelection() || gameManager->isCombatActive()) {
+    return;
+  }
+  refreshSaveSlotInfo();
+  savePromptActive = true;
+}
+
+void GameScene::drawSavePrompt() {
+  DrawRectangle(0, 0, (int)sw, (int)sh, Color{0, 0, 0, 190});
+
+  DrawRectangleRounded(saveSlotPanelRect, 0.06f, 8, panelBg);
+  DrawRectangleRoundedLines(saveSlotPanelRect, 0.06f, 8, 3, gold);
+
+  const char *title = "SAVE GAME";
+  int titleWidth = MeasureTextEx(titleFont, title, 26, 1).x;
+  DrawTextEx(titleFont, title,
+             {saveSlotPanelRect.x + saveSlotPanelRect.width / 2 - titleWidth / 2.0f,
+              saveSlotPanelRect.y + 16},
+             26, 1, gold);
+
+  DrawTextEx(smallFont, "Choose a slot to save to",
+             {saveSlotPanelRect.x + 20, saveSlotPanelRect.y + 56}, 14, 1, textMuted);
+
+  Vector2 mouse = GetMousePosition();
+  for (size_t i = 0; i < saveSlotRects.size(); i++) {
+    Rectangle &r = saveSlotRects[i];
+    bool hovered = CheckCollisionPointRec(mouse, r);
+    bool occupied = i < saveSlotHasSave.size() && saveSlotHasSave[i];
+
+    DrawRectangleRounded(r, 0.1f, 6, Color{30, 27, 22, 255});
+    DrawRectangleRoundedLines(r, 0.1f, 6, 2, hovered ? gold : Color{110, 100, 80, 255});
+
+    std::string label = "SLOT " + std::to_string(i + 1);
+    DrawTextEx(labelFont, label.c_str(), {r.x + 12, r.y + 6}, 16, 1, textLight);
+    DrawTextEx(smallFont, occupied ? "Overwrite saved game" : "Empty slot",
+               {r.x + 12, r.y + 28}, 13, 1, textMuted);
+  }
+
+  bool cancelHovered = CheckCollisionPointRec(mouse, saveSlotCancelRect);
+  DrawRectangleRounded(saveSlotCancelRect, 0.1f, 6, Color{40, 25, 25, 255});
+  DrawRectangleRoundedLines(saveSlotCancelRect, 0.1f, 6, 2,
+                            cancelHovered ? RED : Color{110, 100, 80, 255});
+  DrawTextEx(labelFont, "CANCEL", {saveSlotCancelRect.x + 12, saveSlotCancelRect.y + 8},
+             16, 1, textLight);
+}
+
+void GameScene::handleSaveMouse() {
+  if (!IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+    return;
+  }
+  Vector2 mouse = GetMousePosition();
+
+  for (size_t i = 0; i < saveSlotRects.size(); i++) {
+    if (CheckCollisionPointRec(mouse, saveSlotRects[i])) {
+      if (gameManager->saveGame((int)i + 1)) {
+        pushLog(eventLog, "Game saved to slot " + std::to_string(i + 1) + ".");
+      } else {
+        pushLog(eventLog, "Couldn't save the game right now.");
+      }
+      savePromptActive = false;
+      return;
+    }
+  }
+
+  if (CheckCollisionPointRec(mouse, saveSlotCancelRect)) {
+    savePromptActive = false;
+  }
+}
+
 void GameScene::drawDiscardPrompt() {
 
   int handCount = (int)hand.size();
@@ -1438,6 +1544,11 @@ void GameScene::handleMouse() {
   if (CheckCollisionPointRec(mouse, endTurnRect) &&
       IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
     activateAction((int)actionButtons.size() - 1);
+  }
+
+  if (CheckCollisionPointRec(mouse, saveButtonRect) &&
+      IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+    openSavePrompt();
   }
 
   if (gameManager->isManeuverActive() &&
@@ -1973,6 +2084,10 @@ void GameScene::Update() {
     }
     return;
   }
+  if (savePromptActive) {
+    handleSaveMouse();
+    return;
+  }
   if (combatDefensePending) {
     if (predictionPromptActive) {
       handlePredictionMouse();
@@ -2042,6 +2157,8 @@ void GameScene::Draw() {
     drawDiscardPrompt();
   else if (isHandRevealPromptActive())
     drawHandRevealPrompt();
+  else if (savePromptActive)
+    drawSavePrompt();
   if (matchOver)
     drawResultScreen();
 }
