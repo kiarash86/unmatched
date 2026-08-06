@@ -74,8 +74,8 @@ MainScene::MainScene(AudioManager *audioManager, SceneManager *sceneManager,
               "Begin your journey"},
              {{},
               textureManager->getTexture(TextureID::iconBook),
-              "HOW TO PLAY",
-              "Learn the rules"},
+              "LOAD GAME",
+              "Continue a saved game"},
              {{},
               textureManager->getTexture(TextureID::iconCards),
               "COLLECTION",
@@ -176,8 +176,7 @@ void MainScene::activateButton(int index) // choose next scene
     break;
   case 1:
     audio->playSound(SoundID::clickForAll, 1.0f);
-    scene->changeScene(ScenesType::game);
-    //HACK: FOR NOW USING THIS FOR CHECKING BOARD
+    scene->changeScene(ScenesType::loadGame);
     break;
   case 2:
     audio->playSound(SoundID::clickForAll, 1.0f);
