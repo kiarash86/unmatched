@@ -45,19 +45,12 @@ void pushLog(std::deque<std::string> &log, const std::string &line) {
     log.pop_front();
 }
 
-// Returns a rectangle of size panelW x panelH centered on the sw x sh screen.
-// Used by every popup/prompt panel (defense, prediction, card choice, hand
-// reveal) so they all share one centering formula.
+
 Rectangle centeredPanel(float sw, float sh, float panelW, float panelH) {
   return {sw / 2 - panelW / 2, sh / 2 - panelH / 2, panelW, panelH};
 }
 
-// Lays out `count` stacked option rows of height rowH inside `panel`,
-// starting `topOffset` px below the panel's top, each row spanning
-// panel.x+20 .. panel.width-40 with a 10px gap between rows. If `outRects`
-// is non-null, each row's rectangle is appended to it. Returns the Y
-// coordinate immediately after the last row (where a trailing button/rect,
-// e.g. "no defense" or "close", can be placed).
+
 float layoutStackedRows(const Rectangle &panel, float topOffset, float rowH,
                         int count, std::vector<Rectangle> *outRects) {
   float y = panel.y + topOffset;
@@ -68,7 +61,7 @@ float layoutStackedRows(const Rectangle &panel, float topOffset, float rowH,
   }
   return y;
 }
-} // namespace
+} 
 
 GameScene::GameScene(AudioManager *audioManager, SceneManager *sceneManager,
                      TextureManager *textureManager, FontManager *fontManager)
