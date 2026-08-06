@@ -1,0 +1,32 @@
+{
+    "name": "covert_preparation",
+    "type": "multipurpose",
+    "performer": "fighter",
+    "img": "../../../../assets/images/invisibleman/covert_preparation.png",
+    "boost": 1,
+    "eventType": "after_combat",
+    "attack/def": 2,
+    "effects": [
+        {
+            "type": "draw_card",
+            "howMany": 1
+        },
+        {
+            "type": "move",
+            "whichOne": "fog_token",
+            "howMany": 1,
+            "distance": 2,
+            "toWhere": "none",
+            "performer": "self"
+        },
+        {
+            "type": "move",
+            "whichOne": "fog_token",
+            "howMany": 1,
+            "distance": 2,
+            "toWhere": "none",
+            "performer": "enemy"
+        }
+    ],
+    "quantity": 3
+}
