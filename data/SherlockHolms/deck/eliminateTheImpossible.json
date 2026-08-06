@@ -15,7 +15,7 @@
             "type": "remove_card",
             "from": "enemy",
             "howMany": 1,
-            "how": "user_choosen"
+            "how": "user_chosen"
         }
     ],
     "quantity": 2

@@ -10,7 +10,7 @@
         {
             "type": "remove_card",
             "from": "self",
-            "how": "user_choosen",
+            "how": "user_chosen",
             "howMany": -1,
             "bonusPerCard": {
                 "toWhat": "attack",

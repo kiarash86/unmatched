@@ -14,7 +14,7 @@
                 "type": "remove_card",
                 "from": "self",
                 "howMany": 1,
-                "how": "user_choosen"
+                "how": "user_chosen"
             },
             "onDecline": {
                 "type": "move",

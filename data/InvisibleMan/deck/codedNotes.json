@@ -14,9 +14,9 @@
         {
             "type": "place_on_deck",
             "from": "self",
-            "how": "user_choosen",
+            "how": "user_chosen",
             "howMany": 2,
-            "order": "user_choosen"
+            "order": "user_chosen"
         }
     ],
     "quantity": 2
