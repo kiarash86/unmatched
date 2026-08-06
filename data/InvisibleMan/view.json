@@ -1,0 +1,13 @@
+{
+    "name": "InvisibleMan",
+    "role": "Unseen Fugitive",
+    "desc": "A scientist rendered forever\nunseen by his own experiment.\nMoves through the fog unnoticed.",
+    "hp": 15,
+    "attack": 2,
+    "defense": 2,
+    "speed": 2,
+    "abilityTitle": "Veil of Mist",
+    "abilityDesc": "While on a space with a\nfog token, defense cards gain\n+1. May move directly between\nany two spaces with fog tokens.",
+    "themeColor": [120, 120, 130],
+    "difficulty": 3
+}
