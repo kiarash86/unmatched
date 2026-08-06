@@ -27,9 +27,16 @@ public:
 
   std::vector<Card *> getHand() const;
 
+  std::vector<Card *> getDrawPile() const;
+  std::vector<Card *> getDiscardPile() const;
+
   int drawPileCount() const;
 
   int discardPileCount() const;
 
   int handPileCount() const;
+
+  void restoreState(std::vector<std::unique_ptr<Card>> newHand,
+                     std::vector<std::unique_ptr<Card>> newDrawPile,
+                     std::vector<std::unique_ptr<Card>> newDiscardPile);
 };

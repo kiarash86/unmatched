@@ -63,6 +63,50 @@ std::vector<Card *> Deck::getHand() const {
   return result;
 }
 
+std::vector<Card *> Deck::getDrawPile() const {
+  std::vector<Card *> result;
+  result.reserve(drawPile.size());
+  for (auto &c : drawPile) {
+    result.push_back(c.get());
+  }
+  return result;
+}
+
+std::vector<Card *> Deck::getDiscardPile() const {
+  std::vector<Card *> result;
+  result.reserve(discardPile.size());
+  for (auto &c : discardPile) {
+    result.push_back(c.get());
+  }
+  return result;
+}
+
 int Deck::drawPileCount() const { return (int)drawPile.size(); }
 int Deck::discardPileCount() const { return (int)discardPile.size(); }
 int Deck::handPileCount() const { return (int)hand.size(); }
+
+std::vector<std::unique_ptr<Card>> Deck::releaseAllCards() {
+  std::vector<std::unique_ptr<Card>> all;
+  all.reserve(hand.size() + drawPile.size() + discardPile.size());
+  for (auto &c : hand) {
+    all.push_back(std::move(c));
+  }
+  for (auto &c : drawPile) {
+    all.push_back(std::move(c));
+  }
+  for (auto &c : discardPile) {
+    all.push_back(std::move(c));
+  }
+  hand.clear();
+  drawPile.clear();
+  discardPile.clear();
+  return all;
+}
+
+void Deck::restoreState(std::vector<std::unique_ptr<Card>> newHand,
+                        std::vector<std::unique_ptr<Card>> newDrawPile,
+                        std::vector<std::unique_ptr<Card>> newDiscardPile) {
+  hand = std::move(newHand);
+  drawPile = std::move(newDrawPile);
+  discardPile = std::move(newDiscardPile);
+}
