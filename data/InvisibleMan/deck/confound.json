@@ -1,0 +1,30 @@
+{
+    "name": "confound",
+    "type": "multipurpose",
+    "performer": "fighter",
+    "img": "../../../../assets/images/invisibleman/confound.png",
+    "boost": 2,
+    "eventType": "after_combat",
+    "attack/def": 3,
+    "effects": [
+        {
+            "type": "opponent_choice",
+            "who": "enemy",
+            "choice": {
+                "type": "remove_card",
+                "from": "self",
+                "howMany": 1,
+                "how": "user_choosen"
+            },
+            "onDecline": {
+                "type": "move",
+                "whichOne": "fog_token",
+                "howMany": 1,
+                "distance": 99,
+                "toWhere": "any",
+                "performer": "self"
+            }
+        }
+    ],
+    "quantity": 2
+}

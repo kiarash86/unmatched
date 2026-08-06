@@ -1,0 +1,13 @@
+{
+    "name" : "InvisibleMan", 
+    "img": "../../../../assets/images/invisibleman/invisiblemanHerp.webp",
+    "health" : 15 , 
+    "movement": 2, 
+    "attackType": "melee",
+    "sidekickList": [],
+    "fogTokenList": [
+        "fog",
+        "fog",
+        "fog"
+    ]
+}

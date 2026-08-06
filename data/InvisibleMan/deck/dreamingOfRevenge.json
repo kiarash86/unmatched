@@ -1,0 +1,18 @@
+{
+    "name": "dreaming_of_revenge",
+    "type": "multipurpose",
+    "performer": "fighter",
+    "img": "../../../../assets/images/invisibleman/dreaming_of_revenge.png",
+    "boost": 1,
+    "eventType": "after_combat",
+    "attack/def": 3,
+    "effects": [
+        {
+            "type": "attack",
+            "toWhat": "enemy_fighters_on_fog_token",
+            "howMuch": 1,
+            "condition": "self_on_fog_token"
+        }
+    ],
+    "quantity": 2
+}

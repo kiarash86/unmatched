@@ -1,0 +1,16 @@
+{
+    "name": "reign_of_terror",
+    "type": "event",
+    "performer": "hero",
+    "img": "../../../../assets/images/invisibleman/reign_of_terror.png",
+    "boost": 1,
+    "effects": [
+        {
+            "type": "attack",
+            "toWhat": "each_enemy_fighter",
+            "howMuch": 2,
+            "condition": "self_on_fog_token"
+        }
+    ],
+    "quantity": 2
+}

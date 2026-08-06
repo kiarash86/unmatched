@@ -1,0 +1,26 @@
+{
+    "name": "slip_away",
+    "type": "attack",
+    "performer": "fighter",
+    "img": "../../../../assets/images/invisibleman/slip_away.png",
+    "boost": 2,
+    "attack": 3,
+    "eventType": "after_combat",
+    "effects": [
+        {
+            "type": "move",
+            "whichOne": "fog_token",
+            "howMany": 1,
+            "distance": 99,
+            "toWhere": "space_without_fighters"
+        },
+        {
+            "type": "move",
+            "whichOne": "self",
+            "howMany": 1,
+            "distance": 99,
+            "toWhere": "same_space_as_moved_fog_token"
+        }
+    ],
+    "quantity": 3
+}

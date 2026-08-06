@@ -1,0 +1,28 @@
+{
+    "name": "into_thin_air",
+    "type": "def",
+    "performer": "fighter",
+    "img": "../../../../assets/images/invisibleman/into_thin_air.png",
+    "boost": 1,
+    "def": 4,
+    "eventType": "after_combat",
+    "effects": [
+        {
+            "type": "move",
+            "whichOne": "self",
+            "howMany": 1,
+            "distance": 1,
+            "condition": "none",
+            "toWhere": "none",
+            "allowStay": true
+        },
+        {
+            "type": "move",
+            "whichOne": "fog_token",
+            "howMany": 1,
+            "distance": 3,
+            "toWhere": "none"
+        }
+    ],
+    "quantity": 2
+}

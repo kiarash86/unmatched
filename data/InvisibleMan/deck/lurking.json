@@ -1,0 +1,35 @@
+{
+    "name": "lurking",
+    "type": "def",
+    "performer": "fighter",
+    "img": "../../../../assets/images/invisibleman/lurking.png",
+    "boost": 2,
+    "def": 2,
+    "eventType": "after_combat",
+    "effects": [
+        {
+            "type": "draw_card",
+            "howMany": 1
+        },
+        {
+            "type": "choose_effect",
+            "options": [
+                {
+                    "type": "move",
+                    "whichOne": "self",
+                    "howMany": 1,
+                    "distance": 99,
+                    "toWhere": "space_with_fog_token"
+                },
+                {
+                    "type": "move",
+                    "whichOne": "fog_token",
+                    "howMany": 1,
+                    "distance": 3,
+                    "toWhere": "none"
+                }
+            ]
+        }
+    ],
+    "quantity": 2
+}

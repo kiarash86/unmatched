@@ -1,0 +1,25 @@
+{
+    "name": "vanish",
+    "type": "event",
+    "performer": "hero",
+    "img": "../../../../assets/images/invisibleman/vanish.png",
+    "boost": 3,
+    "effects": [
+        {
+            "type": "add",
+            "toWhat": "health",
+            "howMuch": 1
+        },
+        {
+            "type": "remove_from_board",
+            "whichOne": "self"
+        },
+        {
+            "type": "choose_place",
+            "who": "self",
+            "when": "start_of_next_turn",
+            "note": "if this card was played as your first action this turn, end your turn"
+        }
+    ],
+    "quantity": 2
+}

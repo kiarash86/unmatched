@@ -1,0 +1,23 @@
+{
+    "name": "coded_notes",
+    "type": "def",
+    "performer": "fighter",
+    "img": "../../../../assets/images/invisibleman/coded_notes.png",
+    "boost": 2,
+    "def": 3,
+    "eventType": "after_combat",
+    "effects": [
+        {
+            "type": "draw_card",
+            "howMany": 3
+        },
+        {
+            "type": "place_on_deck",
+            "from": "self",
+            "how": "user_choosen",
+            "howMany": 2,
+            "order": "user_choosen"
+        }
+    ],
+    "quantity": 2
+}
