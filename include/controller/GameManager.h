@@ -87,6 +87,9 @@ std::vector<nlohmann::json> undoStack;
   void finishSetup();
   Fighter *sidekickAwaitingPlacement{nullptr};
 
+  void placeFogTokensFrom(int heroIndex, int fogIndex);
+  Hero *fogTokenAwaitingHero{nullptr};
+
   void applyFatigue(Hero *hero);
 
   void checkFighterDeath(Fighter *fighter);
@@ -163,6 +166,9 @@ static constexpr int kSaveSlotCount = 3;
 
   bool isAwaitingSidekickPlacement() const { return sidekickAwaitingPlacement != nullptr; }
   Fighter *getSidekickAwaitingPlacement() const { return sidekickAwaitingPlacement; }
+
+  bool isAwaitingFogTokenPlacement() const { return fogTokenAwaitingHero != nullptr; }
+  Hero *getFogTokenAwaitingHero() const { return fogTokenAwaitingHero; }
 
   bool isGameOver() const;
   Hero *getWinner() const;

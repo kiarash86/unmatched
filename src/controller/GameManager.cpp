@@ -508,9 +508,6 @@ void GameManager::placeHeroesFrom(int heroIndex, std::vector<int> availableStart
     for (auto &sidekick : hero->getSidekicks()) {
       sidekick->setOwnerPlayer(heroIndex);
     }
-  for (int i = 0; i < hero->getStartingFogTokenCount(); i++) {
-      map->addFogToken(chosen->getId());
-    }
 
     std::vector<int> remaining;
     for (int id : availableStartTileIds) {
@@ -533,7 +530,7 @@ void GameManager::placeSidekicksFrom(int heroIndex, std::size_t sidekickIndex) {
   if (heroIndex >= (int)heroes.size()) {
 
     sidekickAwaitingPlacement = nullptr;
-    finishSetup();
+    placeFogTokensFrom(0, 0);
     return;
   }
 
@@ -564,6 +561,50 @@ void GameManager::placeSidekicksFrom(int heroIndex, std::size_t sidekickIndex) {
   requestTileChoice(options, [this, heroIndex, sidekickIndex, sidekick](Tile *chosen) {
     map->placeFighter(sidekick, chosen->getId());
     placeSidekicksFrom(heroIndex, sidekickIndex + 1);
+  });
+}
+
+void GameManager::placeFogTokensFrom(int heroIndex, int fogIndex) {
+
+  while (heroIndex < (int)heroes.size() &&
+         fogIndex >= heroes[heroIndex]->getStartingFogTokenCount()) {
+    heroIndex++;
+    fogIndex = 0;
+  }
+
+  if (heroIndex >= (int)heroes.size()) {
+
+    fogTokenAwaitingHero = nullptr;
+    finishSetup();
+    return;
+  }
+
+  Hero *hero = heroes[heroIndex].get();
+  fogTokenAwaitingHero = hero;
+
+  int heroTileId = map->getTileIdOf(hero);
+  Tile *heroTile = map->getTile(heroTileId);
+  std::vector<Tile *> options;
+  if (heroTile) {
+    for (Tile *t : map->getTilesInZones(heroTile->getZones())) {
+      if (t->getId() == heroTileId || map->isOccupied(t->getId())) {
+        continue;
+      }
+      options.push_back(t);
+    }
+    std::sort(options.begin(), options.end(),
+              [](Tile *a, Tile *b) { return a->getId() < b->getId(); });
+  }
+
+  if (options.empty()) {
+
+    placeFogTokensFrom(heroIndex, fogIndex + 1);
+    return;
+  }
+
+  requestTileChoice(options, [this, heroIndex, fogIndex](Tile *chosen) {
+    map->addFogToken(chosen->getId());
+    placeFogTokensFrom(heroIndex, fogIndex + 1);
   });
 }
 
