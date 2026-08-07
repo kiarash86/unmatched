@@ -170,6 +170,78 @@ bool GameManager::hasSave(int slot) {
   return std::filesystem::exists(saveFilePath(slot));
 }
 
+nlohmann::json GameManager::serializeState() const {
+  nlohmann::json j;
+  j["mapName"] = map->getName();
+
+  nlohmann::json fogArr = nlohmann::json::array();
+  for (int tileId : map->getFogTokenTileIds()) {
+    fogArr.push_back({{"tileId", tileId}, {"count", map->fogTokenCountAt(tileId)}});
+  }
+  j["fogTokens"] = std::move(fogArr);
+
+  nlohmann::json heroesArr = nlohmann::json::array();
+  for (auto &hero : heroes) {
+    nlohmann::json h;
+    h["name"] = hero->getName();
+    h["tileId"] = map->getTileIdOf(hero.get());
+    h["health"] = hero->getHealth();
+
+    h["fatigued"] = hero->isFatigued();
+    h["startingFogTokenCount"] = hero->getStartingFogTokenCount();
+    if (hero->getDeck()) {
+      h["deck"] = serializeDeck(hero->getDeck());
+    }
+
+    nlohmann::json sidekicksArr = nlohmann::json::array();
+    for (auto &sk : hero->getSidekicks()) {
+      nlohmann::json s;
+      s["name"] = sk->getName();
+      s["tileId"] = map->getTileIdOf(sk.get());
+      s["health"] = sk->getHealth();
+      s["fatigued"] = sk->isFatigued();
+      sidekicksArr.push_back(std::move(s));
+    }
+    h["sidekicks"] = std::move(sidekicksArr);
+
+    heroesArr.push_back(std::move(h));
+  }
+  j["heroes"] = std::move(heroesArr);
+
+  j["currentTurn"] = currentTurn;
+  j["actionsRemaining"] = actionsRemaining;
+  j["maneuverActive"] = maneuverActive;
+  j["maneuverBoosted"] = maneuverBoosted;
+
+  nlohmann::json movesObj = nlohmann::json::object();
+  for (auto &entry : movesRemainingByFighter) {
+    std::string id = idForFighter(heroes, entry.first);
+    if (!id.empty()) {
+      movesObj[id] = entry.second;
+    }
+  }
+  j["movesRemainingByFighter"] = std::move(movesObj);
+
+  nlohmann::json fogTurnObj = nlohmann::json::object();
+  for (auto &entry : fogTileAtOwnerTurnStart) {
+    std::string id = idForFighter(heroes, entry.first);
+    if (!id.empty()) {
+      fogTurnObj[id] = entry.second;
+    }
+  }
+  j["fogTileAtOwnerTurnStart"] = std::move(fogTurnObj);
+
+  nlohmann::json disabledArr = nlohmann::json::array();
+  for (Hero *h : disabledAbilityHeroes) {
+    if (h) {
+      disabledArr.push_back(h->getName());
+    }
+  }
+  j["disabledAbilityHeroes"] = std::move(disabledArr);
+
+  return j;
+}
+
 bool GameManager::saveGame(int slot) const {
 if (isWaitingForSelection() || isCombatActive()) {
     return false;
@@ -179,73 +251,7 @@ if (isWaitingForSelection() || isCombatActive()) {
   }
 
   try {
-    nlohmann::json j;
-    j["mapName"] = map->getName();
-
-    nlohmann::json fogArr = nlohmann::json::array();
-    for (int tileId : map->getFogTokenTileIds()) {
-      fogArr.push_back({{"tileId", tileId}, {"count", map->fogTokenCountAt(tileId)}});
-    }
-    j["fogTokens"] = std::move(fogArr);
-
-    nlohmann::json heroesArr = nlohmann::json::array();
-    for (auto &hero : heroes) {
-      nlohmann::json h;
-      h["name"] = hero->getName();
-      h["tileId"] = map->getTileIdOf(hero.get());
-      h["health"] = hero->getHealth();
-
-      h["fatigued"] = hero->isFatigued();
-      h["startingFogTokenCount"] = hero->getStartingFogTokenCount();
-      if (hero->getDeck()) {
-        h["deck"] = serializeDeck(hero->getDeck());
-      }
-
-      nlohmann::json sidekicksArr = nlohmann::json::array();
-      for (auto &sk : hero->getSidekicks()) {
-        nlohmann::json s;
-        s["name"] = sk->getName();
-        s["tileId"] = map->getTileIdOf(sk.get());
-        s["health"] = sk->getHealth();
-        s["fatigued"] = sk->isFatigued();
-        sidekicksArr.push_back(std::move(s));
-      }
-      h["sidekicks"] = std::move(sidekicksArr);
-
-      heroesArr.push_back(std::move(h));
-    }
-    j["heroes"] = std::move(heroesArr);
-
-    j["currentTurn"] = currentTurn;
-    j["actionsRemaining"] = actionsRemaining;
-    j["maneuverActive"] = maneuverActive;
-    j["maneuverBoosted"] = maneuverBoosted;
-
-    nlohmann::json movesObj = nlohmann::json::object();
-    for (auto &entry : movesRemainingByFighter) {
-      std::string id = idForFighter(heroes, entry.first);
-      if (!id.empty()) {
-        movesObj[id] = entry.second;
-      }
-    }
-    j["movesRemainingByFighter"] = std::move(movesObj);
-
-    nlohmann::json fogTurnObj = nlohmann::json::object();
-    for (auto &entry : fogTileAtOwnerTurnStart) {
-      std::string id = idForFighter(heroes, entry.first);
-      if (!id.empty()) {
-        fogTurnObj[id] = entry.second;
-      }
-    }
-    j["fogTileAtOwnerTurnStart"] = std::move(fogTurnObj);
-
-    nlohmann::json disabledArr = nlohmann::json::array();
-    for (Hero *h : disabledAbilityHeroes) {
-      if (h) {
-        disabledArr.push_back(h->getName());
-      }
-    }
-    j["disabledAbilityHeroes"] = std::move(disabledArr);
+    nlohmann::json j = serializeState();
 
     std::filesystem::path path(saveFilePath(slot));
     if (path.has_parent_path()) {
@@ -269,7 +275,18 @@ std::unique_ptr<GameManager> GameManager::loadGame(int slot) {
 
   try {
     nlohmann::json j = load(saveFilePath(slot));
+    return buildFromState(j);
+  } catch (const AppException &) {
+    return nullptr;
+  } catch (const nlohmann::json::exception &) {
+    return nullptr;
+  } catch (const std::exception &) {
+    return nullptr;
+  }
+}
 
+std::unique_ptr<GameManager> GameManager::buildFromState(const nlohmann::json &j) {
+  try {
     if (!j.contains("heroes") || !j["heroes"].is_array() || !j.contains("mapName")) {
       return nullptr;
     }
@@ -393,7 +410,39 @@ std::unique_ptr<GameManager> GameManager::loadGame(int slot) {
   }
 }
 
+void GameManager::pushUndoCheckpoint() {
+if (isWaitingForSelection() || isCombatActive() || !map) {
+    return;
+  }
+  try {
+    undoStack.push_back(serializeState());
+  } catch (const std::exception &) {
+ }
+}
+
+void GameManager::clearUndoHistory() { undoStack.clear(); }
+
+bool GameManager::canUndo() const { return !undoStack.empty(); }
+
+std::unique_ptr<GameManager> GameManager::undo() {
+  if (undoStack.empty()) {
+    return nullptr;
+  }
+
+  nlohmann::json snapshot = std::move(undoStack.back());
+  undoStack.pop_back();
+
+  auto restored = buildFromState(snapshot);
+  if (!restored) {
+    return nullptr;
+  }
+
+  restored->undoStack = std::move(undoStack);
+  return restored;
+}
+
 void GameManager::resetTurnState() {
+  clearUndoHistory();
   actionsRemaining = 2;
   movesRemainingByFighter.clear();
   maneuverActive = false;
@@ -687,6 +736,8 @@ bool GameManager::performManeuver() {
     return false;
   }
 
+  pushUndoCheckpoint();
+
   Deck *deck = hero->getDeck();
 
   bool deckWasEmpty = deck->drawPileCount() == 0;
@@ -751,6 +802,8 @@ bool GameManager::moveFighter(Fighter *fighter, int tileId) {
     return false;
   }
 
+  pushUndoCheckpoint();
+
   map->placeFighter(fighter, tileId);
   movesRemainingByFighter[fighter] = remaining - distance;
 
@@ -786,6 +839,8 @@ bool GameManager::moveThroughFog(Fighter *fighter, int destinationTileId) {
   if (remaining <= 0) {
     return false;
   }
+
+  pushUndoCheckpoint();
 
   map->placeFighter(fighter, destinationTileId);
   movesRemainingByFighter[fighter] = remaining - 1;
@@ -823,6 +878,8 @@ bool GameManager::boostMovement(Card *card, Fighter *fighter) {
     return false;
   }
 
+  pushUndoCheckpoint();
+
   int gain = card->getBoost();
   hero->getDeck()->discard(card);
 
@@ -854,6 +911,8 @@ bool GameManager::playCard(Card *card, Fighter *self, Fighter *target, Fighter *
   if (!heroHasCardInHand(hero, card)) {
     return false;
   }
+
+  pushUndoCheckpoint();
 
   auto data = std::make_shared<gameData>(
       buildGameData(self, target, enemy, card, nullptr, card->getEventType()));
@@ -1216,6 +1275,7 @@ bool GameManager::startCombat(Card *attackCard, Fighter *attacker, Fighter *targ
   combat.defender = target;
   combat.attackerCard = attackCard;
   actionsRemaining--;
+  clearUndoHistory();
   return true;
 }
 

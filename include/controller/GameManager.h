@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <variant>
 #include <vector>
+#include <nlohmann/json.hpp>
 
 using PendingSelection =
     std::variant<std::monostate, std::vector<Tile *>, std::vector<Fighter *>,
@@ -72,6 +73,12 @@ bool deferredPlacementRequestedThisCard{false};
 
   void resetTurnState();
 
+std::vector<nlohmann::json> undoStack;
+  void pushUndoCheckpoint();
+  void clearUndoHistory();
+  nlohmann::json serializeState() const;
+  static std::unique_ptr<GameManager> buildFromState(const nlohmann::json &j);
+
   std::vector<int> allStartTileIds;
   void placeHeroesFrom(int heroIndex, std::vector<int> availableStartTileIds);
   Hero *heroAwaitingStartPlacement{nullptr};
@@ -131,6 +138,10 @@ static constexpr int kSaveSlotCount = 3;
  bool saveGame(int slot) const;
 
  static std::unique_ptr<GameManager> loadGame(int slot);
+
+
+  bool canUndo() const;
+  std::unique_ptr<GameManager> undo();
 
   void startGame();
 
