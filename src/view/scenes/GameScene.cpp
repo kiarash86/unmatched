@@ -626,6 +626,14 @@ void GameScene::drawBoard() {
             sk ? sk->getName().c_str() : "sidekick",
             sk ? sk->getOwnerPlayer() + 1 : 0),
         {boardRect.x + 12, boardRect.y + 10}, 18, 1, gold);
+  } else if (gameManager->isAwaitingFogTokenPlacement()) {
+    Hero *h = gameManager->getFogTokenAwaitingHero();
+    DrawTextEx(
+        smallFont,
+        TextFormat(
+            "Player %d: place a fog token -- click a highlighted space",
+            h ? h->getOwnerPlayer() + 1 : 0),
+        {boardRect.x + 12, boardRect.y + 10}, 18, 1, gold);
   } else if (gameManager->isWaitingForTile()) {
     DrawTextEx(smallFont, "Choose a highlighted space",
                {boardRect.x + 12, boardRect.y + 10}, 18, 1, gold);
