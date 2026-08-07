@@ -647,6 +647,9 @@ bool GameManager::endTurn() {
   if (heroes.empty() || matchOver) {
     return false;
   }
+  if (isWaitingForSelection() || isCombatActive()) {
+    return false;
+  }
   if (actionsRemaining > 0) {
     return false;
   }
@@ -1269,13 +1272,14 @@ bool GameManager::startCombat(Card *attackCard, Fighter *attacker, Fighter *targ
     }
   }
 
+  pushUndoCheckpoint();
+
   combat = CombatRound{};
   combat.active = true;
   combat.attacker = attacker;
   combat.defender = target;
   combat.attackerCard = attackCard;
   actionsRemaining--;
-  clearUndoHistory();
   return true;
 }
 
