@@ -12,6 +12,24 @@
 namespace {
 const std::string kDefaultMap = "baskervilleManor";
 
+std::string cardTextureKey(const std::string &heroName, const std::string &cardName) {
+  std::string key = heroName;
+  if (!key.empty()) {
+    key[0] = (char)std::tolower((unsigned char)key[0]);
+  }
+
+  bool capitalizeNext = true;
+  for (char ch : cardName) {
+    if (ch == '_') {
+      capitalizeNext = true;
+      continue;
+    }
+    key += capitalizeNext ? (char)std::toupper((unsigned char)ch) : ch;
+    capitalizeNext = false;
+  }
+  return key;
+}
+
 std::string categoryLabel(TypeOfCard type) {
   switch (type) {
   case TypeOfCard::attack:
@@ -204,7 +222,7 @@ void GameScene::refreshFromGameManager() {
                           : card->getAttackStat();
       Texture2D *art = nullptr;
       if (auto texId = magic_enum::enum_cast<TextureID>(
-              (heroName+ card->getName()))) {
+              cardTextureKey(heroName, card->getName()))) {
         art = &texture->getTexture(*texId);
       }
 
@@ -351,6 +369,7 @@ void GameScene::UpdateLayout() {
   resultMenuRect = {sw / 2 - 110, sh / 2 + 60, 220, 48};
 
   saveButtonRect = {sw - 170, sh - 116, 150, 44};
+  undoButtonRect = {sw - 170, sh - 172, 150, 44};
   {
     float slotH = 56.0f;
     float gap = 12.0f;
@@ -888,6 +907,20 @@ void GameScene::drawBottomBar() {
     DrawRectangleRoundedLines(saveButtonRect, 0.15f, 6, 2, saveBorder);
     DrawTextEx(labelFont, "SAVE", {saveButtonRect.x + 50, saveButtonRect.y + 11},
                24, 1, saveText);
+  }
+
+  {
+    bool undoEnabled = gameManager->canUndo() &&
+                       !gameManager->isWaitingForSelection() &&
+                       !gameManager->isCombatActive();
+    Color undoBg = undoEnabled ? Color{45, 35, 70, 255} : Color{35, 32, 30, 180};
+    Color undoBorder = undoEnabled ? Color{170, 130, 220, 255}
+                                   : Fade(Color{170, 130, 220, 255}, 0.35f);
+    Color undoText = undoEnabled ? WHITE : Fade(WHITE, 0.4f);
+    DrawRectangleRounded(undoButtonRect, 0.15f, 6, undoBg);
+    DrawRectangleRoundedLines(undoButtonRect, 0.15f, 6, 2, undoBorder);
+    DrawTextEx(labelFont, "UNDO", {undoButtonRect.x + 50, undoButtonRect.y + 11},
+               24, 1, undoText);
   }
 
   if (gameManager->isManeuverActive()) {
@@ -1549,6 +1582,33 @@ void GameScene::handleMouse() {
   if (CheckCollisionPointRec(mouse, saveButtonRect) &&
       IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
     openSavePrompt();
+  }
+
+  if (CheckCollisionPointRec(mouse, undoButtonRect) &&
+      IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && gameManager->canUndo() &&
+      !gameManager->isWaitingForSelection() && !gameManager->isCombatActive()) {
+    if (auto restored = gameManager->undo()) {
+      gameManager = std::move(restored);
+      gameManager->addObserver(this);
+
+   selectedAction = -1;
+      selectedCard = -1;
+      cancelMovePicker();
+      cancelTargetPicker();
+      attackModeActive = false;
+      schemeModeActive = false;
+      combatDefensePending = false;
+      defenseCardOptions.clear();
+      defenseHandRevealed = false;
+      predictionPromptActive = false;
+      pendingPredictionCard = nullptr;
+      handRevealActive = false;
+      handRevealCards.clear();
+      activeFighter = nullptr;
+
+      pushLog(eventLog, "Undid last action.");
+      refreshFromGameManager();
+    }
   }
 
   if (gameManager->isManeuverActive() &&

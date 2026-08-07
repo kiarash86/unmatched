@@ -184,6 +184,7 @@ private:
 
   bool savePromptActive{false};
   Rectangle saveButtonRect{};
+  Rectangle undoButtonRect{};
   Rectangle saveSlotPanelRect{};
   std::vector<Rectangle> saveSlotRects;
   std::vector<bool> saveSlotHasSave;
