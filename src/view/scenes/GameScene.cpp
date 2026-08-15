@@ -9,8 +9,52 @@
 #include <algorithm>
 #include <cctype>
 #include <cmath>
+#include <sstream>
 namespace {
 const std::string kDefaultMap = "baskervilleManor";
+
+std::string spacedCaps(const std::string &camel) {
+  std::string out;
+  for (size_t i = 0; i < camel.size(); i++) {
+    unsigned char ch = (unsigned char)camel[i];
+    if (i > 0 && std::isupper(ch) && !std::isupper((unsigned char)camel[i - 1]))
+      out += ' ';
+    out += (char)std::toupper(ch);
+  }
+  return out;
+}
+
+std::vector<std::string> wrapText(Font &font, const std::string &text,
+                                  float maxWidth, float fontSize) {
+  std::vector<std::string> lines;
+  std::istringstream iss(text);
+  std::string word, current;
+  while (iss >> word) {
+    std::string trial = current.empty() ? word : current + " " + word;
+    float w = MeasureTextEx(font, trial.c_str(), fontSize, 1).x;
+    if (w > maxWidth && !current.empty()) {
+      lines.push_back(current);
+      current = word;
+    } else {
+      current = trial;
+    }
+  }
+  if (!current.empty())
+    lines.push_back(current);
+  return lines;
+}
+
+void drawPipRow(Vector2 start, int total, int filled, float radius, float gap,
+                Color fillColor, Color emptyColor) {
+  for (int i = 0; i < total; i++) {
+    Vector2 c = {start.x + i * gap, start.y};
+    if (i < filled) {
+      DrawCircleV(c, radius, fillColor);
+    } else {
+      DrawCircleLines((int)c.x, (int)c.y, radius, emptyColor);
+    }
+  }
+}
 
 std::string cardTextureKey(const std::string &heroName, const std::string &cardName) {
   std::string key = heroName;
@@ -56,6 +100,12 @@ std::string timingLabel(TypeOfEvent event) {
     return "Immediately";
   case TypeOfEvent::after_combat:
     return "After Combat";
+  case TypeOfEvent::start_turn_self:
+    return "Start of Turn";
+  case TypeOfEvent::all_the_time:
+    return "Passive";
+  case TypeOfEvent::none:
+    return "Scheme";
   default:
     return "";
   }
@@ -92,7 +142,6 @@ GameScene::GameScene(AudioManager *audioManager, SceneManager *sceneManager,
   titleFont = fontManager->getFont(FontID::t, 38);
   labelFont = fontManager->getFont(FontID::t, 24);
   smallFont = fontManager->getFont(FontID::t, 20);
-
   map = textureManager->getTexture(TextureID::manorMap);
   iconSword = textureManager->getTexture(TextureID::iconSword);
   iconShield = textureManager->getTexture(TextureID::iconShield);
@@ -188,6 +237,7 @@ void GameScene::refreshFromGameManager() {
 
   heroName = hero->getName();
   heroHealth = hero->getHealth();
+  heroMaxHealth = hero->getMaxHealth();
   heroShield = 0;
 
   mapName = gameManager->getMap().getName();
@@ -327,8 +377,17 @@ void GameScene::UpdateLayout() {
     if (s.isCurrentTurn)
       ownSidekickLineCount = (int)s.sidekickLines.size();
   }
+  float abilitiesH = 0.0f;
+  for (auto &ab : abilities) {
+    abilitiesH += 20.0f + 9.0f;
+    abilitiesH +=
+        (float)wrapText(smallFont, ab.desc, panelW - 32.0f, 15.0f).size() *
+        17.0f;
+  }
   heroPanelRect = {margin, margin, panelW,
-                   260.0f + ownSidekickLineCount * 18.0f};
+                   210.0f + ownSidekickLineCount * 18.0f +
+                       (ownSidekickLineCount > 0 ? 28.0f : 0.0f) +
+                       abilitiesH};
 
   int otherHeroCount = std::max(0, (int)heroSummaries.size() - 1);
   int sidekickLineCount = 0;
@@ -337,23 +396,30 @@ void GameScene::UpdateLayout() {
       sidekickLineCount += (int)s.sidekickLines.size();
   }
   float opponentsPanelH =
-      34.0f + otherHeroCount * 30.0f + sidekickLineCount * 18.0f;
+      44.0f + otherHeroCount * 50.0f + sidekickLineCount * 20.0f;
   opponentsPanelRect = {margin, heroPanelRect.y + heroPanelRect.height + 14,
                         panelW, opponentsPanelH};
   eventLogRect = {margin, opponentsPanelRect.y + opponentsPanelRect.height + 14,
-                  panelW, 172.0f};
-  actionsPanelRect = {sw - panelW - margin, margin, panelW, 300.0f};
-  deckRect = {actionsPanelRect.x + 65, actionsPanelRect.y + 320, 130, 170};
+                  panelW,
+                  std::max(150.0f, sh - 110.0f - (opponentsPanelRect.y +
+                                                  opponentsPanelRect.height +
+                                                  14.0f))};
+  actionsPanelRect = {sw - panelW - margin, margin, panelW, 292.0f};
+  deckRect = {actionsPanelRect.x, actionsPanelRect.y + actionsPanelRect.height + 14,
+             panelW, 186.0f};
   boardRect = {margin + panelW + 20, margin, sw - 2 * panelW - 2 * margin - 40,
                sh - 370};
 
   {
-    float scale = std::min(boardRect.width / kMapImageWidth,
-                           boardRect.height / kMapImageHeight);
+    Rectangle contentRect = {boardRect.x + 10, boardRect.y + 52,
+                             boardRect.width - 20, boardRect.height - 88};
+    float scale = std::min(contentRect.width / kMapImageWidth,
+                           contentRect.height / kMapImageHeight);
     float destW = kMapImageWidth * scale;
     float destH = kMapImageHeight * scale;
-    mapDestRect = {boardRect.x + (boardRect.width - destW) / 2,
-                   boardRect.y + (boardRect.height - destH) / 2, destW, destH};
+    mapDestRect = {contentRect.x + (contentRect.width - destW) / 2,
+                   contentRect.y + (contentRect.height - destH) / 2, destW,
+                   destH};
 
     float offsetX = mapDestRect.x - boardRect.x;
     float offsetY = mapDestRect.y - boardRect.y;
@@ -462,8 +528,6 @@ void GameScene::UpdateLayout() {
     cardChoiceDeclineRect = {0, 0, 0, 0};
   }
 
-  // Effect-choice prompt (ChooseEffectEffect / OpponentChoiceEffect):
-  // simple stacked-button menu, one row per labeled option.
   std::vector<std::string> effectChoiceLabels =
       gameManager->isWaitingForEffectChoice()
           ? gameManager->getValidEffectChoiceLabels()
@@ -500,43 +564,82 @@ void GameScene::drawHeroPanel() {
   DrawRectangleRounded(heroPanelRect, 0.06f, 8, panelBg);
   DrawRectangleRoundedLines(heroPanelRect, 0.06f, 8, 2, gold);
 
-  DrawTextEx(titleFont, heroName.c_str(),
-             {heroPanelRect.x + 14, heroPanelRect.y + 12}, 26, 1, textLight);
+  float padX = heroPanelRect.x + 16;
+
+  Vector2 portraitCenter = {padX + 30, heroPanelRect.y + 46};
+  DrawCircleV(portraitCenter, 30, Color{35, 30, 25, 255});
+  DrawCircleLines((int)portraitCenter.x, (int)portraitCenter.y, 30, gold);
+  DrawCircleLines((int)portraitCenter.x, (int)portraitCenter.y, 27, gold);
+  std::string initial = heroName.empty() ? "?" : heroName.substr(0, 1);
+  Vector2 initialSize = MeasureTextEx(titleFont, initial.c_str(), 26, 1);
+  DrawTextEx(titleFont, initial.c_str(),
+             {portraitCenter.x - initialSize.x / 2.0f,
+              portraitCenter.y - initialSize.y / 2.0f},
+             26, 1, gold);
+
+  float nameX = padX + 74;
+  DrawTextEx(titleFont, spacedCaps(heroName).c_str(),
+             {nameX, heroPanelRect.y + 18}, 22, 1, textLight);
   DrawTextEx(smallFont,
-             TextFormat("(your turn -- %d action%s left)",
+             TextFormat("Your turn -- %d action%s left",
                         gameManager->getActionsRemaining(),
                         gameManager->getActionsRemaining() == 1 ? "" : "s"),
-             {heroPanelRect.x + 14, heroPanelRect.y + 38}, 16, 1, gold);
+             {nameX, heroPanelRect.y + 46}, 15, 1, gold);
 
-  Rectangle portrait = {heroPanelRect.x + 10, heroPanelRect.y + 46, 90, 90};
-  DrawRectangleRec(portrait, Color{35, 30, 25, 255});
-  DrawRectangleLinesEx(portrait, 2, gold);
+  float y = heroPanelRect.y + 92;
 
-  float statY = heroPanelRect.y + 148;
-  DrawTextEx(smallFont, TextFormat("HP %d", heroHealth),
-             {heroPanelRect.x + 14, statY}, 22, 1, RED);
-  DrawTextEx(smallFont, TextFormat("DEF %d", heroShield),
-             {heroPanelRect.x + 110, statY}, 22, 1, SKYBLUE);
+  DrawTextEx(smallFont, "VITALITY", {padX, y}, 14, 2, textMuted);
+  int vitalitySlots = 8;
+  int filledVitality =
+      heroMaxHealth > 0
+          ? std::clamp((int)std::round((float)heroHealth / heroMaxHealth *
+                                       vitalitySlots),
+                       0, vitalitySlots)
+          : 0;
+  drawPipRow({padX + 2, y + 22}, vitalitySlots, filledVitality, 6.5f, 17.0f,
+            Color{190, 60, 55, 255}, Color{110, 60, 58, 255});
+  DrawTextEx(smallFont, TextFormat("%d/%d", heroHealth, heroMaxHealth),
+             {padX + vitalitySlots * 17.0f + 10, y + 15}, 15, 1, textLight);
 
-  float skY = statY + 28;
+  y += 46;
+
+  DrawTextEx(smallFont, "WARD", {padX, y}, 14, 2, textMuted);
+  int wardSlots = 4;
+  int filledWard = std::clamp(heroShield, 0, wardSlots);
+  drawPipRow({padX + 2, y + 22}, wardSlots, filledWard, 6.5f, 17.0f,
+            Color{90, 140, 200, 255}, Color{70, 85, 105, 255});
+  DrawTextEx(smallFont, TextFormat("%d", heroShield),
+             {padX + wardSlots * 17.0f + 10, y + 15}, 15, 1, textLight);
+
+  y += 44;
+
+  bool hasSidekick = false;
   for (auto &s : heroSummaries) {
     if (!s.isCurrentTurn)
       continue;
-    for (auto &line : s.sidekickLines) {
-      DrawTextEx(smallFont, line.c_str(), {heroPanelRect.x + 14, skY}, 16, 1,
-                 textMuted);
-      skY += 18;
+    if (!s.sidekickLines.empty()) {
+      hasSidekick = true;
+      DrawTextEx(smallFont, "SIDEKICK", {padX, y}, 14, 2, textMuted);
+      y += 20;
+      for (auto &line : s.sidekickLines) {
+        DrawTextEx(smallFont, line.c_str(), {padX, y}, 15, 1, textLight);
+        y += 18;
+      }
     }
     break;
   }
+  if (hasSidekick)
+    y += 8;
 
-  float abY = skY + 12;
   for (auto &ab : abilities) {
-    DrawTextEx(labelFont, ab.title.c_str(), {heroPanelRect.x + 14, abY}, 20, 1,
-               gold);
-    DrawTextEx(smallFont, ab.desc.c_str(), {heroPanelRect.x + 14, abY + 20}, 16,
-               1, textMuted);
-    abY += 50;
+    DrawTextEx(labelFont, ab.title.c_str(), {padX, y}, 18, 1, gold);
+    y += 20;
+    for (auto &line : wrapText(smallFont, ab.desc, heroPanelRect.width - 32, 15))
+    {
+      DrawTextEx(smallFont, line.c_str(), {padX, y}, 15, 1, textMuted);
+      y += 17;
+    }
+    y += 9;
   }
 }
 
@@ -545,60 +648,93 @@ void GameScene::drawOpponentsPanel() {
   DrawRectangleRoundedLines(opponentsPanelRect, 0.06f, 8, 2,
                             Color{110, 60, 60, 255});
 
-  float y = opponentsPanelRect.y + 10;
+  DrawTextEx(smallFont, "ADVERSARIES", {opponentsPanelRect.x + 14,
+                                        opponentsPanelRect.y + 12},
+             14, 2, textMuted);
+
+  float y = opponentsPanelRect.y + 38;
   for (auto &s : heroSummaries) {
     if (s.isCurrentTurn)
       continue;
 
     Color ownerTint =
         (s.ownerPlayer % 2 == 0) ? SKYBLUE : Color{220, 120, 120, 255};
-    DrawCircleV({opponentsPanelRect.x + 16, y + 9}, 6, ownerTint);
-    DrawTextEx(labelFont, s.name.c_str(), {opponentsPanelRect.x + 30, y}, 20, 1,
+    DrawCircleV({opponentsPanelRect.x + 22, y + 8}, 9, Color{35, 30, 25, 255});
+    DrawCircleLines((int)(opponentsPanelRect.x + 22), (int)(y + 8), 9,
+                    ownerTint);
+    std::string initial = s.name.empty() ? "?" : s.name.substr(0, 1);
+    Vector2 initSize = MeasureTextEx(smallFont, initial.c_str(), 13, 1);
+    DrawTextEx(smallFont, initial.c_str(),
+              {opponentsPanelRect.x + 22 - initSize.x / 2,
+               y + 8 - initSize.y / 2},
+              13, 1, ownerTint);
+    DrawTextEx(labelFont, spacedCaps(s.name).c_str(), {opponentsPanelRect.x + 38, y}, 18, 1,
                textLight);
-    DrawTextEx(smallFont, TextFormat("HP %d/%d", s.health, s.maxHealth),
-               {opponentsPanelRect.x + opponentsPanelRect.width - 90, y}, 18, 1,
-               RED);
-    y += 32;
+    y += 20;
+    DrawTextEx(smallFont, TextFormat("%d / %d HEALTH", s.health, s.maxHealth),
+               {opponentsPanelRect.x + 38, y}, 14, 1, Color{200, 110, 100, 255});
+    y += 24;
 
     for (auto &line : s.sidekickLines) {
-      DrawTextEx(smallFont, line.c_str(), {opponentsPanelRect.x + 40, y}, 16, 1,
+      DrawTextEx(smallFont, line.c_str(), {opponentsPanelRect.x + 46, y}, 15, 1,
                  textMuted);
-      y += 22;
+      y += 20;
     }
+    y += 6;
   }
 }
 
 void GameScene::drawActionsPanel() {
   DrawRectangleRounded(actionsPanelRect, 0.06f, 8, panelBg);
   DrawRectangleRoundedLines(actionsPanelRect, 0.06f, 8, 2, gold);
-  DrawTextEx(titleFont, "ACTIONS",
-             {actionsPanelRect.x + 14, actionsPanelRect.y + 12}, 26, 1,
-             textLight);
+  DrawTextEx(smallFont, "ACTIONS",
+             {actionsPanelRect.x + 14, actionsPanelRect.y + 12}, 14, 2,
+             textMuted);
 
   for (size_t i = 0; i < actionButtons.size(); i++) {
     auto &a = actionButtons[i];
     bool hovered = ((int)i == selectedAction);
 
-    if (hovered)
-      DrawRectangleRounded(a.rec, 0.2f, 6, Color{40, 45, 60, 220});
+    DrawRectangleRounded(a.rec, 0.28f, 6,
+                         hovered ? Color{46, 42, 30, 255}
+                                 : Color{28, 25, 21, 235});
+    DrawRectangleRoundedLines(a.rec, 0.28f, 6, hovered ? 2.0f : 1.0f,
+                              hovered ? gold : Color{95, 85, 65, 180});
 
-    DrawTextureEx(a.icon, {a.rec.x, a.rec.y}, 0, 24.0f / a.icon.width, WHITE);
-    DrawTextEx(labelFont, a.title.c_str(), {a.rec.x + 36, a.rec.y - 2}, 20, 1,
+    Rectangle iconBox = {a.rec.x + 10, a.rec.y + a.rec.height / 2 - 15, 30, 30};
+    DrawTextureEx(a.icon,
+                  {iconBox.x + 15 - (a.icon.width * (22.0f / a.icon.width)) / 2,
+                   iconBox.y + 15 - (a.icon.height * (22.0f / a.icon.width)) / 2},
+                  0, 22.0f / a.icon.width, hovered ? gold : textLight);
+    DrawTextEx(labelFont, a.title.c_str(), {a.rec.x + 52, a.rec.y + 7}, 19, 1,
                hovered ? gold : textLight);
-    DrawTextEx(smallFont, a.desc.c_str(), {a.rec.x + 36, a.rec.y + 18}, 15, 1,
+    DrawTextEx(smallFont, a.desc.c_str(), {a.rec.x + 52, a.rec.y + 27}, 13, 1,
                textMuted);
   }
 }
 
 void GameScene::drawDeck() {
-  DrawRectangleRounded(deckRect, 0.08f, 8, Color{45, 40, 35, 255});
-  DrawRectangleRoundedLines(deckRect, 0.08f, 8, 2, Color{90, 85, 75, 255});
-  DrawCircleLines((int)(deckRect.x + deckRect.width / 2),
-                  (int)(deckRect.y + deckRect.height / 2), 40,
-                  Color{140, 130, 110, 180});
-  DrawTextEx(labelFont, "DECK",
-             {deckRect.x + 34, deckRect.y + deckRect.height / 2 - 10}, 20, 1,
-             textMuted);
+  DrawRectangleRounded(deckRect, 0.06f, 8, panelBg);
+  DrawRectangleRoundedLines(deckRect, 0.06f, 8, 2, gold);
+
+  float stackW = 78, stackH = 108;
+  Vector2 stackCenter = {deckRect.x + deckRect.width / 2,
+                         deckRect.y + 20 + stackH / 2};
+  for (int i = 2; i >= 0; i--) {
+    Rectangle back = {stackCenter.x - stackW / 2 + i * 4.0f,
+                      stackCenter.y - stackH / 2 - i * 4.0f, stackW, stackH};
+    DrawRectangleRounded(back, 0.12f, 6, Color{40, 34, 26, 255});
+    DrawRectangleRoundedLines(back, 0.12f, 6, 1.5f, Color{140, 120, 80, 200});
+  }
+  DrawCircleLines((int)stackCenter.x, (int)(stackCenter.y - 8), 26,
+                  Color{150, 130, 90, 160});
+
+  std::string countText = TextFormat("%d CARDS REMAIN", cardsInDeck);
+  Vector2 countSize = MeasureTextEx(smallFont, countText.c_str(), 15, 1);
+  DrawTextEx(smallFont, countText.c_str(),
+             {deckRect.x + deckRect.width / 2 - countSize.x / 2,
+              deckRect.y + deckRect.height - 30},
+             15, 1, textMuted);
 }
 
 void GameScene::drawBoard() {
@@ -607,7 +743,29 @@ void GameScene::drawBoard() {
   DrawRectangleGradientV((int)boardRect.x, (int)boardRect.y,
                          (int)boardRect.width, (int)boardRect.height,
                          Color{26, 34, 38, 255}, Color{14, 19, 21, 255});
+
+  if (map.id != 0) {
+    BeginScissorMode((int)boardRect.x, (int)boardRect.y, (int)boardRect.width,
+                     (int)boardRect.height);
+    DrawTexturePro(map, {0, 0, (float)map.width, (float)map.height},
+                  mapDestRect, {0, 0}, 0.0f, Fade(WHITE, 0.85f));
+    EndScissorMode();
+  }
+
   DrawRectangleRoundedLines(boardRect, 0.02f, 6, 2, Color{90, 85, 70, 140});
+
+  DrawTextEx(labelFont,
+             TextFormat("%s   -   TURN %d", spacedCaps(mapName).c_str(),
+                        gameManager->getCurrentTurn()),
+             {boardRect.x + 14, boardRect.y + 12}, 19, 1, textLight);
+
+  std::string caption =
+      "Violet rings mark portal tiles - fog wisps show token count";
+  Vector2 capSize = MeasureTextEx(smallFont, caption.c_str(), 13, 1);
+  DrawTextEx(smallFont, caption.c_str(),
+             {boardRect.x + boardRect.width / 2 - capSize.x / 2,
+              boardRect.y + boardRect.height - 20},
+             13, 1, textMuted);
 
   if (gameManager->isAwaitingHeroStartPlacement()) {
     Hero *h = gameManager->getHeroAwaitingStartPlacement();
@@ -616,7 +774,7 @@ void GameScene::drawBoard() {
                           "highlighted space",
                           h ? h->getOwnerPlayer() + 1 : 0,
                           h ? h->getName().c_str() : "your hero"),
-               {boardRect.x + 12, boardRect.y + 10}, 18, 1, gold);
+               {boardRect.x + 12, boardRect.y + 42}, 18, 1, gold);
   } else if (gameManager->isAwaitingSidekickPlacement()) {
     Fighter *sk = gameManager->getSidekickAwaitingPlacement();
     DrawTextEx(
@@ -625,7 +783,7 @@ void GameScene::drawBoard() {
             "Place %s (Player %d's sidekick) -- click a highlighted space",
             sk ? sk->getName().c_str() : "sidekick",
             sk ? sk->getOwnerPlayer() + 1 : 0),
-        {boardRect.x + 12, boardRect.y + 10}, 18, 1, gold);
+        {boardRect.x + 12, boardRect.y + 42}, 18, 1, gold);
   } else if (gameManager->isAwaitingFogTokenPlacement()) {
     Hero *h = gameManager->getFogTokenAwaitingHero();
     DrawTextEx(
@@ -633,13 +791,13 @@ void GameScene::drawBoard() {
         TextFormat(
             "Player %d: place a fog token -- click a highlighted space",
             h ? h->getOwnerPlayer() + 1 : 0),
-        {boardRect.x + 12, boardRect.y + 10}, 18, 1, gold);
+        {boardRect.x + 12, boardRect.y + 42}, 18, 1, gold);
   } else if (gameManager->isWaitingForTile()) {
     DrawTextEx(smallFont, "Choose a highlighted space",
-               {boardRect.x + 12, boardRect.y + 10}, 18, 1, gold);
+               {boardRect.x + 12, boardRect.y + 42}, 18, 1, gold);
   } else if (gameManager->isWaitingForFighter()) {
     DrawTextEx(smallFont, "Choose a highlighted fighter, or Skip",
-               {boardRect.x + 12, boardRect.y + 10}, 18, 1, gold);
+               {boardRect.x + 12, boardRect.y + 42}, 18, 1, gold);
     if (fighterChoiceDeclineRect.width > 0) {
       bool hovered =
           CheckCollisionPointRec(GetMousePosition(), fighterChoiceDeclineRect);
@@ -657,13 +815,13 @@ void GameScene::drawBoard() {
     DrawTextEx(smallFont,
                "Choose a highlighted tile to move to, or click a hand card to "
                "Boost (Esc to cancel)",
-               {boardRect.x + 12, boardRect.y + 10}, 18, 1, gold);
+               {boardRect.x + 12, boardRect.y + 42}, 18, 1, gold);
   } else if (gameManager->canBoostMovement()) {
 
     DrawTextEx(
         smallFont,
         "No legal move right now -- click a hand card to Boost your movement",
-        {boardRect.x + 12, boardRect.y + 10}, 18, 1, gold);
+        {boardRect.x + 12, boardRect.y + 42}, 18, 1, gold);
   } else if (!targetModeActive && !gameManager->isWaitingForTile() &&
              !gameManager->isAwaitingSidekickPlacement()) {
     Fighter *active = getActiveFighter();
@@ -672,25 +830,25 @@ void GameScene::drawBoard() {
         smallFont,
         TextFormat("Active fighter: %s -- click your own token to switch",
                    label.c_str()),
-        {boardRect.x + 12, boardRect.y + 10}, 18, 1, textMuted);
+        {boardRect.x + 12, boardRect.y + 42}, 18, 1, textMuted);
   }
   if (targetModeActive) {
     const char *msg =
         pendingTargetIsAttack
             ? "Choose a highlighted enemy to attack (Esc to cancel)"
             : "Choose a highlighted fighter to target (Esc to cancel)";
-    DrawTextEx(smallFont, msg, {boardRect.x + 12, boardRect.y + 10}, 18, 1,
+    DrawTextEx(smallFont, msg, {boardRect.x + 12, boardRect.y + 42}, 18, 1,
                gold);
   } else if (attackModeActive) {
     const char *msg = attackRangeTargets.empty()
                           ? "No enemy in range -- move closer first"
                           : "Highlighted enemies are in range -- click an "
                             "Attack/Multipurpose card in your hand";
-    DrawTextEx(smallFont, msg, {boardRect.x + 12, boardRect.y + 10}, 18, 1,
+    DrawTextEx(smallFont, msg, {boardRect.x + 12, boardRect.y + 42}, 18, 1,
                gold);
   } else if (schemeModeActive) {
     DrawTextEx(smallFont, "Click a Scheme (event) card in your hand to play it",
-               {boardRect.x + 12, boardRect.y + 10}, 18, 1, gold);
+               {boardRect.x + 12, boardRect.y + 42}, 18, 1, gold);
   }
 
   for (auto &e : edges) {
@@ -877,7 +1035,7 @@ void GameScene::drawHand() {
     DrawRectangleRounded(drawRect, 0.06f, 6, Color{30, 27, 22, 255});
 
     if (c.art) {
-      Rectangle src{0, 0, (float)c.art->width, (float)c.art->height};
+   Rectangle src{0, 0, (float)c.art->width, (float)c.art->height};
       DrawTexturePro(*c.art, src, drawRect, {0, 0}, 0.0f, WHITE);
     }
 
@@ -949,19 +1107,42 @@ void GameScene::drawEventLog() {
   DrawRectangleRoundedLines(eventLogRect, 0.06f, 8, 2,
                             Color{110, 100, 80, 255});
 
-  DrawTextEx(labelFont, "LOG", {eventLogRect.x + 14, eventLogRect.y + 10}, 18,
-             1, gold);
+  DrawTextEx(smallFont, "CASE NOTES",
+             {eventLogRect.x + 14, eventLogRect.y + 12}, 14, 2, textMuted);
 
-  float x = eventLogRect.x + 14;
+  float x = eventLogRect.x + 22;
+  float textW = eventLogRect.width - 44;
   float y = eventLogRect.y + 40;
+  float bottomLimit = eventLogRect.y + eventLogRect.height - 12;
+
   if (eventLog.empty()) {
-    DrawTextEx(smallFont, "Nothing has happened yet.", {x, y}, 15, 1,
+    DrawTextEx(smallFont, "Nothing has happened yet.", {x, y}, 14, 1,
                textMuted);
     return;
   }
+  std::vector<std::vector<std::string>> wrapped;
+  float totalH = 0.0f;
   for (auto &line : eventLog) {
-    DrawTextEx(smallFont, line.c_str(), {x, y}, 15, 1, textMuted);
-    y += 24;
+    auto w = wrapText(smallFont, line, textW, 14);
+    totalH += w.size() * 18.0f + 10.0f;
+    wrapped.push_back(std::move(w));
+  }
+
+  size_t firstVisible = 0;
+  while (firstVisible + 1 < wrapped.size() &&
+        totalH > (bottomLimit - y)) {
+    totalH -= wrapped[firstVisible].size() * 18.0f + 10.0f;
+    firstVisible++;
+  }
+
+  for (size_t i = firstVisible; i < wrapped.size(); i++) {
+    float entryH = wrapped[i].size() * 18.0f;
+    DrawLineEx({x - 10, y + 2}, {x - 10, y + entryH - 6}, 2, gold);
+    for (auto &l : wrapped[i]) {
+      DrawTextEx(smallFont, l.c_str(), {x, y}, 14, 1, textMuted);
+      y += 18.0f;
+    }
+    y += 10.0f;
   }
 }
 

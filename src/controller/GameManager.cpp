@@ -139,6 +139,9 @@ GameManager::GameManager(std::vector<std::unique_ptr<Hero>> heroesIn, std::uniqu
     : heroes(std::move(heroesIn)), map(std::move(mapIn)) {
   for (int i = 0; i < (int)heroes.size(); i++) {
     heroes[i]->setOwnerPlayer(i);
+    for (auto &sidekick : heroes[i]->getSidekicks()) {
+      sidekick->setOwnerPlayer(i);
+    }
   }
 }
 
@@ -505,9 +508,6 @@ void GameManager::placeHeroesFrom(int heroIndex, std::vector<int> availableStart
   requestTileChoice(options, [this, heroIndex, availableStartTileIds](Tile *chosen) {
     Hero *hero = heroes[heroIndex].get();
     map->placeFighter(hero, chosen->getId());
-    for (auto &sidekick : hero->getSidekicks()) {
-      sidekick->setOwnerPlayer(heroIndex);
-    }
 
     std::vector<int> remaining;
     for (int id : availableStartTileIds) {
