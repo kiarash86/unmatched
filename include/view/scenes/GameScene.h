@@ -94,6 +94,7 @@ private:
   std::string heroName;
   std::string mapName;
   int heroHealth{0};
+  int heroMaxHealth{0};
   int heroShield{0};
   int cardsInDeck{0};
   int tokens{0};

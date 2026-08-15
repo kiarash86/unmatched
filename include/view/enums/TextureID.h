@@ -25,6 +25,8 @@ enum class TextureID {
   titleHeroSelection , 
   frame,
 
+  baskervilleManorMap,
+
   // Dracula card art (assets/images/Dracula/cards/*.png)
   draculaAmbush,
   draculaBaptismOfBlood,
