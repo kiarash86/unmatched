@@ -44,6 +44,18 @@ std::vector<std::string> wrapText(Font &font, const std::string &text,
   return lines;
 }
 
+void drawPipRow(Vector2 start, int total, int filled, float radius, float gap,
+                Color fillColor, Color emptyColor) {
+  for (int i = 0; i < total; i++) {
+    Vector2 c = {start.x + i * gap, start.y};
+    if (i < filled) {
+      DrawCircleV(c, radius, fillColor);
+    } else {
+      DrawCircleLines((int)c.x, (int)c.y, radius, emptyColor);
+    }
+  }
+}
+
 std::string cardTextureKey(const std::string &heroName, const std::string &cardName) {
   std::string key = heroName;
   if (!key.empty()) {
