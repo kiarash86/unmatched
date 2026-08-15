@@ -24,6 +24,26 @@ std::string spacedCaps(const std::string &camel) {
   return out;
 }
 
+std::vector<std::string> wrapText(Font &font, const std::string &text,
+                                  float maxWidth, float fontSize) {
+  std::vector<std::string> lines;
+  std::istringstream iss(text);
+  std::string word, current;
+  while (iss >> word) {
+    std::string trial = current.empty() ? word : current + " " + word;
+    float w = MeasureTextEx(font, trial.c_str(), fontSize, 1).x;
+    if (w > maxWidth && !current.empty()) {
+      lines.push_back(current);
+      current = word;
+    } else {
+      current = trial;
+    }
+  }
+  if (!current.empty())
+    lines.push_back(current);
+  return lines;
+}
+
 std::string cardTextureKey(const std::string &heroName, const std::string &cardName) {
   std::string key = heroName;
   if (!key.empty()) {
