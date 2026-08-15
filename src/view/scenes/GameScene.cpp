@@ -428,7 +428,7 @@ void GameScene::UpdateLayout() {
       t.radius = kBaseTileRadius * scale;
     }
   }
-  
+
   endTurnRect = {sw - 170, sh - 60, 150, 44};
   finishMovingRect = {sw - 340, sh - 60, 150, 44};
   stayPutRect = {sw - 340, sh - 60, 150, 44};
@@ -943,7 +943,7 @@ void GameScene::drawHand() {
     DrawRectangleRounded(drawRect, 0.06f, 6, Color{30, 27, 22, 255});
 
     if (c.art) {
-      Rectangle src{0, 0, (float)c.art->width, (float)c.art->height};
+  Rectangle src{0, 0, (float)c.art->width, (float)c.art->height};
       DrawTexturePro(*c.art, src, drawRect, {0, 0}, 0.0f, WHITE);
     }
 
