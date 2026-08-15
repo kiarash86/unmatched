@@ -377,8 +377,17 @@ void GameScene::UpdateLayout() {
     if (s.isCurrentTurn)
       ownSidekickLineCount = (int)s.sidekickLines.size();
   }
+  float abilitiesH = 0.0f;
+  for (auto &ab : abilities) {
+    abilitiesH += 20.0f + 9.0f;
+    abilitiesH +=
+        (float)wrapText(smallFont, ab.desc, panelW - 32.0f, 15.0f).size() *
+        17.0f;
+  }
   heroPanelRect = {margin, margin, panelW,
-                   260.0f + ownSidekickLineCount * 18.0f};
+                   210.0f + ownSidekickLineCount * 18.0f +
+                       (ownSidekickLineCount > 0 ? 28.0f : 0.0f) +
+                       abilitiesH};
 
   int otherHeroCount = std::max(0, (int)heroSummaries.size() - 1);
   int sidekickLineCount = 0;
@@ -387,23 +396,30 @@ void GameScene::UpdateLayout() {
       sidekickLineCount += (int)s.sidekickLines.size();
   }
   float opponentsPanelH =
-      34.0f + otherHeroCount * 30.0f + sidekickLineCount * 18.0f;
+      44.0f + otherHeroCount * 50.0f + sidekickLineCount * 20.0f;
   opponentsPanelRect = {margin, heroPanelRect.y + heroPanelRect.height + 14,
                         panelW, opponentsPanelH};
   eventLogRect = {margin, opponentsPanelRect.y + opponentsPanelRect.height + 14,
-                  panelW, 172.0f};
-  actionsPanelRect = {sw - panelW - margin, margin, panelW, 300.0f};
-  deckRect = {actionsPanelRect.x + 65, actionsPanelRect.y + 320, 130, 170};
+                  panelW,
+                  std::max(150.0f, sh - 110.0f - (opponentsPanelRect.y +
+                                                  opponentsPanelRect.height +
+                                                  14.0f))};
+  actionsPanelRect = {sw - panelW - margin, margin, panelW, 292.0f};
+  deckRect = {actionsPanelRect.x, actionsPanelRect.y + actionsPanelRect.height + 14,
+             panelW, 186.0f};
   boardRect = {margin + panelW + 20, margin, sw - 2 * panelW - 2 * margin - 40,
                sh - 370};
 
   {
-    float scale = std::min(boardRect.width / kMapImageWidth,
-                           boardRect.height / kMapImageHeight);
+    Rectangle contentRect = {boardRect.x + 10, boardRect.y + 52,
+                             boardRect.width - 20, boardRect.height - 88};
+    float scale = std::min(contentRect.width / kMapImageWidth,
+                           contentRect.height / kMapImageHeight);
     float destW = kMapImageWidth * scale;
     float destH = kMapImageHeight * scale;
-    mapDestRect = {boardRect.x + (boardRect.width - destW) / 2,
-                   boardRect.y + (boardRect.height - destH) / 2, destW, destH};
+    mapDestRect = {contentRect.x + (contentRect.width - destW) / 2,
+                   contentRect.y + (contentRect.height - destH) / 2, destW,
+                   destH};
 
     float offsetX = mapDestRect.x - boardRect.x;
     float offsetY = mapDestRect.y - boardRect.y;
@@ -412,7 +428,7 @@ void GameScene::UpdateLayout() {
       t.radius = kBaseTileRadius * scale;
     }
   }
-
+  
   endTurnRect = {sw - 170, sh - 60, 150, 44};
   finishMovingRect = {sw - 340, sh - 60, 150, 44};
   stayPutRect = {sw - 340, sh - 60, 150, 44};
