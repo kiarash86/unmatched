@@ -9,8 +9,20 @@
 #include <algorithm>
 #include <cctype>
 #include <cmath>
+#include <sstream>
 namespace {
 const std::string kDefaultMap = "baskervilleManor";
+
+std::string spacedCaps(const std::string &camel) {
+  std::string out;
+  for (size_t i = 0; i < camel.size(); i++) {
+    unsigned char ch = (unsigned char)camel[i];
+    if (i > 0 && std::isupper(ch) && !std::isupper((unsigned char)camel[i - 1]))
+      out += ' ';
+    out += (char)std::toupper(ch);
+  }
+  return out;
+}
 
 std::string cardTextureKey(const std::string &heroName, const std::string &cardName) {
   std::string key = heroName;
