@@ -100,6 +100,12 @@ std::string timingLabel(TypeOfEvent event) {
     return "Immediately";
   case TypeOfEvent::after_combat:
     return "After Combat";
+    case TypeOfEvent::start_turn_self:
+    return "Start of Turn";
+  case TypeOfEvent::all_the_time:
+    return "Passive";
+  case TypeOfEvent::none:
+    return "Scheme";
   default:
     return "";
   }
