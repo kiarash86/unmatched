@@ -142,7 +142,6 @@ GameScene::GameScene(AudioManager *audioManager, SceneManager *sceneManager,
   titleFont = fontManager->getFont(FontID::t, 38);
   labelFont = fontManager->getFont(FontID::t, 24);
   smallFont = fontManager->getFont(FontID::t, 20);
-
   map = textureManager->getTexture(TextureID::manorMap);
   iconSword = textureManager->getTexture(TextureID::iconSword);
   iconShield = textureManager->getTexture(TextureID::iconShield);
@@ -238,6 +237,7 @@ void GameScene::refreshFromGameManager() {
 
   heroName = hero->getName();
   heroHealth = hero->getHealth();
+  heroMaxHealth = hero->getMaxHealth();
   heroShield = 0;
 
   mapName = gameManager->getMap().getName();
