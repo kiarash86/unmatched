@@ -139,6 +139,10 @@ GameManager::GameManager(std::vector<std::unique_ptr<Hero>> heroesIn, std::uniqu
     : heroes(std::move(heroesIn)), map(std::move(mapIn)) {
   for (int i = 0; i < (int)heroes.size(); i++) {
     heroes[i]->setOwnerPlayer(i);
+    for (auto &sidekick : heroes[i]->getSidekicks()) 
+    {
+      sidekick->setOwnerPlayer(i);
+    }
   }
 }
 
