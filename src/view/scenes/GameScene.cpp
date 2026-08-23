@@ -74,23 +74,6 @@ std::string cardTextureKey(const std::string &heroName, const std::string &cardN
   return key;
 }
 
-std::string categoryLabel(TypeOfCard type) {
-  switch (type) {
-  case TypeOfCard::attack:
-    return "Attack";
-  case TypeOfCard::def:
-    return "Defend";
-  case TypeOfCard::event:
-    return "Event";
-
-  case TypeOfCard::multipurpose:
-    return "Atk/Def";
-  default:
-    return "Event";
-  }
-}
-
-
 void pushLog(std::deque<std::string> &log, const std::string &line) {
   log.push_back(line);
   while (log.size() > 5)
