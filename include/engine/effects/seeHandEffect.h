@@ -5,9 +5,6 @@
 #include "model/hero.h"
 
 class SeeHandEffect : public Effect {
-private:
-  std::vector<Card *> lastSeenHand;
-
 public:
   SeeHandEffect() = default;
   ~SeeHandEffect() override = default;
@@ -27,12 +24,11 @@ public:
       return;
     }
 
-    lastSeenHand = enemyHero->getDeck()->getHand();
+      std::vector<Card *> lastSeenHand = enemyHero->getDeck()->getHand();
 
     if (gameData.onHandRevealed) {
       gameData.onHandRevealed(enemyHero, lastSeenHand);
     }
   }
 
-  const std::vector<Card *> &getSeenHand() const { return lastSeenHand; }
 };
