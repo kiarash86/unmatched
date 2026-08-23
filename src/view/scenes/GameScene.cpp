@@ -91,26 +91,6 @@ std::string categoryLabel(TypeOfCard type) {
 }
 
 
-
-std::string timingLabel(TypeOfEvent event) {
-  switch (event) {
-  case TypeOfEvent::during_combat:
-    return "During Combat";
-  case TypeOfEvent::before_combat:
-    return "Immediately";
-  case TypeOfEvent::after_combat:
-    return "After Combat";
-  case TypeOfEvent::start_turn_self:
-    return "Start of Turn";
-  case TypeOfEvent::all_the_time:
-    return "Passive";
-  case TypeOfEvent::none:
-    return "Scheme";
-  default:
-    return "";
-  }
-}
-
 void pushLog(std::deque<std::string> &log, const std::string &line) {
   log.push_back(line);
   while (log.size() > 5)
