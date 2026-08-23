@@ -266,19 +266,15 @@ void GameScene::refreshFromGameManager() {
     cardsInDeck = hero->getDeck()->drawPileCount();
     for (Card *card : hero->getDeck()->getHand()) {
 
-      bool hasStat = card->getCardType() != TypeOfCard::event;
-      int statValue = card->getCardType() == TypeOfCard::def
-                          ? card->getDefStat()
-                          : card->getAttackStat();
+      
       Texture2D *art = nullptr;
       if (auto texId = magic_enum::enum_cast<TextureID>(
               cardTextureKey(heroName, card->getName()))) {
         art = &texture->getTexture(*texId);
       }
 
-      hand.push_back({card, card->getName(), categoryLabel(card->getCardType()),
-                      card->getBoost(), hasStat, statValue,
-                      timingLabel(card->getEventType()), art});
+   hand.push_back({card, card->getName(), art});
+
     }
   } else {
     cardsInDeck = 0;
