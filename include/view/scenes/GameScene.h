@@ -238,7 +238,6 @@ private:
   void drawDefensePrompt();
   void handleDefenseMouse();
 
-  bool isPredictionPromptActive() const { return predictionPromptActive; }
   void beginPredictionPrompt(Card *defenseCard);
   void resolvePrediction(int guessedValue);
   void drawPredictionPrompt();
