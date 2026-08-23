@@ -11,8 +11,7 @@
 #include <memory>                             // smart pointer
 class SceneManager {
 private:
-  // int screenHeight;
-  // int screenWidth;
+
   AudioManager *audioManager;
   TextureManager *textureManager;
   FontManager *fontManager;
@@ -31,12 +30,7 @@ private:
       case ScenesType::game:
       currentScene = std::make_unique<GameScene>(audioManager , this , textureManager , fontManager);
       break;
-      // case ScenesType::collection:
-      // TODO:: WRITE THESE SCENES , I DONT HAVE THEM FOR NOW
-      //    break;
-      //  case ScenesType::setting:
-      // TODO:: WRITE THESE SCENES , I DONT HAVE THEM FOR NOW
-      //    break;
+
     case ScenesType::heroSelection:
       currentScene = std::make_unique<HeroSelectionScene>(
           audioManager, this, textureManager, fontManager);
