@@ -573,7 +573,7 @@ void HeroSelectionScene::confirmSelection() {
   SoundID chosenSound = soundForHero(chosenId);
   audio->playSound(chosenSound, 1.0f);
 
-  Player player(currentPlayerIndex, chosenId, heroes[selectedHero]->name);
+  Player player(chosenId);
   PlayerSelectionManager::instance().addPlayer(player);
 
   currentPlayerIndex++;
