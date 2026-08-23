@@ -51,11 +51,6 @@ private:
   {
     Card *card;
     std::string name;
-    std::string category;
-    int boost{0};
-    bool hasAttackDef{false};
-    int attackDefValue{0};
-    std::string timing;
     Texture2D *art{nullptr};
   };
   struct AbilityRow
