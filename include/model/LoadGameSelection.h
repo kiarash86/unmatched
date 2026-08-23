@@ -16,5 +16,4 @@ public:
 
   int getRequestedSlot() const { return requestedSlot; }
 
-  bool hasRequest() const { return requestedSlot >= 0; }
 };
