@@ -26,12 +26,16 @@ void Fighter::setFatigued(bool value) { fatigued = value; } // after deck is emp
 bool Fighter::isFatigued() const { return fatigued; }
 
 void Fighter::damage(const int &dmg) {
+  if (dmg <= 0) { 
+    return;
+  }
   health -= (dmg > health) ? health : dmg;
 }
 void Fighter::heal(const int &amount) {
-  if (canBeHealed()) {
-    health += ((health + amount) > maxHealth) ? maxHealth - health : amount;
+  if (amount <= 0 || !canBeHealed()) { 
+    return;
   }
+  health += ((health + amount) > maxHealth) ? maxHealth - health : amount;
 }
 bool Fighter::isAlive() const { return health > 0; }
 void Fighter::setName(const std::string &newName) { name = newName; }
