@@ -11,12 +11,14 @@
 #include <memory>                             // smart pointer
 class SceneManager {
 private:
-
   AudioManager *audioManager;
   TextureManager *textureManager;
   FontManager *fontManager;
   // current scene that is being shown
   std::unique_ptr<Scene> currentScene;
+
+  bool quitRequested{false};
+
   // current scene that is being shown
 
   // this func is created for using that in change scene 
@@ -30,7 +32,6 @@ private:
       case ScenesType::game:
       currentScene = std::make_unique<GameScene>(audioManager , this , textureManager , fontManager);
       break;
-
     case ScenesType::heroSelection:
       currentScene = std::make_unique<HeroSelectionScene>(
           audioManager, this, textureManager, fontManager);
@@ -39,6 +40,8 @@ private:
       currentScene = std::make_unique<LoadGameScene>(audioManager, this,
                                                       textureManager, fontManager);
       break;
+    default:
+    throw AppException("no scene");
     }
   }
 
@@ -83,6 +86,9 @@ public:
   // same with scene, just for capsoulation funcs of scenes
   void update() { currentScene->Update(); };
   // same with scene, just for capsoulation funcs of scenes
+
+  void requestQuit() { quitRequested = true; };
+  bool shouldQuit() const { return quitRequested; };
 
   // destructor
   ~SceneManager() = default;

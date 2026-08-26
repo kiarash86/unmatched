@@ -187,7 +187,8 @@ void MainScene::activateButton(int index) // choose next scene
     scene->changeScene(ScenesType::setting);
     break;
   case 4:
-    CloseWindow();
+    audio->playSound(SoundID::clickForAll, 1.0f);
+    scene->requestQuit();
     break;
   }
 }
@@ -273,8 +274,6 @@ void MainScene::drawQuote() // drawing quoteBox, lines, text
 
   DrawLineEx({panel.x + padX, lineY}, {panel.x + panel.width - padX, lineY}, 1,
              Fade(Color{180, 160, 120, 255}, 0.32f));
-
-  float cx = panel.x + panel.width * 0.5f;
 
   std::string authorText = "-" + quotes[currentQuote].author;
   Vector2 aSize =

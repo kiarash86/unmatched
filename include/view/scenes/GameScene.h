@@ -2,8 +2,10 @@
 #include "raylib.h"
 #include "view/scenes/Scene.h"
 #include "controller/GameManager.h"
+#include "controller/AIController.h"
 #include "engine/observer/observer.h"
 #include <deque>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -79,6 +81,10 @@ private:
   Color unknownZoneColor;
   Color portalRingColor;
   std::unique_ptr<GameManager> gameManager;
+
+  std::unique_ptr<AIController> aiController;
+  static constexpr int kAIPlayerIndex = 1;
+  void updateAI();
 
   std::vector<BoardTileView> tiles;
   std::vector<std::pair<int, int>> edges;

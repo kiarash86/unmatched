@@ -22,6 +22,13 @@ Tile *Map::getTile(int id) const {
 }
 // put a fighter in tile
 void Map::placeFighter(Fighter *fighter, int tileId) {
+  if (!fighter || !getTile(tileId)) {
+    return;
+  }
+  Fighter *existing = getFighterAt(tileId);
+  if (existing && existing != fighter) {
+    return; 
+  }
   removeFighter(fighter);
   occupancy[tileId] = fighter;
   fighterTile[fighter] = tileId;
@@ -313,11 +320,16 @@ int Map::movementDistance(int fromTileId, int toTileId,
 
 // change postion with another fighter
 void Map::exchangePosition(Fighter *fighter1, Fighter *fighter2) {
+  if (!fighter1 || !fighter2 || fighter1 == fighter2) {
+    return;
+  }
   int tile1 = getTileIdOf(fighter1);
   int tile2 = getTileIdOf(fighter2);
   if (tile1 == -1 || tile2 == -1) {
     return;
   }
+  removeFighter(fighter1);
+  removeFighter(fighter2); 
   placeFighter(fighter1, tile2);
   placeFighter(fighter2, tile1);
 }

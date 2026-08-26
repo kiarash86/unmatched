@@ -50,6 +50,9 @@ inline app::~app() {
 inline void app::run() {
   while (!WindowShouldClose()) {
     sceneManager->update();
+    if (sceneManager->shouldQuit()) {
+      break; 
+    }
     audioManager->update();
     BeginDrawing();
     sceneManager->draw();

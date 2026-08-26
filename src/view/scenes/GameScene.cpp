@@ -154,6 +154,10 @@ GameScene::GameScene(AudioManager *audioManager, SceneManager *sceneManager,
   }
   gameManager->addObserver(this);
 
+  if (gameManager->isVsAI()) {
+    aiController = std::make_unique<AIController>(kAIPlayerIndex);
+  }
+
   BuildBoardLayout();
   refreshFromGameManager();
 
@@ -269,8 +273,6 @@ void GameScene::refreshFromGameManager() {
     }
     heroSummaries.push_back(std::move(summary));
   }
-
-  handRects.clear();
 }
 
 void GameScene::BuildBoardLayout() {
@@ -418,8 +420,7 @@ void GameScene::UpdateLayout() {
   float totalW =
       hand.size() * cardW + (hand.empty() ? 0 : (hand.size() - 1) * gap);
   float startX = sw / 2 - totalW / 2;
-  float handY = sh - cardH - 40;
-  for (size_t i = 0; i < hand.size(); i++) {
+  float handY = sh - cardH - 70;
     handRects.push_back({startX + i * (cardW + gap), handY, cardW, cardH});
   }
 
@@ -1453,7 +1454,8 @@ void GameScene::refreshSaveSlotInfo() {
 }
 
 void GameScene::openSavePrompt() {
-  if (gameManager->isWaitingForSelection() || gameManager->isCombatActive()) {
+  if (gameManager->isWaitingForSelection() || gameManager->isCombatActive() ||
+      isDiscardPromptActive()) {
     return;
   }
   refreshSaveSlotInfo();
@@ -1584,6 +1586,11 @@ void GameScene::playHandCard(int index) {
   Card *card = hand[index].card;
   TypeOfCard type = card->getCardType();
 
+  if (schemeModeActive && type != TypeOfCard::event) {
+    pushLog(eventLog, "Scheme mode: pick a Scheme (event) card.");
+    return;
+  }
+
   Fighter *activeFighter = getActiveFighter();
   if (!gameManager->canPerform(card, activeFighter)) {
 
@@ -1706,11 +1713,21 @@ void GameScene::handleMouse() {
 
   Vector2 mouse = GetMousePosition();
 
+  bool click = IsMouseButtonPressed(MOUSE_LEFT_BUTTON);
+  auto tryClick = [&](bool hit) {
+    if (click && hit) {
+      click = false;
+      return true;
+    }
+    return false;
+  };
+
   selectedAction = -1;
   for (size_t i = 0; i < actionButtons.size(); i++) {
-    if (CheckCollisionPointRec(mouse, actionButtons[i].rec)) {
+    bool hovered = CheckCollisionPointRec(mouse, actionButtons[i].rec);
+    if (hovered) {
       selectedAction = (int)i;
-      if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+      if (tryClick(true))
         activateAction(selectedAction);
       break;
     }
@@ -1720,7 +1737,7 @@ void GameScene::handleMouse() {
   for (size_t i = 0; i < handRects.size(); i++) {
     if (CheckCollisionPointRec(mouse, handRects[i])) {
       selectedCard = (int)i;
-      if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+      if (tryClick(true)) {
         if (gameManager->canBoostMovement()) {
 
           tryBoostMovement(selectedCard);
@@ -1732,19 +1749,17 @@ void GameScene::handleMouse() {
     }
   }
 
-  if (CheckCollisionPointRec(mouse, endTurnRect) &&
-      IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+  if (tryClick(CheckCollisionPointRec(mouse, endTurnRect))) {
     activateAction((int)actionButtons.size() - 1);
   }
 
-  if (CheckCollisionPointRec(mouse, saveButtonRect) &&
-      IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+  if (tryClick(CheckCollisionPointRec(mouse, saveButtonRect))) {
     openSavePrompt();
   }
 
-  if (CheckCollisionPointRec(mouse, undoButtonRect) &&
-      IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && gameManager->canUndo() &&
-      !gameManager->isWaitingForSelection() && !gameManager->isCombatActive()) {
+  if (gameManager->canUndo() && !gameManager->isWaitingForSelection() &&
+      !gameManager->isCombatActive() &&
+      tryClick(CheckCollisionPointRec(mouse, undoButtonRect))) {
     if (auto restored = gameManager->undo()) {
       gameManager = std::move(restored);
       gameManager->addObserver(this);
@@ -1754,6 +1769,7 @@ void GameScene::handleMouse() {
       cancelMovePicker();
       cancelTargetPicker();
       attackModeActive = false;
+      clearAttackRangePreview();
       schemeModeActive = false;
       combatDefensePending = false;
       defenseCardOptions.clear();
@@ -1770,8 +1786,7 @@ void GameScene::handleMouse() {
   }
 
   if (gameManager->isManeuverActive() &&
-      CheckCollisionPointRec(mouse, finishMovingRect) &&
-      IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+      tryClick(CheckCollisionPointRec(mouse, finishMovingRect))) {
     gameManager->finishManeuver();
     cancelMovePicker();
     pushLog(eventLog, "Finished moving.");
@@ -1787,10 +1802,10 @@ void GameScene::handleMouse() {
                                  t.id) != legalMoveTiles.end();
         if (isLegal) {
           hoveredMoveTile = t.id;
-          if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+          if (tryClick(true)) {
             tryMoveToTile(t.id);
           }
-        } else if (t.occupant && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        } else if (t.occupant && tryClick(true)) {
 
           trySelectActiveFighter(t.occupant);
         }
@@ -1889,8 +1904,8 @@ void GameScene::handleKeyboard() {
   }
   if (IsKeyPressed(KEY_ENTER) && selectedAction >= 0) {
     activateAction(selectedAction);
-  }
-  if (IsKeyPressed(KEY_ENTER) && selectedCard >= 0) {
+  } else if (IsKeyPressed(KEY_ENTER) && selectedCard >= 0) {
+
     if (gameManager->canBoostMovement()) {
       tryBoostMovement(selectedCard);
     } else {
@@ -2285,6 +2300,39 @@ void GameScene::activateAction(int index) {
   }
 }
 
+void GameScene::updateAI() {
+  if (!aiController || !gameManager) {
+    return;
+  }
+
+  if (combatDefensePending) {
+    Hero *defender = gameManager->getCombatDefendingHero();
+    if (defender && aiController->isControlling(defender)) {
+      predictionPromptActive = false;
+      pendingPredictionCard = nullptr;
+      aiController->update(*gameManager);
+      combatDefensePending = gameManager->isCombatActive();
+      if (!combatDefensePending) {
+        defenseCardOptions.clear();
+        defenseHandRevealed = false;
+      }
+      refreshFromGameManager();
+    }
+    return;
+  }
+
+  aiController->update(*gameManager);
+
+  if (gameManager->isCombatActive() && !combatDefensePending) {
+    Hero *defender = gameManager->getCombatDefendingHero();
+    if (defender && !aiController->isControlling(defender)) {
+      beginDefensePrompt();
+    }
+  }
+
+  refreshFromGameManager();
+}
+
 void GameScene::Update() {
   if (matchOver) {
     if (CheckCollisionPointRec(GetMousePosition(), resultMenuRect) &&
@@ -2297,6 +2345,12 @@ void GameScene::Update() {
     handleSaveMouse();
     return;
   }
+
+  updateAI();
+  if (matchOver) {
+    return;
+  }
+
   if (combatDefensePending) {
     if (predictionPromptActive) {
       handlePredictionMouse();

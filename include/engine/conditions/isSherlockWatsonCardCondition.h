@@ -1,6 +1,6 @@
 #pragma once
 #include "condition.h"
-#include "model/card.h"
+#include "model/fighter.h"
 #include <algorithm>
 #include <cctype>
 #include <string>
@@ -12,15 +12,16 @@ public:
 
   bool check(gameData &gameData, Fighter *fighter = nullptr) override {
     (void)fighter;
-    if (!gameData.cardPlayed) {
+    Fighter *who = gameData.self;
+    if (!who) {
       return false;
     }
-    std::string name = gameData.cardPlayed->getPerformerName();
+    std::string name = who->getName();
 
     std::transform(name.begin(), name.end(), name.begin(), [](char c) {
       return (char)std::tolower(c);
     }); //  make it lowercase
 
-    return name == "sherlock" || name == "watson";
+    return name == "sherlockholms" || name == "watson";
   }
 };

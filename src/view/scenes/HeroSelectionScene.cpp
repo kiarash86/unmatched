@@ -103,6 +103,9 @@ void HeroSelectionScene::onEnter() {
 
   selectedHero = 0;
 
+  vsAIMode = false;
+  gameModeLocked = false;
+
   pendingVoiceAction = PendingVoiceAction::none;
 
   audio->playSound(SoundID::player1Choose, 1.0f);
@@ -117,6 +120,8 @@ void HeroSelectionScene::Draw() {
 
   drawBackButton();
 
+  drawModeToggle();
+
   drawHeroList();
 
   drawInfoPanel();
@@ -130,8 +135,6 @@ void HeroSelectionScene::Update() {
     if (pendingVoiceAction == PendingVoiceAction::Player2) {
       audio->playSound(SoundID::player2Choose, 1.0f);
     } else if (pendingVoiceAction == PendingVoiceAction::startTransition) {
-      // both players are locked in and player two's voice line just
-      // finished -- go straight to the board, no extra wait
       pendingVoiceAction = PendingVoiceAction::none;
       scene->changeScene(ScenesType::game);
       return;
@@ -171,6 +174,15 @@ void HeroSelectionScene::UpdateLayout() {
                     titleImgHeight};
 
   backButtonRect = {sw * 0.03f, sh * 0.045f, sw * 0.11f, sh * 0.055f};
+
+  float modeBtnWidth = sw * 0.15f;
+  float modeBtnHeight = sh * 0.055f;
+  float modeBtnGap = sw * 0.01f;
+
+  twoPlayerModeRect = {sw * 0.97f - modeBtnWidth, sh * 0.045f, modeBtnWidth,
+                       modeBtnHeight};
+  onePlayerModeRect = {twoPlayerModeRect.x - modeBtnGap - modeBtnWidth,
+                       sh * 0.045f, modeBtnWidth, modeBtnHeight};
 
   float listWidth = sw * 0.24f;
   float cardSpacing = sh * 0.018f;
@@ -260,6 +272,56 @@ void HeroSelectionScene::drawBackButton() {
              buttonFontSize, 1, RAYWHITE);
 }
 
+void HeroSelectionScene::drawModeToggle() {
+  Vector2 mouse = GetMousePosition();
+
+  struct ModeButton {
+    Rectangle rect;
+    const char *label;
+    bool active;
+  };
+
+  ModeButton buttons[2] = {
+      {onePlayerModeRect, "1 PLAYER (VS AI)", vsAIMode},
+      {twoPlayerModeRect, "2 PLAYERS", !vsAIMode},
+  };
+
+  for (auto &btn : buttons) {
+    bool hover =
+        !gameModeLocked && CheckCollisionPointRec(mouse, btn.rect);
+
+    Color bg;
+    Color border;
+
+    if (btn.active) {
+      bg = Color{90, 60, 20, 235};
+      border = GOLD;
+    } else if (hover) {
+      bg = Color{45, 48, 58, 235};
+      border = Color{195, 160, 90, 255};
+    } else {
+      bg = Color{26, 28, 36, 215};
+      border = Color{120, 110, 90, 180};
+    }
+
+    if (gameModeLocked && !btn.active) {
+      bg = Fade(bg, 0.5f);
+      border = Fade(border, 0.5f);
+    }
+
+    DrawRectangleRounded(btn.rect, 0.18f, 12, bg);
+    DrawRectangleRoundedLines(btn.rect, 0.18f, 12, 2, border);
+
+    Vector2 textSize =
+        MeasureTextEx(cormoMedium, btn.label, buttonFontSize * 0.75f, 1);
+
+    DrawTextEx(cormoMedium, btn.label,
+               {btn.rect.x + btn.rect.width / 2 - textSize.x / 2,
+                btn.rect.y + btn.rect.height / 2 - textSize.y / 2},
+               buttonFontSize * 0.75f, 1, btn.active ? GOLD : RAYWHITE);
+  }
+}
+
 void HeroSelectionScene::drawDifficultyStars(float x, float y, int rating, int maxRating) {
   float spacing = statFontSize * 0.95f;
   float radius = statFontSize * 0.32f;
@@ -338,26 +400,17 @@ void HeroSelectionScene::drawInfoPanel() {
   float x = infoContentRect.x + 25;
   float y = infoContentRect.y + 25;
 
-  //----------------------------------
-  // Hero Name
-  //----------------------------------
-
+ 
   DrawTextEx(cinzelBold, hero->name.c_str(), {x, y}, heroNameFontSize, 2, GOLD);
 
   y += heroNameFontSize + 10;
 
-  //----------------------------------
-  // Hero Role
-  //----------------------------------
-
+  
   DrawTextEx(cormoMedium, hero->role.c_str(), {x, y}, heroRoleFontSize, 1,
              LIGHTGRAY);
 
   y += heroRoleFontSize + 16;
 
-  //----------------------------------
-  // Quote / description
-  //----------------------------------
 
   if (!hero->desc.empty()) {
     std::vector<std::string> descLines;
@@ -389,10 +442,7 @@ void HeroSelectionScene::drawInfoPanel() {
     y += 14;
   }
 
-  //----------------------------------
-  // Difficulty
-  //----------------------------------
-
+ 
   DrawTextEx(cinzelSemiBold, "DIFFICULTY", {x, y}, panelTitleFontSize, 1,
              RAYWHITE);
 
@@ -403,9 +453,6 @@ void HeroSelectionScene::drawInfoPanel() {
 
   y += panelTitleFontSize + 34;
 
-  //----------------------------------
-  // Stats (real data from InfoHero)
-  //----------------------------------
 
   DrawTextEx(cinzelSemiBold, "ATTRIBUTES", {x, y}, panelTitleFontSize, 1,
              RAYWHITE);
@@ -468,7 +515,7 @@ void HeroSelectionScene::handleMouse() {
 
   Vector2 mouse = GetMousePosition(); // position of mouse
 
-  bool overInteractive = false; // for changing curser
+  bool overInteractive = false; 
 
   for (size_t i = 0; i < heroCardRects.size(); i++) {
     if (CheckCollisionPointRec(mouse, heroCardRects[i])) {
@@ -492,6 +539,24 @@ void HeroSelectionScene::handleMouse() {
 
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
       scene->changeScene(ScenesType::mainScene);
+    }
+  }
+
+  if (!gameModeLocked) {
+    if (CheckCollisionPointRec(mouse, onePlayerModeRect)) {
+      overInteractive = true;
+
+      if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && !vsAIMode) {
+        vsAIMode = true;
+        PlayerSelectionManager::instance().setVsAI(vsAIMode);
+      }
+    } else if (CheckCollisionPointRec(mouse, twoPlayerModeRect)) {
+      overInteractive = true;
+
+      if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && vsAIMode) {
+        vsAIMode = false;
+        PlayerSelectionManager::instance().setVsAI(vsAIMode);
+      }
     }
   }
 
@@ -577,6 +642,20 @@ void HeroSelectionScene::confirmSelection() {
   PlayerSelectionManager::instance().addPlayer(player);
 
   currentPlayerIndex++;
+
+  gameModeLocked = true;
+
+  if (currentPlayerIndex < totalPlayers && vsAIMode) {
+
+    moveToNextAvailableHero();
+
+    HeroList aiChosenId = heroIds[selectedHero];
+
+    Player aiPlayer(aiChosenId);
+    PlayerSelectionManager::instance().addPlayer(aiPlayer);
+
+    currentPlayerIndex++;
+  }
 
   if (currentPlayerIndex >= totalPlayers) // next scene or next choosing hero?
   {
