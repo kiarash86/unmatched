@@ -157,7 +157,9 @@ std::unique_ptr<GameManager> GameManager::createFromSelection(const std::string 
     }
 
     auto map = MapFactory::create(mapName);
-    return std::make_unique<GameManager>(std::move(heroes), std::move(map));
+    auto gm = std::make_unique<GameManager>(std::move(heroes), std::move(map));
+    gm->vsAI = PlayerSelectionManager::instance().isVsAI();
+    return gm;
   } catch (const AppException &e) {
 
     throw FactoryException("Failed to set up match on map '" + mapName + "': " +
@@ -176,6 +178,7 @@ bool GameManager::hasSave(int slot) {
 nlohmann::json GameManager::serializeState() const {
   nlohmann::json j;
   j["mapName"] = map->getName();
+  j["vsAI"] = vsAI;
 
   nlohmann::json fogArr = nlohmann::json::array();
   for (int tileId : map->getFogTokenTileIds()) {
@@ -368,6 +371,7 @@ std::unique_ptr<GameManager> GameManager::buildFromState(const nlohmann::json &j
 
     auto gm = std::make_unique<GameManager>(std::move(heroes), std::move(map));
 
+    gm->vsAI = j.value("vsAI", false);
     gm->currentTurn = j.value("currentTurn", 0);
     gm->actionsRemaining = j.value("actionsRemaining", 0);
     gm->maneuverActive = j.value("maneuverActive", false);
