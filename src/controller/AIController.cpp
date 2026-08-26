@@ -298,3 +298,56 @@ void AIController::resolveCardChoice(GameManager &gm)
   }
   gm.submitCard(best);
 }
+
+
+
+bool AIController::tryMoveTowardEnemy(GameManager &gm, Hero *self, Hero *enemy)
+{
+  (void)enemy;
+  if (gm.getActionsRemaining() <= 0)
+  {
+    return false;
+  }
+
+  Fighter *mover = self;
+  Fighter *nearest = nearestEnemyFighter(gm, mover);
+  if (!nearest)
+  {
+    return false;
+  }
+
+  int currentDistance = gm.getMap().distanceBetween(mover->getTileId(), nearest->getTileId());
+  if (currentDistance >= 0 && currentDistance <= 1)
+  {
+    return false;
+  }
+
+  if (!gm.performManeuver())
+  {
+    return false;
+  }
+
+  Map &board = gm.getMap();
+  std::vector<Tile *> reachable =
+      board.getReachableTiles(mover->getTileId(), gm.getMovesRemaining(mover), mover);
+
+  Tile *best = nullptr;
+  int bestDist = currentDistance;
+  for (Tile *t : reachable)
+  {
+    int d = board.distanceBetween(t->getId(), nearest->getTileId());
+    if (d >= 0 && d < bestDist)
+    {
+      bestDist = d;
+      best = t;
+    }
+  }
+  if (best)
+  {
+    gm.moveFighter(mover, best->getId());
+  }
+  gm.finishManeuver();
+  return true;
+}
+
+
