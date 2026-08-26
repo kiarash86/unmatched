@@ -45,8 +45,8 @@ inline const nlohmann::json &requireField(const nlohmann::json &j, const std::st
 inline int requireInt(const nlohmann::json &j, const std::string &key,
                        const std::string &context) {
   const auto &field = requireField(j, key, context);
-  if (!field.is_number()) {
-    throw DataFormatException(context + ": field '" + key + "' must be a number"); // string to int? or similiar?
+  if (!field.is_number_integer()) { 
+    throw DataFormatException(context + ": field '" + key + "' must be an integer"); // string to int? or similiar?
   }
   return field.get<int>();
 }
