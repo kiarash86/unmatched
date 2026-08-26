@@ -698,8 +698,14 @@ bool GameManager::endTurn() {
     return false;
   }
 
-  currentTurn = (currentTurn + 1) % (int)heroes.size();
-  resetTurnState();
+int playerCount = (int)heroes.size();
+  for (int i = 0; i < playerCount; i++) {
+    currentTurn = (currentTurn + 1) % playerCount;
+    Hero *next = heroes[currentTurn].get();
+    if (next && next->isAlive()) {
+      break;
+    }
+  }  resetTurnState();
   triggerStartOfTurnAbility();
 
   for (auto *obs : observers) obs->onTurnEnded(currentTurn);
