@@ -24,7 +24,7 @@ public:
       return;
     }
 
-      std::vector<Card *> lastSeenHand = enemyHero->getDeck()->getHand();
+      std::vector<Card *> seenHand = enemyHero->getDeck()->getHand();
 
     if (gameData.onHandRevealed) {
       gameData.onHandRevealed(enemyHero, seenHand);
