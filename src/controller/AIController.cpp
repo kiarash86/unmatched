@@ -379,3 +379,29 @@ Card *AIController::pickDefenseCard(GameManager &gm, Hero *defender) const
   return best;
 }
 
+void AIController::discardOne(GameManager &gm, Hero *self)
+{
+  if (!self->getDeck())
+  {
+    return;
+  }
+  std::vector<Card *> hand = self->getDeck()->getHand();
+  if (hand.empty())
+  {
+    return;
+  }
+
+  Card *worst = hand.front();
+  int worstScore = INT_MAX;
+  for (Card *c : hand)
+  {
+    int score = c->getAttackStat() + c->getDefStat() + c->getBoost();
+    if (score < worstScore)
+    {
+      worstScore = score;
+      worst = c;
+    }
+  }
+  gm.discardExcessCard(worst);
+}
+
