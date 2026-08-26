@@ -143,6 +143,62 @@ void AIController::resolveFighterChoice(GameManager &gm)
 
 
 
+Fighter *AIController::weakestOf(const std::vector<Fighter *> &fighters)
+{
+  Fighter *best = nullptr;
+  for (Fighter *f : fighters)
+  {
+    if (!f)
+    {
+      continue;
+    }
+    if (!best || f->getHealth() < best->getHealth())
+    {
+      best = f;
+    }
+  }
+  return best;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
