@@ -15,5 +15,4 @@ public:
   void clear() { requestedSlot = -1; }
 
   int getRequestedSlot() const { return requestedSlot; }
-
 };
