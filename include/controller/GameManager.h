@@ -24,6 +24,8 @@ private:
   std::unique_ptr<Map> map;
   int currentTurn{0};
 
+  bool vsAI{false};
+
   std::unordered_map<Fighter *, int> movesRemainingByFighter;
   int actionsRemaining{0};
   bool maneuverActive{false};
@@ -133,6 +135,8 @@ public:
   ~GameManager();
 
   static std::unique_ptr<GameManager> createFromSelection(const std::string &mapName);
+
+  bool isVsAI() const { return vsAI; } // true = player 2 is played by the AI
 
 static constexpr int kSaveSlotCount = 3;
   static std::string saveFilePath(int slot);
