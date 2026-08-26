@@ -8,6 +8,8 @@ class PlayerSelectionManager // managing heroes
 private:
   std::vector<Player> players; // all players
 
+  bool vsAI = false;
+
   PlayerSelectionManager() = default; // singelton class
 
 public:
@@ -20,6 +22,17 @@ public:
   void reset() // start from 0(no heroes for any players)
   {
     players.clear();
+    vsAI = false;
+  }
+
+  void setVsAI(bool value)
+  {
+    vsAI = value;
+  }
+
+  bool isVsAI() const // true = single player vs AI, false = two player
+  {
+    return vsAI;
   }
 
   void addPlayer(const Player &player) // adding player
