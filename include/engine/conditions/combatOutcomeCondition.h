@@ -16,6 +16,6 @@ public:
     Fighter *who = fighter ? fighter : gameData.self;
     Fighter *who2 = (outcome == CombatOutcome::Won) ? gameData.lastCombatWinner
                                                            : gameData.lastCombatLoser;
-    return who && who2 ;
+    return who != nullptr && who == who2;
   }
 };
