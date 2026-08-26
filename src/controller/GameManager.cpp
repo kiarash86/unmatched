@@ -721,6 +721,14 @@ void GameManager::checkFighterDeath(Fighter *fighter) {
   }
   map->removeFighter(fighter);
   for (auto *obs : observers) obs->onFighterRemoved(fighter);
+  void GameManager::reapTheDead() {
+  for (auto &hero : heroes) {
+    checkFighterDeath(hero.get());
+    for (auto &sk : hero->getSidekicks()) {
+      checkFighterDeath(sk.get());
+    }
+  }
+}
 }
 
 void GameManager::notifyDamage(Fighter *fighter, int healthBefore) {
