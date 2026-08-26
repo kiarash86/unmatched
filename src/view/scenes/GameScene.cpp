@@ -1778,15 +1778,6 @@ void GameScene::handleMouse() {
     refreshFromGameManager();
   }
 
-  if (Tile *stayTile = gameManager->getStayTileOption()) {
-    if (CheckCollisionPointRec(mouse, stayPutRect) &&
-        IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-      gameManager->submitTile(stayTile);
-      pushLog(eventLog, "Chose not to move.");
-      refreshFromGameManager();
-    }
-  }
-
   hoveredMoveTile = -1;
   if (moveModeActive && CheckCollisionPointRec(mouse, boardRect)) {
     for (auto &t : tiles) {
