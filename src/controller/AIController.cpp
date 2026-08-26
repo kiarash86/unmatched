@@ -405,3 +405,15 @@ void AIController::discardOne(GameManager &gm, Hero *self)
   gm.discardExcessCard(worst);
 }
 
+
+
+void AIController::resolveEffectChoice(GameManager &gm)
+{
+  std::vector<std::string> labels = gm.getValidEffectChoiceLabels();
+  if (labels.empty())
+  {
+    return;
+  }
+  gm.submitEffectChoice(0);
+}
+
