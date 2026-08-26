@@ -56,6 +56,49 @@ bool AIController::pendingBelongsToMe(GameManager &gm) const
 
 
 
+void AIController::resolveTileChoice(GameManager &gm)
+{
+  std::vector<Tile *> options = gm.getValidTiles();
+  if (options.empty())
+  {
+    return;
+  }
+
+  Fighter *reference = gm.getPendingChooser();
+  if (!reference)
+  {
+    reference = gm.getCurrentHero();
+  }
+
+  Tile *best = options.front();
+  if (reference)
+  {
+    if (Fighter *enemyRef = nearestEnemyFighter(gm, reference))
+    {
+      int bestDist = INT_MAX;
+      for (Tile *t : options)
+      {
+        int d = gm.getMap().distanceBetween(t->getId(), enemyRef->getTileId());
+        if (d >= 0 && d < bestDist)
+        {
+          bestDist = d;
+          best = t;
+        }
+      }
+    }
+  }
+  gm.submitTile(best);
+}
+
+
+
+
+
+
+
+
+
+
 
 
 
