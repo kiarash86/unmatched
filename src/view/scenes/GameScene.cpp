@@ -1686,6 +1686,16 @@ void GameScene::handleGenericFighterPick() {
 void GameScene::handleMouse() {
 
   if (gameManager->isWaitingForTile()) {
+    Vector2 mousePos = GetMousePosition();
+    if (Tile *stayTile = gameManager->getStayTileOption()) {
+      if (CheckCollisionPointRec(mousePos, stayPutRect) &&
+          IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        gameManager->submitTile(stayTile);
+        pushLog(eventLog, "Chose not to move.");
+        refreshFromGameManager();
+        return;
+      }
+    }
     handleGenericTilePick();
     return;
   }
