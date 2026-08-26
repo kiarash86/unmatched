@@ -51,6 +51,32 @@ private:
       }
       return results;
     }
+    if (what == "near_sidekick") {
+      std::vector<Fighter *> results;
+      if (gameData.self && gameData.enemy && gameData.map) {
+        Map *map = gameData.map;
+        int selfPlayer = gameData.self->getOwnerPlayer();
+        int enemyPlayer = gameData.enemy->getOwnerPlayer();
+        for (auto type : {TypeOfFighter::hero, TypeOfFighter::sidekick}) {
+          for (auto *f : map->getFighter(type, enemyPlayer)) {
+            if (!f || !f->isAlive()) {
+              continue;
+            }
+            for (auto *sk : map->getFighter(TypeOfFighter::sidekick, selfPlayer)) {
+              if (!sk || !sk->isAlive()) {
+                continue;
+              }
+              int d = map->distanceBetween(map->getTileIdOf(sk), map->getTileIdOf(f));
+              if (d >= 0 && d <= 1) {
+                results.push_back(f);
+                break;
+              }
+            }
+          }
+        }
+      }
+      return results;
+    }
  if (what == "each_enemy_fighter" || what == "enemy_fighters_on_fog_token") {
       std::vector<Fighter *> results;
       if (gameData.self && gameData.enemy && gameData.map) {
