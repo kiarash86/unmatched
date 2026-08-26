@@ -417,3 +417,26 @@ void AIController::resolveEffectChoice(GameManager &gm)
   gm.submitEffectChoice(0);
 }
 
+
+void AIController::resolveDefenseIfNeeded(GameManager &gm)
+{
+  Hero *defender = gm.getCombatDefendingHero();
+  if (!defender || !isControlling(defender))
+  {
+    return;
+  }
+
+  Card *chosen = pickDefenseCard(gm, defender);
+
+  int predicted = -1;
+  if (chosen && chosen->needsPrediction())
+  {
+    if (Card *attackerCard = gm.getCombatAttackerCard())
+    {
+      predicted = attackerCard->getAttackStat(); //TODO : a random number between 1 and attack stat that is being used now
+    }
+  }
+
+  gm.resolveCombat(chosen, predicted);
+}
+
