@@ -585,4 +585,55 @@ bool AIController::tryPlayUsefulCard(GameManager &gm, Hero *self, Hero *enemy)
   }
   return false;
 }
+void AIController::takeTurnStep(GameManager &gm)
+{
+  Hero *self = gm.getCurrentHero();
+  if (!self)
+  {
+    return;
+  }
+
+  if (gm.getActionsRemaining() <= 0)
+  {
+    gm.endTurn();
+    return;
+  }
+
+  Hero *enemy = nullptr;
+  for (int p = 0; p < gm.getPlayerCount(); p++)
+  {
+    Hero *h = gm.getHero(p);
+    if (h && !isControlling(h))
+    {
+      enemy = h;
+      break;
+    }
+  }
+  if (!enemy)
+  {
+    gm.endTurn();
+    return;
+  }
+
+  if (tryAttack(gm, self, enemy))
+  {
+    return;
+  }
+  if (tryPlayUsefulCard(gm, self, enemy))
+  {
+    return;
+  }
+  if (tryMoveTowardEnemy(gm, self, enemy))
+  {
+    return;
+  }
+
+  if (gm.performManeuver())
+  {
+    gm.finishManeuver();
+    return;
+  }
+
+  gm.endTurn();
+}
 
