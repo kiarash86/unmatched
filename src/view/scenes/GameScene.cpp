@@ -273,8 +273,6 @@ void GameScene::refreshFromGameManager() {
     }
     heroSummaries.push_back(std::move(summary));
   }
-
-  handRects.clear();
 }
 
 void GameScene::BuildBoardLayout() {
