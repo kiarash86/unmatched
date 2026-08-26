@@ -637,3 +637,37 @@ void AIController::takeTurnStep(GameManager &gm)
   gm.endTurn();
 }
 
+
+void AIController::update(GameManager &gm)
+{
+  if (gm.isGameOver())
+  {
+    return;
+  }
+
+  if (gm.isWaitingForSelection())
+  {
+    resolvePendingSelection(gm);
+    return;
+  }
+
+  if (gm.isCombatActive())
+  {
+    resolveDefenseIfNeeded(gm);
+    return;
+  }
+
+  Hero *current = gm.getCurrentHero();
+  if (!current || !isControlling(current))
+  {
+    return;
+  }
+
+  if (gm.needsEndOfTurnDiscard())
+  {
+    discardOne(gm, current);
+    return;
+  }
+
+  takeTurnStep(gm);
+}
