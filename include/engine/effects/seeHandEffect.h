@@ -27,8 +27,7 @@ public:
       std::vector<Card *> lastSeenHand = enemyHero->getDeck()->getHand();
 
     if (gameData.onHandRevealed) {
-      gameData.onHandRevealed(enemyHero, lastSeenHand);
+      gameData.onHandRevealed(enemyHero, seenHand);
     }
   }
-
 };
