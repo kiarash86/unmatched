@@ -440,3 +440,78 @@ void AIController::resolveDefenseIfNeeded(GameManager &gm)
   gm.resolveCombat(chosen, predicted);
 }
 
+
+bool AIController::tryAttack(GameManager &gm, Hero *self, Hero *enemy)
+{
+  if (gm.getActionsRemaining() <= 0 || !self->getDeck())
+  {
+    return false;
+  }
+
+  std::vector<Fighter *> attackers;
+  attackers.push_back(self);
+  for (auto &sk : self->getSidekicks())
+  {
+    if (sk->isAlive())
+    {
+      attackers.push_back(sk.get());
+    }
+  }
+
+  std::vector<Fighter *> targets;
+  targets.push_back(enemy);
+  for (auto &sk : enemy->getSidekicks())
+  {
+    if (sk->isAlive())
+    {
+      targets.push_back(sk.get());
+    }
+  }
+
+  Fighter *bestAttacker = nullptr;
+  Card *bestCard = nullptr;
+  Fighter *bestTarget = nullptr;
+  int bestScore = INT_MIN;
+
+  for (Fighter *attacker : attackers)
+  {
+    if (!attacker->isAlive())
+    {
+      continue;
+    }
+    for (Card *card : self->getDeck()->getHand())
+    {
+      if (card->getCardType() != TypeOfCard::attack &&
+          card->getCardType() != TypeOfCard::multipurpose)
+      {
+        continue;
+      }
+      if (!gm.canPerform(card, attacker))
+      {
+        continue;
+      }
+      for (Fighter *target : targets)
+      {
+        if (!target->isAlive() || !inAttackRange(gm, attacker, target))
+        {
+          continue;
+        }
+
+        int score = card->getAttackStat() * 10 - target->getHealth();
+        if (score > bestScore)
+        {
+          bestScore = score;
+          bestAttacker = attacker;
+          bestCard = card;
+          bestTarget = target;
+        }
+      }
+    }
+  }
+
+  if (!bestAttacker)
+  {
+    return false;
+  }
+  return gm.startCombat(bestCard, bestAttacker, bestTarget);
+}
