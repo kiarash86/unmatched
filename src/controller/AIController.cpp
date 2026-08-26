@@ -204,6 +204,76 @@ bool AIController::inAttackRange(GameManager &gm, Fighter *attacker, Fighter *ta
 
 
 
+Fighter *AIController::nearestEnemyFighter(GameManager &gm, Fighter *from) const
+{
+  if (!from)
+  {
+    return nullptr;
+  }
+  Fighter *best = nullptr;
+  int bestDist = INT_MAX;
+  for (int p = 0; p < gm.getPlayerCount(); p++)
+  {
+    Hero *h = gm.getHero(p);
+    if (!h || h->getOwnerPlayer() == from->getOwnerPlayer())
+    {
+      continue;
+    }
+    std::vector<Fighter *> candidates;
+    candidates.push_back(h);
+    for (auto &sk : h->getSidekicks())
+    {
+      if (sk->isAlive())
+      {
+        candidates.push_back(sk.get());
+      }
+    }
+    for (Fighter *f : candidates)
+    {
+      if (!f->isAlive())
+      {
+        continue;
+      }
+      int d = gm.getMap().distanceBetween(from->getTileId(), f->getTileId());
+      if (d >= 0 && d < bestDist)
+      {
+        bestDist = d;
+        best = f;
+      }
+    }
+  }
+  return best;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
