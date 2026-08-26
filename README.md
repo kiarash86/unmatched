@@ -66,6 +66,52 @@ reads GameManager and draws it.**
   `TextureManager`/`SceneManager` as `unique_ptr` members and passes raw
   pointers down to whoever needs them, instead of any of them being global.
 
+## AI opponent
+
+Player 2's hero is now played by a small rule-based AI (`AIController`)
+instead of requiring a second human. Player 1 (whoever picks first on the
+hero-selection screen) is still human; whichever hero player 2 picks on
+that same screen becomes the AI's hero.
+
+`AIController` never touches raylib or `GameScene`'s internals -- it only
+calls `GameManager`'s existing public methods (`startCombat`, `playCard`,
+`moveFighter`, `performManeuver`, `resolveCombat`, `submitTile`/
+`submitFighter`/`submitCard`/`submitEffectChoice`, `endTurn`, ...), exactly
+like the view layer does for the human. `GameScene::updateAI()` calls
+`AIController::update()` once per frame; it is a no-op unless there is
+something for the AI to actually do right now, and it never touches
+anything that belongs to the human's turn.
+
+What it does, each time it gets to act:
+
+1. **Pending choices** (tile/fighter/card/effect, from its own cards or
+   abilities): resolved with small greedy heuristics -- finish off the
+   weakest enemy fighter if one is offered, otherwise help the most
+   wounded ally, otherwise keep the best-looking card, otherwise just take
+   the first option.
+2. **Combat defense**, when the human attacks it: play the legal defense
+   card with the highest Defense value it has, or take the hit if it has
+   none. For a defense card that asks it to predict the attacker's value,
+   it reads the already-chosen attack card's printed value directly rather
+   than bluffing.
+3. **Its own turn**, one action at a time:
+   - Attack the reachable enemy fighter it can hit hardest/finish off, if
+     any attack is legal from its hero or an alive sidekick.
+   - Otherwise play a legal Event ("Scheme") card, preferring to help its
+     most wounded ally or weaken the enemy's weakest fighter.
+   - Otherwise Maneuver and move toward the nearest enemy fighter.
+   - Otherwise Maneuver just to draw a card, then end its turn once out of
+     actions (discarding down to 7 first if needed).
+
+It is intentionally simple: no lookahead, no board-wide planning, and no
+special-casing per hero ability beyond what's already exposed generically
+(e.g. it doesn't "know" about Dracula's Blood Harvest by name, it just
+answers whatever fighter-choice prompt that ability raises the same way
+it answers any other one). It's meant as a playable opponent and a
+starting point, not a strong one -- `takeTurnStep`/`tryAttack`/
+`tryPlayUsefulCard`/`tryMoveTowardEnemy` in `src/controller/AIController.cpp`
+are the places to make it smarter.
+
 ## Exception handling
 
 The project uses a small custom exception hierarchy
@@ -156,6 +202,7 @@ header-only, so they have no matching `.cpp` file.)
 | `AudioManager.h` | Loads/caches/plays music and sound effects from `assets/music`/`assets/sounds` by `MusicID`/`SoundID`, checking the file exists first. Header-only. |
 | `FontManager.h` | Loads/caches fonts from `assets/fonts` by `FontID`, with a fallback font if a specific one is missing. Header-only. |
 | `TextureManager.h` | Loads/caches textures from `assets/images` by `TextureID`. Header-only. |
+| `AIController.h` / `.cpp` | A simple, rule-based AI that plays player 2's hero. It reads state and acts purely through `GameManager`'s public API (the same API `GameScene` uses for the human), so it has no dependency on raylib or the view layer. See [AI opponent](#ai-opponent) below. |
 
 ### `include/model` & `src/model`
 
