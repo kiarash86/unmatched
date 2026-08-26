@@ -11,7 +11,6 @@
 #include <memory>                             // smart pointer
 class SceneManager {
 private:
-
   AudioManager *audioManager;
   TextureManager *textureManager;
   FontManager *fontManager;
@@ -30,7 +29,6 @@ private:
       case ScenesType::game:
       currentScene = std::make_unique<GameScene>(audioManager , this , textureManager , fontManager);
       break;
-
     case ScenesType::heroSelection:
       currentScene = std::make_unique<HeroSelectionScene>(
           audioManager, this, textureManager, fontManager);
