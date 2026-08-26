@@ -23,26 +23,30 @@ private:
 
   void loadAllSound() // loading all sounds
   {
-    if (!std::filesystem::exists(pathSounds)) return; // no assets yet
+    if (!std::filesystem::exists(pathSounds))
+      return; // no assets yet
 
     for (auto &snd :
          magic_enum::enum_values<SoundID>()) // soundID is list of all sounds
     {
       std::string path = pathSounds + std::string(magic_enum::enum_name(snd)) + ".mp3";
-      if (!std::filesystem::exists(path)) continue; // this one's missing
+      if (!std::filesystem::exists(path))
+        continue; // this one's missing
       sounds.emplace(snd, LoadSound(path.c_str()));
     }
   }
 
   void loadAllMusic() // loading all musics
   {
-    if (!std::filesystem::exists(pathMusics)) return; // no assets yet
+    if (!std::filesystem::exists(pathMusics))
+      return; // no assets yet
 
     for (auto &msc :
          magic_enum::enum_values<MusicID>()) // musicID is list of all muaics
     {
       std::string path = pathMusics + std::string(magic_enum::enum_name(msc)) + ".mp3";
-      if (!std::filesystem::exists(path)) continue; // this one's missing
+      if (!std::filesystem::exists(path))
+        continue; // this one's missing
       musics.emplace(msc, LoadMusicStream(path.c_str()));
     }
   }
@@ -50,9 +54,11 @@ private:
 public:
   void update() // get music for seconds ahead
   {
-    for (auto &cMs : currentMusics) {
+    for (auto &cMs : currentMusics)
+    {
       auto it = musics.find(cMs);
-      if (it == musics.end()) continue;
+      if (it == musics.end())
+        continue;
       if (IsMusicStreamPlaying(it->second)) // check if its puased
       {
         UpdateMusicStream(it->second);
@@ -81,33 +87,40 @@ public:
 
   void playMusic(MusicID music, float volume, bool loop) // play music
   {
-    if (musics.find(music) == musics.end()) return; // asset missing, no-op
-
-    if (currentMusics.find(music) !=
-        currentMusics.end()) // dont have this music? bye!bye!
+    auto it = musics.find(music);
+    if (it == musics.end())
     {
       return;
     }
+    if (currentMusics.count(music) != 0)
+    {
+      SetMusicVolume(it->second, volume);
+      it->second.looping = loop;
+      return;
+    }
 
-    SetMusicVolume(musics.at(music), volume); // set volume
-    musics.at(music).looping = loop;          // set looping status
-    PlayMusicStream(musics.at(music));        // playing music
-    currentMusics.insert(music);              // adding to current musics
+    SetMusicVolume(it->second, volume); // set volume
+    it->second.looping = loop;          // set looping status
+    PlayMusicStream(it->second);        // playing music
+    currentMusics.insert(music);        // adding to current musics
   }
 
   void playSound(SoundID sound, float volume) // play sound
   {
     auto it = sounds.find(sound);
-    if (it == sounds.end()) return; // asset missing, no-op
+    if (it == sounds.end())
+      return;                           // asset missing, no-op
     SetSoundVolume(it->second, volume); // set volume
     PlaySound(it->second);              // playing sound
   }
 
   void stopAllMusic() // no music playing anymore
   {
-    for (auto &ms : currentMusics) {
+    for (auto &ms : currentMusics)
+    {
       auto it = musics.find(ms);
-      if (it != musics.end()) StopMusicStream(it->second);
+      if (it != musics.end())
+        StopMusicStream(it->second);
     }
     currentMusics.clear();
   }
@@ -115,15 +128,18 @@ public:
   void stopMusic(MusicID music) // erase this music from current musics
   {
     auto it = musics.find(music);
-    if (it != musics.end()) StopMusicStream(it->second);
+    if (it != musics.end())
+      StopMusicStream(it->second);
     currentMusics.erase(music);
   }
 
   void pauseMusic(MusicID music) // pause musicStream
   {
     auto it = musics.find(music);
-    if (it == musics.end()) return;
-    if (IsMusicStreamPlaying(it->second)) {
+    if (it == musics.end())
+      return;
+    if (IsMusicStreamPlaying(it->second))
+    {
       PauseMusicStream(it->second);
     }
   }
@@ -131,8 +147,10 @@ public:
   void resumeMusic(MusicID music) // continue musicStream
   {
     auto it = musics.find(music);
-    if (it == musics.end()) return;
-    if (!IsMusicStreamPlaying(it->second)) {
+    if (it == musics.end())
+      return;
+    if (!IsMusicStreamPlaying(it->second))
+    {
       ResumeMusicStream(it->second);
     }
   }
