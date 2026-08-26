@@ -166,6 +166,53 @@ Fighter *AIController::weakestOf(const std::vector<Fighter *> &fighters)
 
 
 
+bool AIController::inAttackRange(GameManager &gm, Fighter *attacker, Fighter *target) const
+{
+  Map &board = gm.getMap();
+  int fromTile = attacker->getTileId();
+  int toTile = target->getTileId();
+  int distance = board.distanceBetween(fromTile, toTile);
+
+  if (attacker->getTypeOfAttack() == TypeOfAttack::melee)
+  {
+    return distance == 1;
+  }
+
+  if (distance == 1)
+  {
+    return true;
+  }
+  Tile *fromT = board.getTile(fromTile);
+  Tile *toT = board.getTile(toTile);
+  if (!fromT || !toT)
+  {
+    return false;
+  }
+  for (const auto &zone : fromT->getZones())
+  {
+    if (toT->getZones().count(zone))
+    {
+      return true;
+    }
+  }
+  return false;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
