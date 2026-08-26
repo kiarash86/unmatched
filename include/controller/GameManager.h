@@ -94,6 +94,7 @@ std::vector<nlohmann::json> undoStack;
 
   void checkFighterDeath(Fighter *fighter);
 
+  void reapTheDead();
   
   void notifyDamage(Fighter *fighter, int healthBefore);
 
