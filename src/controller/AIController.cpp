@@ -98,6 +98,53 @@ void AIController::resolveTileChoice(GameManager &gm)
 
 
 
+void AIController::resolveFighterChoice(GameManager &gm)
+{
+  std::vector<Fighter *> options = gm.getValidFighters();
+  if (options.empty())
+  {
+    return;
+  }
+
+  std::vector<Fighter *> enemies, allies;
+  bool hasDecline = false;
+  for (Fighter *f : options)
+  {
+    if (!f)
+    {
+      hasDecline = true;
+      continue;
+    }
+    if (f->getOwnerPlayer() == ownerPlayer)
+    {
+      allies.push_back(f);
+    }
+    else
+    {
+      enemies.push_back(f);
+    }
+  }
+
+  Fighter *choice = nullptr;
+  if (!enemies.empty())
+  {
+    choice = weakestOf(enemies);
+  }
+  else if (!allies.empty())
+  {
+    choice = weakestOf(allies);
+  }
+  else if (hasDecline)
+  {
+    choice = nullptr;
+  }
+  gm.submitFighter(choice);
+}
+
+
+
+
+
 
 
 
