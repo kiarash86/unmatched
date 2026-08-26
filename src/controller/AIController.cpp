@@ -351,3 +351,31 @@ bool AIController::tryMoveTowardEnemy(GameManager &gm, Hero *self, Hero *enemy)
 }
 
 
+Card *AIController::pickDefenseCard(GameManager &gm, Hero *defender) const
+{
+  if (!defender || !defender->getDeck())
+  {
+    return nullptr;
+  }
+  Card *best = nullptr;
+  int bestStat = -1;
+  for (Card *c : defender->getDeck()->getHand())
+  {
+    if (c->getCardType() != TypeOfCard::def &&
+        c->getCardType() != TypeOfCard::multipurpose)
+    {
+      continue;
+    }
+    if (!gm.canPerform(c, defender))
+    {
+      continue;
+    }
+    if (c->getDefStat() > bestStat)
+    {
+      bestStat = c->getDefStat();
+      best = c;
+    }
+  }
+  return best;
+}
+
