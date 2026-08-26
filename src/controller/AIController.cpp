@@ -10,6 +10,14 @@
 #include "model/typeOfAttack.h"
 #include "model/typeOfCard.h"
 #include <climits>
+#include <random>
+
+namespace {
+std::mt19937 &aiRng() {
+  static std::mt19937 rng{std::random_device{}()};
+  return rng;
+}
+} 
 
 AIController::AIController(int ownerPlayer) : ownerPlayer(ownerPlayer) {}
 
@@ -317,7 +325,7 @@ bool AIController::tryMoveTowardEnemy(GameManager &gm, Hero *self, Hero *enemy)
   }
 
   int currentDistance = gm.getMap().distanceBetween(mover->getTileId(), nearest->getTileId());
-  if (currentDistance >= 0 && currentDistance <= 1)
+  if (currentDistance < 0 || currentDistance <= 1)
   {
     return false;
   }
@@ -347,7 +355,8 @@ bool AIController::tryMoveTowardEnemy(GameManager &gm, Hero *self, Hero *enemy)
     gm.moveFighter(mover, best->getId());
   }
   gm.finishManeuver();
-  return true;
+
+  return best != nullptr;
 }
 
 
@@ -433,7 +442,12 @@ void AIController::resolveDefenseIfNeeded(GameManager &gm)
   {
     if (Card *attackerCard = gm.getCombatAttackerCard())
     {
-      predicted = attackerCard->getAttackStat(); //TODO : a random number between 1 and attack stat that is being used now
+      int stat = attackerCard->getAttackStat();
+      if (stat > 0)
+      {
+        std::uniform_int_distribution<int> dist(1, stat);
+        predicted = dist(aiRng());
+      }
     }
   }
 
