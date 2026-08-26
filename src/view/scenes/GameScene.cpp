@@ -154,6 +154,10 @@ GameScene::GameScene(AudioManager *audioManager, SceneManager *sceneManager,
   }
   gameManager->addObserver(this);
 
+  if (gameManager->isVsAI()) {
+    aiController = std::make_unique<AIController>(kAIPlayerIndex);
+  }
+
   BuildBoardLayout();
   refreshFromGameManager();
 
@@ -2284,6 +2288,44 @@ void GameScene::activateAction(int index) {
   }
 }
 
+void GameScene::updateAI() {
+  if (!aiController || !gameManager) {
+    return;
+  }
+
+  // If a defense prompt is already showing but it turns out the defender is
+  // the AI's hero (e.g. the human just attacked it), let the AI answer it
+  // instead of waiting on a mouse click that will never come.
+  if (combatDefensePending) {
+    Hero *defender = gameManager->getCombatDefendingHero();
+    if (defender && aiController->isControlling(defender)) {
+      predictionPromptActive = false;
+      pendingPredictionCard = nullptr;
+      aiController->update(*gameManager);
+      combatDefensePending = gameManager->isCombatActive();
+      if (!combatDefensePending) {
+        defenseCardOptions.clear();
+        defenseHandRevealed = false;
+      }
+      refreshFromGameManager();
+    }
+    return;
+  }
+
+  aiController->update(*gameManager);
+
+  // The AI may have just started an attack against the human; hand off to
+  // the normal defense prompt the same way a human attacker would.
+  if (gameManager->isCombatActive() && !combatDefensePending) {
+    Hero *defender = gameManager->getCombatDefendingHero();
+    if (defender && !aiController->isControlling(defender)) {
+      beginDefensePrompt();
+    }
+  }
+
+  refreshFromGameManager();
+}
+
 void GameScene::Update() {
   if (matchOver) {
     if (CheckCollisionPointRec(GetMousePosition(), resultMenuRect) &&
@@ -2296,6 +2338,12 @@ void GameScene::Update() {
     handleSaveMouse();
     return;
   }
+
+  updateAI();
+  if (matchOver) {
+    return;
+  }
+
   if (combatDefensePending) {
     if (predictionPromptActive) {
       handlePredictionMouse();
