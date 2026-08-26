@@ -421,7 +421,8 @@ void GameScene::UpdateLayout() {
       hand.size() * cardW + (hand.empty() ? 0 : (hand.size() - 1) * gap);
   float startX = sw / 2 - totalW / 2;
   float handY = sh - cardH - 70;
-    handRects.push_back({startX + i * (cardW + gap), handY, cardW, cardH});
+  for (size_t i = 0; i < hand.size(); i++) {
+    handRects.push_back(Rectangle{startX + i * (cardW + gap), handY, cardW, cardH});
   }
 
   float defCardH = 46.0f;
