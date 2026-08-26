@@ -95,8 +95,9 @@ std::vector<nlohmann::json> undoStack;
   void applyFatigue(Hero *hero);
 
   void checkFighterDeath(Fighter *fighter);
+  void reapTheDead();
 
-  
+   
   void notifyDamage(Fighter *fighter, int healthBefore);
 
  
