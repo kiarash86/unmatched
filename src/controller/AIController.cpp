@@ -515,3 +515,74 @@ bool AIController::tryAttack(GameManager &gm, Hero *self, Hero *enemy)
   }
   return gm.startCombat(bestCard, bestAttacker, bestTarget);
 }
+
+
+bool AIController::tryPlayUsefulCard(GameManager &gm, Hero *self, Hero *enemy)
+{
+  (void)enemy;
+  if (gm.getActionsRemaining() <= 0 || !self->getDeck())
+  {
+    return false;
+  }
+
+  for (Card *card : self->getDeck()->getHand())
+  {
+    if (card->getCardType() != TypeOfCard::event)
+    {
+      continue;
+    }
+    if (!gm.canPerform(card, self))
+    {
+      continue;
+    }
+
+    if (!gm.cardNeedsTarget(card))
+    {
+      if (gm.playCard(card))
+      {
+        return true;
+      }
+      continue;
+    }
+
+    std::vector<Fighter *> targets = gm.getValidTargetsForCard(card);
+    if (targets.empty())
+    {
+      continue;
+    }
+
+    Fighter *target = nullptr;
+    if (card->isTargetsAnyFighter())
+    {
+      std::vector<Fighter *> allies;
+      for (Fighter *f : targets)
+      {
+        if (f->getOwnerPlayer() == ownerPlayer)
+        {
+          allies.push_back(f);
+        }
+      }
+      target = !allies.empty() ? weakestOf(allies) : weakestOf(targets);
+    }
+    else
+    {
+      target = weakestOf(targets);
+    }
+    if (!target)
+    {
+      continue;
+    }
+
+    Hero *enemyHero = gm.getHero(target->getOwnerPlayer());
+    if (!enemyHero)
+    {
+      enemyHero = target->getOwnerPlayer() == self->getOwnerPlayer() ? self : nullptr;
+    }
+    if (gm.playCard(card, self, target, enemyHero))
+    {
+      return true;
+    }
+  }
+  return false;
+}
+
