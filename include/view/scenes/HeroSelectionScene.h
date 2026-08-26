@@ -16,14 +16,13 @@ none,
 Player2,
 startTransition
   }; /*this is for controlling
-  sounds, if it is player2 then at first it should reach the end of dialog of
-  first hero then go for choosehero of player 2*/
+  sounds, if it is player2 then at first it should reach the end of sspeech of
+  first hero then go  choose hero for player 2*/
 
 PendingVoiceAction pendingVoiceAction =
 PendingVoiceAction::none; //   where are we now?
 SoundID heroVoiceBeingWaitedOn =
-SoundID::draculaSpeech; // next sound (it is supposed to play after other
-                              // sound or first)
+SoundID::draculaSpeech; // next sound 
 
 std::vector<std::unique_ptr<InfoHero>> heroes; // saving in this vector
 
@@ -34,6 +33,12 @@ int selectedHero = 0; // index for buttons
 static const int totalPlayers = 2; // number of player we need
 
 int currentPlayerIndex = 0; // which player turn it is
+
+  // (1 player vs AI, or 2 player)
+bool vsAIMode = false; // false = 2 players, true =ai
+bool gameModeLocked =
+    false;
+  // GAME MODE
 
   // FONTS
 Font cinzelBold;
@@ -66,6 +71,9 @@ Rectangle infoPanelRect;  // info box
 Rectangle titleImageRect; // where to draw titleHeroSelection
 Rectangle paginationRect; // where to draw hero pagination dots
 
+Rectangle onePlayerModeRect; // 1 Player button
+Rectangle twoPlayerModeRect; // 2 Players button
+
 std::vector<Rectangle> heroCardRects; // rect of each hero card in the list
   // LAYOUT
 
@@ -79,10 +87,11 @@ void confirmSelection();        // effect of selected for hero
 void moveToNextAvailableHero(); // go to next hero that is not selected by
                                   // someone before
 
-void drawBackground(); // draw background
-void drawTitle();      // draw title
-void drawBackButton(); // draw back button
-void drawHeroList();   // draw hero list(menu)
+void drawBackground();  // draw background
+void drawTitle();       // draw title
+void drawBackButton();  // draw back button
+void drawModeToggle();  // draw 1 player / 2 player toggle buttons
+void drawHeroList();    // draw hero list(menu)
 void drawInfoPanel();  // draw panel of info
 void drawDifficultyStars(float x, float y, int rating,
                           int maxRating = 5); // draw difficulty stars
