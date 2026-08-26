@@ -28,20 +28,25 @@ private:
   bool isAutoTargeted() const {
     std::string w = toLower(toWhat);
     return w == "near_hero" || w == "adjacent_fighter" ||
-           w == "each_enemy_fighter" || w == "enemy_fighters_on_fog_token";
+           w == "each_enemy_fighter" || w == "enemy_fighters_on_fog_token" ||
+           w == "near_sidekick" || w == "near_enemy_fighter";
   }
 
   // who is your target
   std::vector<Fighter *> resolveTargets(gameData &gameData) const {
     std::string what = toLower(toWhat);
 
-    if (what == "near_hero" || what == "adjacent_fighter") {
+    if (what == "near_hero" || what == "adjacent_fighter" ||
+        what == "near_enemy_fighter") {
       std::vector<Fighter *> results;
       if (gameData.self && gameData.enemy && gameData.map) {
         int enemyPlayer = gameData.enemy->getOwnerPlayer();
         int selfTile = gameData.map->getTileIdOf(gameData.self);
         for (auto type : {TypeOfFighter::hero, TypeOfFighter::sidekick}) {
           for (auto *f : gameData.map->getFighter(type, enemyPlayer)) {
+            if (!f || !f->isAlive()) {
+              continue;
+            }
             int d = gameData.map->distanceBetween(selfTile, gameData.map->getTileIdOf(f));
             if (d >= 0 && d <= 1) {
               results.push_back(f);
@@ -51,6 +56,34 @@ private:
       }
       return results;
     }
+
+    if (what == "near_sidekick") {
+      std::vector<Fighter *> results;
+      if (gameData.self && gameData.enemy && gameData.map) {
+        Map *map = gameData.map;
+        int selfPlayer = gameData.self->getOwnerPlayer();
+        int enemyPlayer = gameData.enemy->getOwnerPlayer();
+        for (auto type : {TypeOfFighter::hero, TypeOfFighter::sidekick}) {
+          for (auto *f : map->getFighter(type, enemyPlayer)) {
+            if (!f || !f->isAlive()) {
+              continue;
+            }
+            for (auto *sk : map->getFighter(TypeOfFighter::sidekick, selfPlayer)) {
+              if (!sk || !sk->isAlive()) {
+                continue;
+              }
+              int d = map->distanceBetween(map->getTileIdOf(sk), map->getTileIdOf(f));
+              if (d >= 0 && d <= 1) {
+                results.push_back(f);
+                break;
+              }
+            }
+          }
+        }
+      }
+      return results;
+    }
+
  if (what == "each_enemy_fighter" || what == "enemy_fighters_on_fog_token") {
       std::vector<Fighter *> results;
       if (gameData.self && gameData.enemy && gameData.map) {
