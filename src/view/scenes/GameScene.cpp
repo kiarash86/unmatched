@@ -1010,11 +1010,6 @@ void GameScene::drawBottomBar() {
   DrawTextEx(titleFont, TextFormat("%d", cardsInDeck), {55, sh - 74}, 30, 1,
              textLight);
 
-  DrawRectangleRounded({120, sh - 90, 90, 60}, 0.2f, 6, panelBg);
-  DrawCircleV({160, sh - 60}, 14, Color{150, 20, 20, 255});
-  DrawTextEx(titleFont, TextFormat("%d", tokens), {178, sh - 74}, 30, 1,
-             textLight);
-
   DrawTextEx(labelFont, "UNMATCHED", {20, sh - 26}, 20, 1, textMuted);
   DrawTextEx(smallFont, mapName.c_str(), {160, sh - 26}, 20, 1, gold);
 
