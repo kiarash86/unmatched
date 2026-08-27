@@ -5,7 +5,6 @@
 #include "engine/queries/query.h"
 #include "engine/queries/countfighter.h"
 #include "engine/queries/cardBoost.h"
-#include "engine/queries/countRemovedCards.h"
 #include "factory/conditionFactory.h"
 
 class QueryFactory {
