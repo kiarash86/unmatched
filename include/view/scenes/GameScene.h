@@ -98,7 +98,6 @@ private:
   int heroMaxHealth{0};
   int heroShield{0};
   int cardsInDeck{0};
-  int tokens{0};
   std::deque<std::string> eventLog;
   std::vector<HeroSummaryView> heroSummaries;
   std::vector<ActionButton> actionButtons;
