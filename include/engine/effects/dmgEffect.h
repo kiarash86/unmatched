@@ -82,10 +82,6 @@ private:
       }
       return results;
     }
-<<<<<<< HEAD
-=======
-
->>>>>>> 4afa7692ba7fefd306628c95f08ef9a4aef871be
  if (what == "each_enemy_fighter" || what == "enemy_fighters_on_fog_token") {
       std::vector<Fighter *> results;
       if (gameData.self && gameData.enemy && gameData.map) {
