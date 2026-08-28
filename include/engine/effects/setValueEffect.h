@@ -9,10 +9,11 @@ class SetValueEffect : public Effect {
 private:
   bool targetEnemy{false};
   int fixedAmount{0};
+  bool unmodifiable{false};
 
 public:
-  SetValueEffect(bool targetEnemy, int fixedAmount)
-      : targetEnemy(targetEnemy), fixedAmount(fixedAmount) {}
+  SetValueEffect(bool targetEnemy, int fixedAmount, bool unmodifiable = false)
+      : targetEnemy(targetEnemy), fixedAmount(fixedAmount), unmodifiable(unmodifiable) {}
   ~SetValueEffect() override = default;
 
   void executeImmediate(gameData &gameData) override {
@@ -22,5 +23,9 @@ public:
     if (!targetCard) return;
 
     targetCard->setValue(fixedAmount);
+
+    if (unmodifiable) {
+      targetCard->lockValue();
+    }
   }
 };
