@@ -36,6 +36,14 @@ bool Card::needsTarget() const { // card need someone?
   return false;
 }
 
+bool Card::needsAdjacentTarget() const { 
+  for (auto &effect : effects) {
+    if (effect->requiresAdjacentTarget())
+      return true;
+  }
+  return false;
+}
+
 bool Card::needsPrediction() const { // card need to predicted someone?
   for (auto &effect : effects) {
     if (effect->requiresPrediction())
@@ -76,9 +84,19 @@ void Card::modifyDefStat(const int &amount) { defStat += amount; } // modify val
 
 int Card::getValue() const { return value; } // get value
 
-void Card::setValue(const int &newValue) { value = newValue; } // set value
+void Card::setValue(const int &newValue) { // set value
+  if (valueLocked) {
+    return;
+  }
+  value = newValue;
+}
 
-void Card::modifyValue(const int &amount) { value += amount; } // modify value
+void Card::modifyValue(const int &amount) { // modify value
+  if (valueLocked) {
+    return;
+  }
+  value += amount;
+}
 
 void Card::addEffect(std::unique_ptr<Effect> eff) { // adding effect
   effects.push_back(std::move(eff));

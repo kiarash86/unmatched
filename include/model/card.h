@@ -37,6 +37,9 @@ private:
   bool targetFiggter{false};
 
   int predictedValue{-1};
+
+
+  bool valueLocked{false};
   // VARIABLES
 
 public:
@@ -72,6 +75,8 @@ public:
 
   bool needsTarget() const;
 
+  bool needsAdjacentTarget() const;
+
   bool needsPrediction() const;
 
   bool isTargetsAnyFighter() const {
@@ -79,6 +84,12 @@ public:
   } // using this for see need target someone?
 
   void setTargetsAnyFighter(bool v) { targetFiggter = v; } // set need target
+
+  bool isValueLocked() const { return valueLocked; }
+
+  void lockValue() { valueLocked = true; }
+
+  void unlockValue() { valueLocked = false; }
 
   void setBoost(const int &);
 
