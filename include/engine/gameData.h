@@ -37,6 +37,8 @@ std::function<void(Fighter *, std::vector<Tile *>, std::function<void(Tile *)>)>
 
   std::function<void(std::vector<Card *>, std::function<void(Card *)>)> requestCardChoice;
 
+  std::function<void(Fighter *, std::vector<Card *>, std::function<void(Card *)>)> requestCardChoiceFor;
+
  std::function<void(std::vector<std::string>, std::function<void(int)>)> requestEffectChoice;
 
 std::function<void(Fighter *, std::vector<std::string>, std::function<void(int)>)> requestEffectChoiceFor;
