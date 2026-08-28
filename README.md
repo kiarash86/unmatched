@@ -286,11 +286,9 @@ are built from JSON by `EffectFactory`/`ConditionFactory`/`QueryFactory`.
 | `conditions/isLossedCondition.h` | True if the fighter lost its last combat. |
 | `conditions/isWinnerSelfCondition.h` | True if `self` won the last combat. |
 | `conditions/wonTheWarCondition.h` | True if the player has won the game. |
-| `conditions/isSherlockWatsonCardCondition.h` | True if the card belongs to Sherlock or Watson (for text about synergy between the two heroes). |
 | `queries/query.h` | Abstract base class for a computed value that an effect reads, with its own list of `Condition`s. |
 | `queries/countfighter.h` | Counts how many fighters of a given `TypeOfFighter` a player (or the enemy) has. |
 | `queries/cardBoost.h` | Reads a card's Boost value. |
-| `queries/countRemovedCards.h` | Counts cards removed from the deck/hand in this game, for effects that scale with that. |
 
 ### `include/factory` & `src/factory`
 
