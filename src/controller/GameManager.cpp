@@ -1230,6 +1230,10 @@ gameData GameManager::buildGameData(Fighter *self, Fighter *target, Fighter *ene
                                      std::function<void(Tile *)> onChosen) {
     this->requestTileChoice(chooser, std::move(options), std::move(onChosen));
   };
+  data.requestTileChoiceWithStay = [this](std::vector<Tile *> options, Tile *explicitStayTile,
+                                          std::function<void(Tile *)> onChosen) {
+    this->requestTileChoice(std::move(options), std::move(onChosen), explicitStayTile);
+  };
   data.requestCardChoice = [this](std::vector<Card *> options, std::function<void(Card *)> onChosen) {
     this->requestCardChoice(std::move(options), std::move(onChosen));
   };
@@ -1532,17 +1536,22 @@ void GameManager::runCombatContinuationIfReady() {
   cont();
 }
 
-void GameManager::requestTileChoice(std::vector<Tile *> options, std::function<void(Tile *)> onChosen) {
-  requestTileChoice(nullptr, std::move(options), std::move(onChosen));
+void GameManager::requestTileChoice(std::vector<Tile *> options, std::function<void(Tile *)> onChosen,
+                                    Tile *explicitStayTile) {
+  requestTileChoice(nullptr, std::move(options), std::move(onChosen), explicitStayTile);
 }
-void GameManager::requestTileChoice(Fighter *chooser, std::vector<Tile *> options, std::function<void(Tile *)> onChosen) {
+void GameManager::requestTileChoice(Fighter *chooser, std::vector<Tile *> options,
+                                    std::function<void(Tile *)> onChosen, Tile *explicitStayTile) {
   pendingChooser = chooser;
+
+  pendingExplicitStayTile = explicitStayTile;
   pending = std::move(options);
   onSelectionResolved = [onChosen](void *raw)
   { onChosen(static_cast<Tile *>(raw)); };
 }
 void GameManager::requestFighterChoice(std::vector<Fighter *> options, std::function<void(Fighter *)> onChosen) {
   pendingChooser = nullptr;
+  pendingExplicitStayTile = nullptr;
   pending = std::move(options);
   onSelectionResolved = [onChosen](void *raw)
   { onChosen(static_cast<Fighter *>(raw)); };
@@ -1553,6 +1562,7 @@ void GameManager::requestCardChoice(std::vector<Card *> options, std::function<v
 
 void GameManager::requestCardChoice(Fighter *chooser, std::vector<Card *> options, std::function<void(Card *)> onChosen) {
   pendingChooser = chooser;
+  pendingExplicitStayTile = nullptr;
   pending = std::move(options);
   onSelectionResolved = [onChosen](void *raw)
   { onChosen(static_cast<Card *>(raw)); };
@@ -1590,11 +1600,11 @@ std::vector<Tile *> GameManager::getValidTiles() const {
 }
 
 Tile *GameManager::getStayTileOption() const {
-  if (!isWaitingForTile() || !map) {
+  if (!isWaitingForTile() || !map || !pendingExplicitStayTile) {
     return nullptr;
   }
   for (Tile *t : getValidTiles()) {
-    if (t && map->isOccupied(t->getId())) {
+    if (t == pendingExplicitStayTile) {
       return t;
     }
   }

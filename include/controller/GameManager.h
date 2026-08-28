@@ -37,6 +37,7 @@ private:
   std::function<void(void *)> onSelectionResolved;
 
   Fighter *pendingChooser{nullptr};
+  Tile *pendingExplicitStayTile{nullptr};
 
   std::vector<std::string> pendingEffectChoiceLabels;
   bool waitingForEffectChoice{false};
@@ -221,9 +222,11 @@ public:
   bool disableAbility(Hero *hero);
   void enableAbility(Hero *hero);
 
-  void requestTileChoice(std::vector<Tile *> options, std::function<void(Tile *)> onChosen);
+  void requestTileChoice(std::vector<Tile *> options, std::function<void(Tile *)> onChosen,
+                         Tile *explicitStayTile = nullptr);
 
-  void requestTileChoice(Fighter *chooser, std::vector<Tile *> options, std::function<void(Tile *)> onChosen);
+  void requestTileChoice(Fighter *chooser, std::vector<Tile *> options,
+                         std::function<void(Tile *)> onChosen, Tile *explicitStayTile = nullptr);
   void requestFighterChoice(std::vector<Fighter *> options, std::function<void(Fighter *)> onChosen);
   void requestCardChoice(std::vector<Card *> options, std::function<void(Card *)> onChosen);
   void requestCardChoice(Fighter *chooser, std::vector<Card *> options, std::function<void(Card *)> onChosen);
