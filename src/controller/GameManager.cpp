@@ -1233,6 +1233,10 @@ gameData GameManager::buildGameData(Fighter *self, Fighter *target, Fighter *ene
   data.requestCardChoice = [this](std::vector<Card *> options, std::function<void(Card *)> onChosen) {
     this->requestCardChoice(std::move(options), std::move(onChosen));
   };
+  data.requestCardChoiceFor = [this](Fighter *chooser, std::vector<Card *> options,
+                                     std::function<void(Card *)> onChosen) {
+    this->requestCardChoice(chooser, std::move(options), std::move(onChosen));
+  };
   data.requestEffectChoice = [this](std::vector<std::string> labels, std::function<void(int)> onChosen) {
     this->requestEffectChoice(std::move(labels), std::move(onChosen));
   };
@@ -1544,7 +1548,11 @@ void GameManager::requestFighterChoice(std::vector<Fighter *> options, std::func
   { onChosen(static_cast<Fighter *>(raw)); };
 }
 void GameManager::requestCardChoice(std::vector<Card *> options, std::function<void(Card *)> onChosen) {
-  pendingChooser = nullptr;
+  requestCardChoice(nullptr, std::move(options), std::move(onChosen));
+}
+
+void GameManager::requestCardChoice(Fighter *chooser, std::vector<Card *> options, std::function<void(Card *)> onChosen) {
+  pendingChooser = chooser;
   pending = std::move(options);
   onSelectionResolved = [onChosen](void *raw)
   { onChosen(static_cast<Card *>(raw)); };
