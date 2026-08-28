@@ -117,8 +117,21 @@ public:
     int finalHowMany = howMany > 0 ? howMany + sumQueries(gameData) : howMany;
 
     if (userChosen) {
+      Fighter *chooser = whoLosesCards;
+      auto &requestCardChoiceFor = gameData.requestCardChoiceFor;
+      auto &plainRequestCardChoice = gameData.requestCardChoice;
+      std::function<void(std::vector<Card *>, std::function<void(Card *)>)> requestFn;
+      if (requestCardChoiceFor) {
+        requestFn = [chooser, requestCardChoiceFor](std::vector<Card *> options,
+                                                     std::function<void(Card *)> cb) {
+          requestCardChoiceFor(chooser, std::move(options), std::move(cb));
+        };
+      } else {
+        requestFn = plainRequestCardChoice;
+      }
+
       chooseAndDiscard(hero, finalHowMany, gameData.cardPlayed, bonusPerCard,
-                       gameData.requestCardChoice, onDone);
+                       requestFn, onDone);
     } else {
       discardRandom(hero, finalHowMany);
       if (onDone) {
