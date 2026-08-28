@@ -334,12 +334,15 @@ void Map::exchangePosition(Fighter *fighter1, Fighter *fighter2) {
   placeFighter(fighter2, tile1);
 }
 
-// --- Fog tokens (Invisible Man) ---
+
 void Map::addFogToken(int tileId) {
   if (!getTile(tileId)) {
     return;
   }
-  fogTokensByTile[tileId]++;
+  if (hasFogToken(tileId)) {
+    return;
+  }
+  fogTokensByTile[tileId] = 1;
 }
 
 bool Map::removeFogToken(int tileId) {
@@ -373,11 +376,20 @@ std::vector<int> Map::getFogTokenTileIds() const {
 }
 
 void Map::moveFogToken(int fromTileId, int toTileId) {
+  if (fromTileId == toTileId) {
+    return;
+  }
   if (!getTile(toTileId)) {
     return;
   }
-  if (!removeFogToken(fromTileId)) {
+  if (hasFogToken(toTileId)) {
+    // Destination already holds a mist token; only one per tile is allowed,
+    // so the move is illegal and the source token stays put.
     return;
   }
+  if (!hasFogToken(fromTileId)) {
+    return;
+  }
+  removeFogToken(fromTileId);
   addFogToken(toTileId);
 }
