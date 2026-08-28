@@ -1191,13 +1191,25 @@ std::vector<Fighter *> GameManager::getValidTargetsForCard(const Card *card) con
   }
 
   bool anyFighter = card->isTargetsAnyFighter();
+  bool adjacentOnly = card->needsAdjacentTarget();
+  int selfTile = adjacentOnly ? map->getTileIdOf(self) : -1;
+
   for (auto &[id, tile] : map->getTiles()) {
     (void)id;
     Fighter *fighter = map->getFighterAt(tile->getId());
-    if (fighter && fighter->isAlive() &&
-        (anyFighter || fighter->getOwnerPlayer() != self->getOwnerPlayer())) {
-      targets.push_back(fighter);
+    if (!fighter || !fighter->isAlive()) {
+      continue;
     }
+    if (!(anyFighter || fighter->getOwnerPlayer() != self->getOwnerPlayer())) {
+      continue;
+    }
+    if (adjacentOnly) {
+      int d = map->distanceBetween(selfTile, tile->getId());
+      if (d < 0 || d > 1) {
+        continue;
+      }
+    }
+    targets.push_back(fighter);
   }
   return targets;
 }
@@ -1415,6 +1427,11 @@ bool GameManager::resolveCombat(Card *defenseCard, int predictedAttackValue) {
     }
   }
   combat.defenderCard = defenseCard;
+
+  attackerCard->unlockValue();
+  if (defenseCard) {
+    defenseCard->unlockValue();
+  }
 
   attackerCard->setValue(attackerCard->getAttackStat());
   if (defenseCard) {
