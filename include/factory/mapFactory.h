@@ -1,6 +1,6 @@
 #include <memory>
 #include <nlohmann/json.hpp>
-#include"model/map.h"
+#include "model/map.h"
 #include "factory/tileFactory.h"
 #include  "utility/file.h"
 class MapFactory

@@ -1,8 +1,8 @@
 #pragma once
 #include <memory>
-#include "../model/hero.h"
+#include "model/hero.h"
 #include <nlohmann/json.hpp>
-#include "../utility/file.h"
+#include "utility/file.h"
 #include "sidekickFactory.h"
 #include "deckFactory.h"
 

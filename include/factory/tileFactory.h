@@ -1,6 +1,6 @@
 #include <memory>
 #include <nlohmann/json.hpp>
-#include"model/tile.h"
+#include "model/tile.h"
 class TileFactory
 {
 private:

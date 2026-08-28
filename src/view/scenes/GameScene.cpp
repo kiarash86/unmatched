@@ -595,8 +595,7 @@ void GameScene::drawHeroPanel() {
   for (auto &ab : abilities) {
     DrawTextEx(labelFont, ab.title.c_str(), {padX, y}, 18, 1, gold);
     y += 20;
-    for (auto &line : wrapText(smallFont, ab.desc, heroPanelRect.width - 32, 15))
-    {
+    for (auto &line : wrapText(smallFont, ab.desc, heroPanelRect.width - 32, 15)) {
       DrawTextEx(smallFont, line.c_str(), {padX, y}, 15, 1, textMuted);
       y += 17;
     }

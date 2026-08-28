@@ -1,7 +1,7 @@
 #include <memory>
-#include "../model/card.h"
+#include "model/card.h"
 #include <nlohmann/json.hpp>
-#include "../utility/file.h"
+#include "utility/file.h"
 #include "factory/effectFactory.h"
 class CardFactory
 {

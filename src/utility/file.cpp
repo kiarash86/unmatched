@@ -1,5 +1,5 @@
-#include "../../include/utility/file.h"
-#include "../../include/utility/exceptions.h"
+#include "utility/file.h"
+#include "utility/exceptions.h"
 #include <iostream>
 
 nlohmann::json load(const std::string &path) {

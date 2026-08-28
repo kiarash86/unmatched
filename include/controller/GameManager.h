@@ -36,20 +36,20 @@ private:
   PendingSelection pending;
   std::function<void(void *)> onSelectionResolved;
 
-Fighter *pendingChooser{nullptr};
+  Fighter *pendingChooser{nullptr};
 
-std::vector<std::string> pendingEffectChoiceLabels;
+  std::vector<std::string> pendingEffectChoiceLabels;
   bool waitingForEffectChoice{false};
   std::function<void(int)> onEffectChoiceResolved;
 
-struct PendingEffect {
+  struct PendingEffect {
     Fighter *owner{nullptr};
     Effect *effect{nullptr};
   };
   std::vector<PendingEffect> pendingStartOfTurnEffects;
   void resolvePendingStartOfTurnEffects(Hero *hero);
 
-bool deferredPlacementRequestedThisCard{false};
+  bool deferredPlacementRequestedThisCard{false};
 
   struct CombatRound {
     bool active{false};
@@ -75,7 +75,7 @@ bool deferredPlacementRequestedThisCard{false};
 
   void resetTurnState();
 
-std::vector<nlohmann::json> undoStack;
+  std::vector<nlohmann::json> undoStack;
   void pushUndoCheckpoint();
   void clearUndoHistory();
   nlohmann::json serializeState() const;
@@ -121,7 +121,7 @@ private:
   bool isAbilityDisabled(const Hero *hero) const;
   std::vector<Hero *> disabledAbilityHeroes;
 
-std::unordered_map<Fighter *, bool> fogTileAtOwnerTurnStart;
+  std::unordered_map<Fighter *, bool> fogTileAtOwnerTurnStart;
   void snapshotFogTileAtTurnStart(Hero *hero);
 
   gameData buildGameData(Fighter *self, Fighter *target, Fighter *enemy,
@@ -139,7 +139,7 @@ public:
 
   bool isVsAI() const { return vsAI; } // true = player 2 is played by the AI
 
-static constexpr int kSaveSlotCount = 3;
+  static constexpr int kSaveSlotCount = 3;
   static std::string saveFilePath(int slot);
   static bool hasSave(int slot);
 
@@ -189,7 +189,7 @@ static constexpr int kSaveSlotCount = 3;
 
   bool moveFighter(Fighter *fighter, int tileId);
 
-bool moveThroughFog(Fighter *fighter, int destinationTileId);
+  bool moveThroughFog(Fighter *fighter, int destinationTileId);
 
   bool boostMovement(Card *card, Fighter *fighter = nullptr);
 
@@ -226,7 +226,7 @@ bool moveThroughFog(Fighter *fighter, int destinationTileId);
   void requestTileChoice(Fighter *chooser, std::vector<Tile *> options, std::function<void(Tile *)> onChosen);
   void requestFighterChoice(std::vector<Fighter *> options, std::function<void(Fighter *)> onChosen);
   void requestCardChoice(std::vector<Card *> options, std::function<void(Card *)> onChosen);
-void requestEffectChoice(std::vector<std::string> labels, std::function<void(int)> onChosen);
+  void requestEffectChoice(std::vector<std::string> labels, std::function<void(int)> onChosen);
   void requestEffectChoice(Fighter *chooser, std::vector<std::string> labels, std::function<void(int)> onChosen);
 
   bool isWaitingForTile() const;
