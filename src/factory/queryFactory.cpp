@@ -18,9 +18,6 @@ std::unique_ptr<Query> QueryFactory::create(const nlohmann::json &query) {
   } else if (name == "cardBoost") {
     bool useEnemy = query.value("who", "self") == "enemy";
     qry = std::make_unique<CardBoost>(useEnemy);
-  } else if (name == "countRemovedCards") {
-    bool useEnemy = query.value("who", "self") == "enemy";
-    qry = std::make_unique<CountRemovedCards>(useEnemy);
   }
 
   if (!qry) {
