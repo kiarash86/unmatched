@@ -37,6 +37,10 @@ std::function<void(Fighter *, std::vector<Tile *>, std::function<void(Tile *)>)>
   std::function<void(std::vector<Tile *>, Tile *explicitStayTile, std::function<void(Tile *)>)>
       requestTileChoiceWithStay;
 
+  std::function<void(std::vector<Fighter *>, std::function<void(Fighter *)>)> requestFighterChoice;
+
+  std::function<void(Fighter *, std::vector<Fighter *>, std::function<void(Fighter *)>)> requestFighterChoiceFor;
+
   std::function<void(std::vector<Card *>, std::function<void(Card *)>)> requestCardChoice;
 
   std::function<void(Fighter *, std::vector<Card *>, std::function<void(Card *)>)> requestCardChoiceFor;
