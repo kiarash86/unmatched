@@ -12,7 +12,8 @@
             "howMany": 1,
             "whichOne": "hero",
             "condition": "none",
-            "distance": 3
+            "distance": 3,
+            "allowStay": true
         }
     ],
     "quantity": 2
