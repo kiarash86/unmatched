@@ -2140,10 +2140,12 @@ void GameScene::tryTargetFighter(Fighter *fighter) {
 void GameScene::beginDefensePrompt() {
   defenseCardOptions.clear();
   Hero *defender = gameManager->getCombatDefendingHero();
+  Fighter *actingDefender = gameManager->getCombatDefender();
   if (defender && defender->getDeck()) {
     for (Card *c : defender->getDeck()->getHand()) {
-      if (c->getCardType() == TypeOfCard::def ||
-          c->getCardType() == TypeOfCard::multipurpose) {
+      if ((c->getCardType() == TypeOfCard::def ||
+           c->getCardType() == TypeOfCard::multipurpose) &&
+          gameManager->canPerform(c, actingDefender)) {
         defenseCardOptions.push_back(c);
       }
     }
