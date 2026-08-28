@@ -103,7 +103,8 @@ std::unique_ptr<Effect> EffectFactory::create(const nlohmann::json &effect) {
     eff = std::make_unique<ChangeValueEffect>(targetEnemy, useBoost, baseAmount(effect, "changeWith"));
   } else if (type == "set_value" || type == "set_value_fixed") {
     bool targetEnemy = effect.value("who", "") == "enemy";
-    eff = std::make_unique<SetValueEffect>(targetEnemy, baseAmount(effect, "howMuch"));
+    bool unmodifiable = effect.value("unmodifiable", false);
+    eff = std::make_unique<SetValueEffect>(targetEnemy, baseAmount(effect, "howMuch"), unmodifiable);
   } else if (type == "remove_from_board") {
     eff = std::make_unique<RemoveFromBoardEffect>(effect.value("whichOne", "self"));
   } else if (type == "place_on_deck") {
