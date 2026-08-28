@@ -315,10 +315,11 @@ public:
         toWhere(std::move(toWhere)), performer(std::move(performer)),
         allowStay(allowStay) {}
 //constructor
-  
+
 //destructor
         ~MoveEffect() override = default;
 //destructor
+  bool needsTarget() const override { return whichOne == "target"; }
 
 
   void execute(gameData &gameData, std::function<void()> onDone) override {
