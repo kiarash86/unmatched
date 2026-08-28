@@ -1486,18 +1486,56 @@ void GameManager::finishResolveCombat(Fighter *attacker, Fighter *defender, Card
   lastCombatWinner = winner;
   lastCombatLoser = loser;
 
+
   if (winner == attacker) {
     runCombatEvent(TypeOfEvent::after_combat, attacker, attackerCard, defender, defenseCard);
+  } else if (defenseCard) {
+    runCombatEvent(TypeOfEvent::after_combat, defender, defenseCard, attacker, attackerCard);
+  }
+
+  if (isWaitingForSelection()) {
+    combatContinuation = [this, attacker, defender, attackerCard, defenseCard, attackingHero,
+                          defendingHero, winner, loser, damage, defenderHealthBefore]() {
+      runSecondAfterCombatEvent(attacker, defender, attackerCard, defenseCard, attackingHero,
+                                defendingHero, winner, loser, damage, defenderHealthBefore);
+    };
+    return;
+  }
+
+  runSecondAfterCombatEvent(attacker, defender, attackerCard, defenseCard, attackingHero,
+                            defendingHero, winner, loser, damage, defenderHealthBefore);
+}
+
+void GameManager::runSecondAfterCombatEvent(Fighter *attacker, Fighter *defender,
+                                            Card *attackerCard, Card *defenseCard,
+                                            Hero *attackingHero, Hero *defendingHero,
+                                            Fighter *winner, Fighter *loser, int damage,
+                                            int defenderHealthBefore) {
+  if (winner == attacker) {
     if (defenseCard) {
       runCombatEvent(TypeOfEvent::after_combat, defender, defenseCard, attacker, attackerCard);
     }
   } else {
-    if (defenseCard) {
-      runCombatEvent(TypeOfEvent::after_combat, defender, defenseCard, attacker, attackerCard);
-    }
     runCombatEvent(TypeOfEvent::after_combat, attacker, attackerCard, defender, defenseCard);
   }
 
+  if (isWaitingForSelection()) {
+    combatContinuation = [this, attacker, defender, attackerCard, defenseCard, attackingHero,
+                          defendingHero, winner, loser, damage, defenderHealthBefore]() {
+      finalizeCombat(attacker, defender, attackerCard, defenseCard, attackingHero, defendingHero,
+                     winner, loser, damage, defenderHealthBefore);
+    };
+    return;
+  }
+
+  finalizeCombat(attacker, defender, attackerCard, defenseCard, attackingHero, defendingHero,
+                winner, loser, damage, defenderHealthBefore);
+}
+
+void GameManager::finalizeCombat(Fighter *attacker, Fighter *defender, Card *attackerCard,
+                                 Card *defenseCard, Hero *attackingHero, Hero *defendingHero,
+                                 Fighter *winner, Fighter *loser, int damage,
+                                 int defenderHealthBefore) {
   if (attackingHero && attackingHero->getDeck()) {
     attackingHero->getDeck()->discard(attackerCard);
   }

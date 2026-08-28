@@ -66,6 +66,13 @@ private:
   void finishResolveCombat(Fighter *attacker, Fighter *defender, Card *attackerCard,
                             Card *defenseCard, Hero *attackingHero, Hero *defendingHero,
                             int defenderHealthBefore);
+  void runSecondAfterCombatEvent(Fighter *attacker, Fighter *defender, Card *attackerCard,
+                                  Card *defenseCard, Hero *attackingHero, Hero *defendingHero,
+                                  Fighter *winner, Fighter *loser, int damage,
+                                  int defenderHealthBefore);
+  void finalizeCombat(Fighter *attacker, Fighter *defender, Card *attackerCard,
+                       Card *defenseCard, Hero *attackingHero, Hero *defendingHero,
+                       Fighter *winner, Fighter *loser, int damage, int defenderHealthBefore);
 
   Fighter *lastCombatWinner{nullptr};
   Fighter *lastCombatLoser{nullptr};
