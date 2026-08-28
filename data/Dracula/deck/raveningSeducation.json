@@ -16,7 +16,7 @@
         },
         {
             "type": "attack",
-            "toWhat": "near_sidekick",
+            "toWhat": "target",
             "howMuch": "queries",
             "queries": [
                 {
