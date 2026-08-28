@@ -226,6 +226,11 @@ void executeFogTokenMove(gameData &gameData, std::function<void()> onDone) const
 
       std::vector<Tile *> sourceCandidates;
       for (int tileId : map->getFogTokenTileIds()) {
+        if (toWhere == "different_fog_token" && dataPtr &&
+            tileId == dataPtr->lastMovedFogTokenTile) {
+
+          continue;
+        }
         if (Tile *t = map->getTile(tileId)) {
           sourceCandidates.push_back(t);
         }
@@ -249,7 +254,7 @@ void executeFogTokenMove(gameData &gameData, std::function<void()> onDone) const
         auto destCandidates =
             filterByToWhere(map, nullptr, dataPtr, getFogReachableTiles(map, fromTileId, range));
 
-       
+
         destCandidates.erase(
             std::remove_if(destCandidates.begin(), destCandidates.end(),
                             [map](Tile *t) { return map->hasFogToken(t->getId()); }),
