@@ -27,7 +27,8 @@ private:
 
   bool isAutoTargeted() const {
     std::string w = toLower(toWhat);
-    return w == "near_hero" || w == "adjacent_fighter" ||
+
+    return w == "near_hero" ||
            w == "each_enemy_fighter" || w == "enemy_fighters_on_fog_token" ||
            w == "near_sidekick" || w == "near_enemy_fighter";
   }
@@ -36,8 +37,7 @@ private:
   std::vector<Fighter *> resolveTargets(gameData &gameData) const {
     std::string what = toLower(toWhat);
 
-    if (what == "near_hero" || what == "adjacent_fighter" ||
-        what == "near_enemy_fighter") {
+    if (what == "near_hero" || what == "near_enemy_fighter") {
       std::vector<Fighter *> results;
       if (gameData.self && gameData.enemy && gameData.map) {
         int enemyPlayer = gameData.enemy->getOwnerPlayer();
@@ -122,6 +122,11 @@ public:
 
 // choosing target for damaging 
    bool needsTarget() const override { return !isAutoTargeted(); } // automatically dmg for the auto-targeted toWhat variants
+
+
+  bool requiresAdjacentTarget() const override {
+    return toLower(toWhat) == "adjacent_fighter";
+  }
 // choosing target for damaging 
 
 // damage immediatly, whenever effect apears with this 
