@@ -16,6 +16,7 @@
             "options": [
                 {
                     "type": "move",
+                    "label": "Move Invisible Man to a fog token space",
                     "whichOne": "self",
                     "howMany": 1,
                     "distance": 99,
@@ -23,6 +24,7 @@
                 },
                 {
                     "type": "move",
+                    "label": "Move a fog token up to 3 spaces",
                     "whichOne": "fog_token",
                     "howMany": 1,
                     "distance": 3,
