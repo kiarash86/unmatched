@@ -49,6 +49,7 @@ private:
   };
   std::vector<PendingEffect> pendingStartOfTurnEffects;
   void resolvePendingStartOfTurnEffects(Hero *hero);
+  std::vector<std::unique_ptr<Effect>> ownedDeferredEffects;
 
   bool deferredPlacementRequestedThisCard{false};
 
