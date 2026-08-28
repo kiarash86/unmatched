@@ -34,6 +34,8 @@ struct gameData {
   std::function<void(std::vector<Tile *>, std::function<void(Tile *)>)> requestTileChoice;
 
 std::function<void(Fighter *, std::vector<Tile *>, std::function<void(Tile *)>)> requestTileChoiceFor;
+  std::function<void(std::vector<Tile *>, Tile *explicitStayTile, std::function<void(Tile *)>)>
+      requestTileChoiceWithStay;
 
   std::function<void(std::vector<Card *>, std::function<void(Card *)>)> requestCardChoice;
 
