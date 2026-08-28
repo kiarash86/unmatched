@@ -4,7 +4,9 @@
 #include "model/deck.h"
 #include "model/fighter.h"
 #include "model/hero.h"
+#include <algorithm>
 #include <functional>
+#include <memory>
 #include <vector>
 
 class PlaceOnDeckEffect : public Effect {
@@ -12,12 +14,24 @@ private:
   int howMany{1};
   bool fromEnemy{false};
 
+
+  static void placeChosenInPickOrder(Hero *hero, const std::vector<Card *> &chosenOrder) {
+    if (!hero->getDeck()) {
+      return;
+    }
+    for (auto it = chosenOrder.rbegin(); it != chosenOrder.rend(); ++it) {
+      hero->getDeck()->placeOnTop(*it);
+    }
+  }
+
   static void chooseAndPlace(
       Hero *hero, int remaining, Card *cardToKeep,
+      std::shared_ptr<std::vector<Card *>> chosenOrder,
       std::function<void(std::vector<Card *>, std::function<void(Card *)>)>
           requestCardChoice,
       std::function<void()> onDone) {
     if (remaining <= 0 || !hero->getDeck()) {
+      placeChosenInPickOrder(hero, *chosenOrder);
       if (onDone) {
         onDone();
       }
@@ -25,6 +39,7 @@ private:
     }
     auto hand = hero->getDeck()->getHand();
     if (hand.empty() || !requestCardChoice) {
+      placeChosenInPickOrder(hero, *chosenOrder);
       if (onDone) {
         onDone();
       }
@@ -34,27 +49,34 @@ private:
     std::vector<Card *> options;
     options.reserve(hand.size());
     for (Card *c : hand) {
-      if (c != cardToKeep) {
-        options.push_back(c);
+
+      if (c == cardToKeep) {
+        continue;
       }
+      if (std::find(chosenOrder->begin(), chosenOrder->end(), c) != chosenOrder->end()) {
+        continue;
+      }
+      options.push_back(c);
     }
     if (options.empty()) {
+      placeChosenInPickOrder(hero, *chosenOrder);
       if (onDone) {
         onDone();
       }
       return;
     }
 
-    requestCardChoice(options, [hero, remaining, cardToKeep,
+    requestCardChoice(options, [hero, remaining, cardToKeep, chosenOrder,
                                 requestCardChoice, onDone](Card *chosen) {
       if (!chosen) {
+        placeChosenInPickOrder(hero, *chosenOrder);
         if (onDone) {
           onDone();
         }
         return;
       }
-      hero->getDeck()->placeOnTop(chosen);
-      chooseAndPlace(hero, remaining - 1, cardToKeep, requestCardChoice, onDone);
+      chosenOrder->push_back(chosen);
+      chooseAndPlace(hero, remaining - 1, cardToKeep, chosenOrder, requestCardChoice, onDone);
     });
   }
 
@@ -81,7 +103,23 @@ public:
     }
 
     int finalHowMany = howMany > 0 ? howMany + sumQueries(gameData) : howMany;
-    chooseAndPlace(hero, finalHowMany, gameData.cardPlayed,
-                   gameData.requestCardChoice, onDone);
+    auto chosenOrder = std::make_shared<std::vector<Card *>>();
+
+
+    Fighter *chooser = whoPlacesCards;
+    auto &requestCardChoiceFor = gameData.requestCardChoiceFor;
+    auto &plainRequestCardChoice = gameData.requestCardChoice;
+    std::function<void(std::vector<Card *>, std::function<void(Card *)>)> requestFn;
+    if (requestCardChoiceFor) {
+      requestFn = [chooser, requestCardChoiceFor](std::vector<Card *> options,
+                                                   std::function<void(Card *)> cb) {
+        requestCardChoiceFor(chooser, std::move(options), std::move(cb));
+      };
+    } else {
+      requestFn = plainRequestCardChoice;
+    }
+
+    chooseAndPlace(hero, finalHowMany, gameData.cardPlayed, chosenOrder,
+                   requestFn, onDone);
   }
 };
