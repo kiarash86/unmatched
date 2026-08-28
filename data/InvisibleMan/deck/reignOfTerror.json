@@ -7,7 +7,7 @@
     "effects": [
         {
             "type": "attack",
-            "toWhat": "each_enemy_fighter",
+            "toWhat": "any_enemy_fighter",
             "howMuch": 2,
             "condition": "self_on_fog_token"
         }
