@@ -24,9 +24,6 @@ std::unique_ptr<Condition> ConditionFactory::create(const std::string &condition
   if (condition == "isWinnerSelf") {
     return std::make_unique<CombatOutcomeCondition>(CombatOutcome::Won);
   }
-  if (condition == "is_sherlock_watson_card") {
-    return std::make_unique<IsSherlockWatsonCardCondition>();
-  }
   if (condition == "self_on_fog_token") {
     return std::make_unique<IsOnFogTileCondition>(false);
   }
