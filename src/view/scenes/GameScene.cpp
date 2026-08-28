@@ -2017,8 +2017,13 @@ void GameScene::beginTargetPicker(Card *card) {
     return;
 
   auto targets = gameManager->getValidTargetsForCard(card);
-  if (targets.empty())
+  if (targets.empty()) {
+    Fighter *self = getActiveFighter();
+    Hero *enemy = getDefaultEnemyHero();
+    gameManager->playCard(card, self, nullptr, enemy);
+    refreshFromGameManager();
     return;
+  }
 
   pendingTargetCard = card;
   legalTargets = std::move(targets);
