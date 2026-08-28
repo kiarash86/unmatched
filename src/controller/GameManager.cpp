@@ -6,6 +6,7 @@
 #include "model/deck.h"
 #include "model/typeOfTile.h"
 #include "engine/effects/effect.h"
+#include "engine/effects/choosePlaceEffect.h"
 #include "libraries/magic_enum.hpp"
 #include "utility/exceptions.h"
 #include "utility/file.h"
@@ -242,12 +243,21 @@ nlohmann::json GameManager::serializeState() const {
   }
   j["disabledAbilityHeroes"] = std::move(disabledArr);
 
+
+  nlohmann::json pendingArr = nlohmann::json::array();
+  for (auto &entry : pendingStartOfTurnEffects) {
+    std::string id = idForFighter(heroes, entry.owner);
+    if (!id.empty()) {
+      pendingArr.push_back({{"owner", id}, {"kind", "choose_place_self"}});
+    }
+  }
+  j["pendingStartOfTurnEffects"] = std::move(pendingArr);
+
   return j;
 }
 
 bool GameManager::saveGame(int slot) const {
-  if (isWaitingForSelection() || isCombatActive() ||
-      !pendingStartOfTurnEffects.empty()) {
+  if (isWaitingForSelection() || isCombatActive()) {
     return false;
   }
   if (!map) {
@@ -402,6 +412,20 @@ std::unique_ptr<GameManager> GameManager::buildFromState(const nlohmann::json &j
       }
     }
 
+    if (j.contains("pendingStartOfTurnEffects") && j["pendingStartOfTurnEffects"].is_array()) {
+      for (auto &entryJson : j["pendingStartOfTurnEffects"]) {
+        std::string ownerId = entryJson.value("owner", "");
+        Fighter *owner = fighterForId(gm->heroes, ownerId);
+        if (!owner) {
+          continue;
+        }
+        auto effect = std::make_unique<ChoosePlaceEffect>("self", "start_of_next_turn");
+        Effect *effectPtr = effect.get();
+        gm->ownedDeferredEffects.push_back(std::move(effect));
+        gm->pendingStartOfTurnEffects.push_back({owner, effectPtr});
+      }
+    }
+
     gm->checkForGameOver();
 
     return gm;
@@ -415,8 +439,7 @@ std::unique_ptr<GameManager> GameManager::buildFromState(const nlohmann::json &j
 }
 
 void GameManager::pushUndoCheckpoint() {
-  if (isWaitingForSelection() || isCombatActive() || !map ||
-      !pendingStartOfTurnEffects.empty()) {
+  if (isWaitingForSelection() || isCombatActive() || !map) {
     return;
   }
   try {
@@ -851,6 +874,8 @@ bool GameManager::discardExcessCard(Card *card) {
   if (!heroHasCardInHand(hero, card)) {
     return false;
   }
+
+  pushUndoCheckpoint();
 
   hero->getDeck()->discard(card);
   for (auto *obs : observers)
