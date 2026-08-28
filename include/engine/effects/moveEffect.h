@@ -249,6 +249,12 @@ void executeFogTokenMove(gameData &gameData, std::function<void()> onDone) const
         auto destCandidates =
             filterByToWhere(map, nullptr, dataPtr, getFogReachableTiles(map, fromTileId, range));
 
+       
+        destCandidates.erase(
+            std::remove_if(destCandidates.begin(), destCandidates.end(),
+                            [map](Tile *t) { return map->hasFogToken(t->getId()); }),
+            destCandidates.end());
+
         if (destCandidates.empty()) {
           --*remaining;
           (*stepPtr)();
