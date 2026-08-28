@@ -99,9 +99,10 @@ What it does each time it's its turn:
    otherwise the first option.
 2. **Defending in combat**, when the human attacks: play the legal
    defensive card with the highest defense value, or take the hit if it
-   has no card. For defensive cards that need to predict the attack
-   value, it reads the printed value of the already-chosen attack card
-   directly, rather than guessing.
+   has no card. If the chosen card needs a predicted attack value
+   (Sherlock Holmes' "Elementary"), it picks a uniformly random guess
+   between 1 and the attacker's printed attack value, rather than
+   reading the real value directly.
 3. **Its own turn**, one action per step:
    - Attack the nearest reachable enemy fighter that deals the most
      damage or finishes it off, if the attack is legal from the hero or a
@@ -227,7 +228,7 @@ file.)
 | `app.h` | Owner of the whole application: window setup (raylib's `InitWindow`), the four managers (`Audio`/`Font`/`Texture`/`Scene`), and the main loop (`run()`) that updates and draws the current scene every frame. Header-only. |
 | `SceneManager.h` | Owns `currentScene` and switches between `MainScene`/`HeroSelectionScene`/`LoadGameScene`/`GameScene` via `changeScene()`. Wraps scene construction in try/catch and falls back to the main menu on failure. Header-only. |
 | `PlayerSelectionManager.h` | The only intentional Singleton in this part of the project. Holds which hero each player picked on the selection screen, so `GameManager::createFromSelection()` can build the actual game from it. Header-only. |
-| `GameManager.h` / `.cpp` | The rules engine: turn order, the 2-actions-per-turn limit, maneuver/movement, simultaneous two-card combat (`startCombat`/`resolveCombat`), Scheme cards (`playCard`), the pending-choice mechanism scenes use to ask the player for a tile/fighter/card, win detection, character abilities (Dracula's Blood Harvest, Sherlock/Watson's non-disableable ability, the Invisible Man's fog tokens), plus **save/load** (`saveGame`/`loadGame`/`hasSave`) and **Undo** (`canUndo`/`undo`). `createFromSelection()` is the entry point that builds a ready-to-start game from whatever `PlayerSelectionManager` recorded. |
+| `GameManager.h` / `.cpp` | The rules engine: turn order, the 2-actions-per-turn limit, maneuver/movement, simultaneous two-card combat (`startCombat`/`resolveCombat`, which also carries the defender's predicted attack value for Sherlock's "Elementary"), Scheme cards (`playCard`), the pending-choice mechanism scenes use to ask the player for a tile/fighter/card/effect-choice, win detection, character abilities (Dracula's Blood Harvest, Sherlock/Watson's non-disableable ability, the Invisible Man's fog tokens), plus **save/load** (`saveGame`/`loadGame`/`hasSave`) and **Undo** (`canUndo`/`undo`). `createFromSelection()` is the entry point that builds a ready-to-start game from whatever `PlayerSelectionManager` recorded. |
 | `AudioManager.h` | Loads/caches/plays music and sound effects from `assets/music`/`assets/sounds` based on `MusicID`/`SoundID`, checking that the file exists first. Header-only. |
 | `FontManager.h` | Loads/caches fonts from `assets/fonts` based on `FontID`, with a fallback font if a specific one isn't available. Header-only. |
 | `TextureManager.h` | Loads/caches textures from `assets/images` based on `TextureID`. Header-only. |
@@ -240,7 +241,7 @@ file.)
 | `fighter.h` / `.cpp` | Base class for anything that can stand on the board and fight: name, image, health/max health, movement, attack type (melee/ranged), current tile. Both `Hero` and `Sidekick` derive from it. |
 | `hero.h` / `.cpp` | A player's hero: its extra `Sidekick`s and its own `Deck`. |
 | `sidekick.h` / `.cpp` | A hero's companion fighter (e.g. Dracula's sister, Watson). Just fixes `getFighterType()` on top of `sidekick`. |
-| `card.h` / `.cpp` | A card: name, image, type (attack/def/multipurpose/event), event timing, performer restriction (hero-only/sidekick-only/either), attack/defense/Boost values, and its list of `Effect`s. |
+| `card.h` / `.cpp` | A card: name, image, type (attack/def/multipurpose/event), event timing, performer restriction (hero-only/sidekick-only/either), attack/defense/Boost values, and its list of `Effect`s. Also carries a `predictedValue` (set by `resolveCombat`, read by `predictEffect.h` for Sherlock's "Elementary") and a value-lock flag (`lockValue`/`isValueLocked`) that `setValueEffect.h` uses to make a value immune to further modifiers. |
 | `deck.h` / `.cpp` | A hero's draw pile/discard pile/hand, with `shuffle()`, `draw()`, `discard()`. |
 | `map.h` / `.cpp` | The game board: a collection of `Tile`s by id, with lookups like "tiles within N of tile X" and "who's standing on tile Y", plus fog-token management (`fogTokenCountAt`, `hasFogToken`) used for the Invisible Man's ability. |
 | `tile.h` / `.cpp` | A board space: id, neighbors, tags (`startPoint`, `secretPassage`), zones, and position on the board (`Vector2D`). |
@@ -262,30 +263,31 @@ are built from JSON by `EffectFactory`/`ConditionFactory`/`QueryFactory`.
 
 | File | Description |
 |---|---|
-| `gameData.h` | The shared context struct passed to every call to `Effect::execute()`/`Condition::check()`/`Query::evaluate()`: who is self/target/enemy, which cards have been played, the map, and callbacks for effects that need to ask the player something (e.g. "pick a tile"). |
+| `gameData.h` | The shared context struct passed to every call to `Effect::execute()`/`Condition::check()`/`Query::evaluate()`: who is self/target/enemy, which cards have been played, the last combat's winner/loser, fog-token turn-start state, the map, and callbacks for effects that need to ask a specific player something (a tile/fighter/card/effect choice, aimed at either the card's owner or, for `opponentChoiceEffect.h`, the opponent). |
 | `observer/observer.h` | The `IGameObserver` interface — the Observer-pattern hook that `GameManager` calls (`onGameStarted`, `onCardPlayed`, `onFighterDamaged`, `onCombatResolved`, ...) so `GameScene` can react to state changes without `GameManager` depending on the view. |
 | `effects/effect.h` | Abstract base class for every card/ability effect. Holds its own `Condition`s and `Query`s, and provides `conditionsMet()` for child classes. |
-| `effects/dmgEffect.h` | Deals fixed damage to a target; includes special cases like damaging all enemy fighters on a fog token. |
-| `effects/defEffect.h` | Adds to a card's defense value. |
-| `effects/modifierEffect.h` | Adds to a card's attack/defense value (a generic "+N" modifier). |
+| `effects/dmgEffect.h` | Deals fixed damage to a target; includes special cases like damaging all enemy fighters on a fog token, plus an optional "bonus damage if a condition holds" branch. |
 | `effects/drawEffect.h` | Draws N cards for self/enemy, with an optional "otherwise" branch (e.g. "draw 1 card, or if you can't, do X instead"). |
 | `effects/moveEffect.h` | Moves a fighter up to N tiles, optionally toward/away from something, including movement between fog-token tiles. |
 | `effects/removeCardEffect.h` | Removes card(s) from a hand (random or player's choice), optionally with a reward per card removed. |
 | `effects/removeEffectEffect.h` | Disables a card effect or a hero ability for a duration. |
+| `effects/removeFromBoardEffect.h` | Takes `self`/`target`/`enemy` off the map (used for hiding a fighter, e.g. the Invisible Man's ability). |
 | `effects/seeHandEffect.h` | Shows the opponent's hand to the player. |
 | `effects/positionExchangeEffect.h` | Swaps the `self` and `target` tiles. |
 | `effects/addEffect.h` | Generic "add N to [stat] of [who]" effect. |
-| `effects/changeValueEffect.h` | Changes a card's value by a fixed amount or by the card's own Boost value. |
+| `effects/changeValueEffect.h` | Changes a card's value by a flat amount or by the card's own Boost value; this is the general "+N to attack/defense" effect (JSON `type: "modify"`/`"def"`/`"change_value"` all resolve here). |
+| `effects/setValueEffect.h` | Sets a card's value to a fixed number instead of adding to it, optionally locking it so later modifiers can't change it. |
 | `effects/choosePlaceEffect.h` | Lets the player pick a tile to place/move a fighter to (for Scheme cards with a location choice). |
+| `effects/placeOnDeckEffect.h` | Lets a player pick card(s) from their hand and place them back on top of their draw deck, in the order chosen. |
+| `effects/chooseEffectEffect.h` | Presents the player with a labeled choice between two or more sub-effects and runs whichever one they pick. |
+| `effects/opponentChoiceEffect.h` | Asks the *opponent* (not the card's owner) to accept or decline a sub-effect, running one of two branches based on their answer. |
+| `effects/predictEffect.h` | Powers Sherlock Holmes' "Elementary" defense card: if the defender's guessed attack value matches the attacker's real value, the attack card's effects are cancelled and its value zeroed. |
 | `effects/reviveEffect.h` | Returns a knocked-out sidekick to the board. |
 | `conditions/condition.h` | Abstract base class: `check(gameData, fighter)` reports whether an effect should apply. |
-| `conditions/isNearEnemyCondition.h` | True if an enemy fighter is within N tiles. |
-| `conditions/isNearTargetCondition.h` | True if `gameData.target` is within N tiles. |
-| `conditions/nearHeroCondition.h` | True if a hero (not just any fighter) is within N. |
+| `conditions/proximityCondition.h` | True if the checked fighter is within N tiles of whichever `gameData` member it was built against (`enemy`, `self`, or `target`) — replaces the old separate near-enemy/near-target/near-hero conditions with one parameterized class. |
 | `conditions/isTeamAdjacentCondition.h` | True if two of the player's own fighters are adjacent. |
-| `conditions/isLossedCondition.h` | True if the fighter lost its last combat. |
-| `conditions/isWinnerSelfCondition.h` | True if `self` won the last combat. |
-| `conditions/wonTheWarCondition.h` | True if the player has won the game. |
+| `conditions/combatOutcomeCondition.h` | True if the checked fighter matches `gameData.lastCombatWinner` or `gameData.lastCombatLoser`, depending on which `CombatOutcome` it was built with — replaces the old separate isLossed/isWinnerSelf/wonTheWar conditions. |
+| `conditions/isOnFogTileCondition.h` | True if the fighter is currently standing on a fog token, or (in its "turn start" mode) if it started this turn on one — used for the Invisible Man's ability. |
 | `queries/query.h` | Abstract base class for a computed value that an effect reads, with its own list of `Condition`s. |
 | `queries/countfighter.h` | Counts how many fighters of a given `TypeOfFighter` a player (or the enemy) has. |
 | `queries/cardBoost.h` | Reads a card's Boost value. |
