@@ -140,7 +140,15 @@ void AIController::resolveFighterChoice(GameManager &gm)
   }
   else if (!allies.empty())
   {
-    choice = weakestOf(allies);
+    Fighter *weakestAlly = weakestOf(allies);
+    if (hasDecline && weakestAlly && weakestAlly->getHealth() <= 1)
+    {
+      choice = nullptr;
+    }
+    else
+    {
+      choice = weakestAlly;
+    }
   }
   else if (hasDecline)
   {
@@ -512,6 +520,10 @@ bool AIController::tryAttack(GameManager &gm, Hero *self, Hero *enemy)
         }
 
         int score = card->getAttackStat() * 10 - target->getHealth();
+        if (card->getAttackStat() >= target->getHealth())
+        {
+          score += 1000;
+        }
         if (score > bestScore)
         {
           bestScore = score;
