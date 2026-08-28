@@ -35,6 +35,30 @@ private:
     };
   }
 
+  static std::function<void(std::vector<Tile *>, Tile *, std::function<void(Tile *)>)>
+  makeTilePickerWithStay(gameData &gameData, const std::string &performer) {
+    if (performer == "enemy" && gameData.requestTileChoiceFor) {
+      auto requestFor = gameData.requestTileChoiceFor;
+      Fighter *chooser = gameData.enemy;
+      return [requestFor, chooser](std::vector<Tile *> options, Tile *,
+                                    std::function<void(Tile *)> onChosen) {
+        requestFor(chooser, std::move(options), std::move(onChosen));
+      };
+    }
+    if (gameData.requestTileChoiceWithStay) {
+      auto requestWithStay = gameData.requestTileChoiceWithStay;
+      return [requestWithStay](std::vector<Tile *> options, Tile *stayTile,
+                                std::function<void(Tile *)> onChosen) {
+        requestWithStay(std::move(options), stayTile, std::move(onChosen));
+      };
+    }
+    auto requestTileChoice = gameData.requestTileChoice;
+    return [requestTileChoice](std::vector<Tile *> options, Tile * ,
+                                std::function<void(Tile *)> onChosen) {
+      requestTileChoice(std::move(options), std::move(onChosen));
+    };
+  }
+
   std::vector<Fighter *> resolveMovers(gameData &gameData) const {
     if (whichOne == "self") {
       return {gameData.self};
@@ -319,7 +343,7 @@ public:
     auto movers = std::make_shared<std::vector<Fighter *>>(resolveMovers(gameData));
     auto index = std::make_shared<size_t>(0);
     Map *map = gameData.map;
-    auto requestTileChoice = makeTilePicker(gameData, performer);
+    auto requestTileChoice = makeTilePickerWithStay(gameData, performer);
     int distance = this->distance;
     bool allowStay = this->allowStay;
     struct gameData *dataPtr = &gameData;
@@ -344,17 +368,18 @@ public:
             ? filterByToWhere(map, mover, dataPtr, map->getReachableTiles(fromTileId, range, mover))
             : std::vector<Tile *>{};
 
+        Tile *stayTile = nullptr;
         if (allowStay) {
-  
           if (Tile *origin = map->getTile(fromTileId)) {
             candidates.push_back(origin);
+            stayTile = origin;
           }
         }
         if (candidates.empty()) {
           continue;
         }
 
-        requestTileChoice(candidates, [map, mover, fromTileId, stepPtr](Tile *chosen) { // we write a lambda here
+        requestTileChoice(candidates, stayTile, [map, mover, fromTileId, stepPtr](Tile *chosen) { // we write a lambda here
           // for func
 
           if (chosen && chosen->getId() != fromTileId) {
