@@ -12,7 +12,7 @@
             "who": "enemy",
             "choice": {
                 "type": "remove_card",
-                "from": "self",
+                "from": "enemy",
                 "howMany": 1,
                 "how": "user_chosen"
             },
