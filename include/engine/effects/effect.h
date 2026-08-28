@@ -43,6 +43,7 @@ public:
   }
 
   virtual bool needsTarget() const { return false; }
+  virtual bool requiresAdjacentTarget() const { return false; }
 
   virtual bool requiresPrediction() const { return false; } // for that extra card(i dont remember name)
 
