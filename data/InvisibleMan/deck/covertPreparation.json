@@ -24,7 +24,7 @@
             "whichOne": "fog_token",
             "howMany": 1,
             "distance": 2,
-            "toWhere": "none",
+            "toWhere": "different_fog_token",
             "performer": "enemy"
         }
     ],
