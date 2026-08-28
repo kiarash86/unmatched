@@ -19,7 +19,7 @@
             "onDecline": {
                 "type": "move",
                 "whichOne": "fog_token",
-                "howMany": 1,
+                "howMany": 3,
                 "distance": 99,
                 "toWhere": "any",
                 "performer": "self"
