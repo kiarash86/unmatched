@@ -36,7 +36,7 @@ bool Card::needsTarget() const { // card need someone?
   return false;
 }
 
-bool Card::needsAdjacentTarget() const { 
+bool Card::needsAdjacentTarget() const {
   for (auto &effect : effects) {
     if (effect->requiresAdjacentTarget())
       return true;
