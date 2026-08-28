@@ -1172,7 +1172,7 @@ void GameManager::triggerDraculaBloodHarvest(Hero *hero) {
 
   adjacent.push_back(nullptr);
 
-  requestFighterChoice(adjacent, [this, hero](Fighter *chosen) {
+  requestFighterChoice(hero, adjacent, [this, hero](Fighter *chosen) {
     if (!chosen) {
       return;
     }
@@ -1270,6 +1270,13 @@ gameData GameManager::buildGameData(Fighter *self, Fighter *target, Fighter *ene
   data.requestTileChoiceWithStay = [this](std::vector<Tile *> options, Tile *explicitStayTile,
                                           std::function<void(Tile *)> onChosen) {
     this->requestTileChoice(std::move(options), std::move(onChosen), explicitStayTile);
+  };
+  data.requestFighterChoice = [this](std::vector<Fighter *> options, std::function<void(Fighter *)> onChosen) {
+    this->requestFighterChoice(std::move(options), std::move(onChosen));
+  };
+  data.requestFighterChoiceFor = [this](Fighter *chooser, std::vector<Fighter *> options,
+                                        std::function<void(Fighter *)> onChosen) {
+    this->requestFighterChoice(chooser, std::move(options), std::move(onChosen));
   };
   data.requestCardChoice = [this](std::vector<Card *> options, std::function<void(Card *)> onChosen) {
     this->requestCardChoice(std::move(options), std::move(onChosen));
@@ -1630,7 +1637,12 @@ void GameManager::requestTileChoice(Fighter *chooser, std::vector<Tile *> option
   { onChosen(static_cast<Tile *>(raw)); };
 }
 void GameManager::requestFighterChoice(std::vector<Fighter *> options, std::function<void(Fighter *)> onChosen) {
-  pendingChooser = nullptr;
+  requestFighterChoice(nullptr, std::move(options), std::move(onChosen));
+}
+
+void GameManager::requestFighterChoice(Fighter *chooser, std::vector<Fighter *> options,
+                                       std::function<void(Fighter *)> onChosen) {
+  pendingChooser = chooser;
   pendingExplicitStayTile = nullptr;
   pending = std::move(options);
   onSelectionResolved = [onChosen](void *raw)

@@ -236,6 +236,8 @@ public:
   void requestTileChoice(Fighter *chooser, std::vector<Tile *> options,
                          std::function<void(Tile *)> onChosen, Tile *explicitStayTile = nullptr);
   void requestFighterChoice(std::vector<Fighter *> options, std::function<void(Fighter *)> onChosen);
+  void requestFighterChoice(Fighter *chooser, std::vector<Fighter *> options,
+                            std::function<void(Fighter *)> onChosen);
   void requestCardChoice(std::vector<Card *> options, std::function<void(Card *)> onChosen);
   void requestCardChoice(Fighter *chooser, std::vector<Card *> options, std::function<void(Card *)> onChosen);
   void requestEffectChoice(std::vector<std::string> labels, std::function<void(int)> onChosen);
